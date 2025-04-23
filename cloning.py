@@ -13,22 +13,7 @@ import shutil
 from git import Repo
 import json
 
-LAST_COMMITS_FILE = "../last_commits_research.json"
 MODELS_FILE = "models.json"
-
-
-def load_last_commits() -> dict:
-    """Load the last commits from the file."""
-    if os.path.exists(LAST_COMMITS_FILE):
-        with open(LAST_COMMITS_FILE, "r") as file:
-            return json.load(file)
-    return {}
-
-
-def save_last_commits(last_commits: dict) -> None:
-    """Save the last commits to the file."""
-    with open(LAST_COMMITS_FILE, "w") as file:
-        json.dump(last_commits, file)
 
 
 def main() -> None:
@@ -50,7 +35,6 @@ def main() -> None:
         return
 
     valid_models = []
-    last_commits = load_last_commits()
 
     for model in spreadsheet:
         model_name = model[0].replace("/", "_")
@@ -74,25 +58,12 @@ def main() -> None:
             with open(f"{model_name}/details.txt", "w") as file:
                 file.write(f"Model Name: {str(model_name)}\n\n")
 
-            latest_commit = repo.head.commit.hexsha
-
-            # Check if the commit has changed
-            if model_name in last_commits and last_commits[model_name] == latest_commit:
-                print(f"No changes for {model_name}, skipping model run.")
-                if os.path.exists(f"./{model_name}"):
-                    shutil.rmtree(f"./{model_name}")
-                continue
-
-            # Update the last commit hash
-            last_commits[model_name] = latest_commit
             valid_models.append(model)
 
         except Exception as e:
             print(f"Failed to clone {github_link} for {model_name}: {e}")
+            shutil.rmtree(f"./{model_name}", ignore_errors=True)
             continue
-
-    # Save the updated last commits
-    save_last_commits(last_commits)
 
     with open("models.json", "w") as file:
         json.dump(valid_models, file)
