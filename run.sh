@@ -37,7 +37,7 @@ source activate running-env
 
 echo "--------------------------------------------------"
 echo "Running the model: $1"
-mkdir -p "./$1/competition_output"
+mkdir -p "./$1/research_output"
 cd "$1"
 shopt -s nullglob
 
@@ -49,7 +49,7 @@ for file in ../evaluation_mp3/*.mp3; do
     base_name=$(basename "$file" .mp3)
     start_time=$(date +%s.%N)
 
-    python3 main.py -i "$file" -o "competition_output/${base_name}.mid"
+    python3 main.py -i "$file" -o "research_output/${base_name}.mid"
 
     end_time=$(date +%s.%N)
     runtime=$(echo "$end_time - $start_time" | bc)
@@ -104,7 +104,7 @@ echo "--------------------------------------------------"
 echo "Scoring the output files"
 
 TEAM_DIR="$1"
-OUTPUT_DIR="$TEAM_DIR/competition_output"
+OUTPUT_DIR="$TEAM_DIR/research_output"
 
 if [ ! -d "$OUTPUT_DIR" ]; then
     echo "Error: Output directory $OUTPUT_DIR does not exist!"
@@ -191,7 +191,7 @@ export XDG_RUNTIME_DIR=/tmp/runtime-ochaturv
 echo "--------------------------------------------------"
 echo "Converting the output files"
 TEAM_DIR="$1"
-OUTPUT_DIR="$TEAM_DIR/competition_output"
+OUTPUT_DIR="$TEAM_DIR/research_output"
 
 if [ ! -d "$OUTPUT_DIR" ]; then
     echo "Error: Output directory $OUTPUT_DIR does not exist!"
@@ -233,7 +233,7 @@ echo "--------------------------------------------------"
 echo "Script execution completed!"
 
 TEAM_DIR="$1"
-OUTPUT_DIR="$TEAM_DIR/competition_output"
+OUTPUT_DIR="$TEAM_DIR/research_output"
 GDRIVE_PARENT_FOLDER_ID="1i1xahjfreIqTozgF4dieFYPo3ezrDzQP"
 
 if [ ! -d "$OUTPUT_DIR" ]; then

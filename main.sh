@@ -24,7 +24,7 @@ module load ffmpeg
 module load conda
 
 echo "--------------------------------------------------"
-echo "Running cloning for all participant repositories"
+echo "Running cloning for all testing repositories"
 
 CONDA_ENV_PATH="$HOME/.conda/envs/cloning-env"
 if [ -d "$CONDA_ENV_PATH" ] && [ ! -f "$CONDA_ENV_PATH/bin/activate" ]; then
@@ -112,5 +112,5 @@ done
 echo "--------------------------------------------------"
 echo "Script execution completed!"
 
-curl -s -X POST -H "Content-Type: application/json" -d '{"content": "Main script for competition has been executed!", "avatar_url": "https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png"}' https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux
-curl -d "Main script for competition has been executed!" -H "Title: Main script execution" -H "Priority: default" -H "Topic: gilbreth-notify-amt" ntfy.sh/gilbreth-notify-amt
+curl -s -X POST -H "Content-Type: application/json" -d '{"content": "Main script for paper has been executed!", "avatar_url": "https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png"}' https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux
+curl -d "Main script for paper has been executed!" -H "Title: Main script execution" -H "Priority: default" -H "Topic: gilbreth-notify-amt" ntfy.sh/gilbreth-notify-amt

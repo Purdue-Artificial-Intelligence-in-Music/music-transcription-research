@@ -1,7 +1,7 @@
 #!/opt/homebrew/bin/python3
 """
 Name: run.py
-Purpose: Submit SLURM jobs for each team's model in the AMT competition
+Purpose: Submit SLURM jobs for each model in the AMT research paper
 """
 
 __author__ = "Ojas Chaturvedi"
@@ -31,8 +31,8 @@ def submit_slurm_job(script_name: str, team_dir: str, dependency: str = None) ->
         # sbatch_cmd.append(f"-eslurm_error.err")
     else:
         sbatch_cmd.append(f"-J{team_dir}")
-        sbatch_cmd.append(f"-o{team_dir}/competition_output/slurm_output.txt")
-        # sbatch_cmd.append(f"-e{team_dir}/competition_output/slurm_error.err")
+        sbatch_cmd.append(f"-o{team_dir}/research_output/slurm_output.txt")
+        # sbatch_cmd.append(f"-e{team_dir}/research_output/slurm_error.err")
 
     if dependency:
         sbatch_cmd.append(f"--dependency=afterany:{dependency}")
