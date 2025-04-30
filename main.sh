@@ -21,7 +21,7 @@ if ! ping -c 1 repo.anaconda.com &>/dev/null; then
     MSG="No internet access. Cannot create Conda environment. Exiting."
     echo "$MSG"
     curl -d "$MSG" -H "Title: Error" -H "Priority: urgent" -H "Topic: gilbreth-notify-amt" ntfy.sh/gilbreth-notify-amt
-    curl -s -X POST -H "Content-Type: application/json" -d '{"content": "URGENT: NO INTERNET ACCESS FOR CONDA CREATION"}' https://discord.com/api/webhooks/...
+    curl -s -X POST -H "Content-Type: application/json" -d '{"content": "URGENT: NO INTERNET ACCESS FOR CONDA CREATION"}' https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux
     exit 1
 fi
 
@@ -145,5 +145,5 @@ done
 echo "--------------------------------------------------"
 echo "Script execution completed!"
 
-curl -s -X POST -H "Content-Type: application/json" -d '{"content": "Main script for paper has been executed!"}' https://discord.com/api/webhooks/...
+curl -s -X POST -H "Content-Type: application/json" -d '{"content": "Main script for paper has been executed!"}' https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux
 curl -d "Main script for paper has been executed!" -H "Title: Main script execution" -H "Priority: default" -H "Topic: gilbreth-notify-amt" ntfy.sh/gilbreth-notify-amt
