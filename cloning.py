@@ -1,7 +1,7 @@
 #!/opt/homebrew/bin/python3
 """
 Name: cloning.py
-Purpose: Clone GitHub repositories for competition backend
+Purpose: Clone GitHub repositories for paper backend
 """
 
 __author__ = "Ojas Chaturvedi"
@@ -10,63 +10,69 @@ __license__ = "MIT"
 
 import os
 import shutil
-from git import Repo
 import json
+from git import Repo
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 MODELS_FILE = "models.json"
+MAX_WORKERS = min(32, (os.cpu_count() or 4) * 2)
 
 
-def main() -> None:
-    # Load JSON data from the hardcoded file name 'models.json'
+def clone_repo(model):
+    model_name = model[0].replace("/", "_")
+    github_link = model[1].replace("https://", "")
+    username = model[2]
+    pat = model[3]
+
+    if not model_name or model_name.strip() in [".", "./"]:
+        return (model, False, f"Invalid model name '{model_name}'")
+
+    repo_path = f"./{model_name}"
+    if os.path.exists(repo_path):
+        shutil.rmtree(repo_path)
+
+    try:
+        print(f"Cloning: {github_link} to {repo_path}")
+        Repo.clone_from(f"https://{username}:{pat}@{github_link}", repo_path)
+        with open(f"{repo_path}/details.txt", "w") as f:
+            f.write(f"Model Name: {model_name}\n\n")
+        return (model, True, None)
+    except Exception as e:
+        shutil.rmtree(repo_path, ignore_errors=True)
+        return (model, False, str(e))
+
+
+def main():
     if not os.path.exists(MODELS_FILE):
         print(f"Error: The file '{MODELS_FILE}' was not found.")
         return
 
     try:
-        with open(MODELS_FILE, "r") as file:
-            data = json.load(file)
+        with open(MODELS_FILE, "r") as f:
+            data = json.load(f)
     except Exception as e:
         print(f"Error reading '{MODELS_FILE}': {e}")
         return
 
-    spreadsheet = data.get("values", [])[1:]  # Skip header row
-    if not spreadsheet:
-        print(f"Error: No data found in '{MODELS_FILE}'.")
+    all_rows = data.get("values", [])
+    if len(all_rows) < 2:
+        print(f"Error: Not enough data in '{MODELS_FILE}'.")
         return
 
+    header, spreadsheet = all_rows[0], all_rows[1:]
     valid_models = []
 
-    for model in spreadsheet:
-        model_name = model[0].replace("/", "_")
-        github_link = model[1].replace("https://", "")
-        username = model[2]
-        pat = model[3]
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        futures = [executor.submit(clone_repo, model) for model in spreadsheet]
+        for future in as_completed(futures):
+            model, success, error = future.result()
+            if success:
+                valid_models.append(model)
+            else:
+                print(f"Failed to clone for {model[0]}: {error}")
 
-        if not model_name or model_name.strip() in [".", "./"]:
-            print(f"Warning: Invalid model name '{model_name}', skipping...")
-            continue
-
-        if os.path.exists(f"./{model_name}"):
-            shutil.rmtree(f"./{model_name}")
-
-        print(f"Cloning: {github_link} to ./{model_name}")
-        try:
-            repo = Repo.clone_from(
-                f"https://{username}:{pat}@{github_link}", f"./{model_name}"
-            )
-
-            with open(f"{model_name}/details.txt", "w") as file:
-                file.write(f"Model Name: {str(model_name)}\n\n")
-
-            valid_models.append(model)
-
-        except Exception as e:
-            print(f"Failed to clone {github_link} for {model_name}: {e}")
-            shutil.rmtree(f"./{model_name}", ignore_errors=True)
-            continue
-
-    with open("models.json", "w") as file:
-        json.dump(valid_models, file)
+    with open(MODELS_FILE, "w") as f:
+        json.dump({"values": [header] + valid_models}, f, indent=2)
 
     print("Cloning process completed!")
 
