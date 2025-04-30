@@ -43,7 +43,6 @@ python cloning.py
 
 echo "--------------------------------------------------"
 echo "Paring the json file with all team data"
-echo "Extracted team names with Submission tag:"
 count=0
 mapfile -t lines < <(jq -c '.[]' teams.json)
 for line in "${lines[@]}"; do
