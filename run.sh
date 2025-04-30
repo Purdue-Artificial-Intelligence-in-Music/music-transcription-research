@@ -234,7 +234,7 @@ echo "Script execution completed!"
 
 TEAM_DIR="$1"
 OUTPUT_DIR="$TEAM_DIR/research_output"
-GDRIVE_PARENT_FOLDER_ID="1i1xahjfreIqTozgF4dieFYPo3ezrDzQP"
+GDRIVE_PARENT_FOLDER_ID="11zBLIit-Cg7Tu5KHJXZBvaUauFr5Dtbc"
 
 if [ ! -d "$OUTPUT_DIR" ]; then
     echo "Error: Output directory $OUTPUT_DIR does not exist!"
