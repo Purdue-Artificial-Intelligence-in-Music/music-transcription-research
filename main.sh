@@ -7,107 +7,143 @@
 #SBATCH --time=01:30:00
 #SBATCH -J main
 
-echo "--------------------------------------------------"
-echo "Running main.sh"
+set -euo pipefail
+ROOTSAFE=${ROOTSAFE:-""}
+trap 'echo "Script terminated unexpectedly."; exit 1' ERR
 
+echo "--------------------------------------------------"
+echo "Starting main.sh"
+
+# ------------------------------
+# Internet Check
+# ------------------------------
 if ! ping -c 1 repo.anaconda.com &>/dev/null; then
-    echo "No internet access. Cannot create Conda environment. Exiting."
-    curl -d "No internet access. Cannot create Conda environment. Exiting." -H "Title: Error" -H "Priority: urgent" -H "Topic: gilbreth-notify-amt" ntfy.sh/gilbreth-notify-amt
-    curl -s -X POST -H "Content-Type: application/json" -d '{"content": "URGENT: NO INTERNET ACCESS FOR CONDA CREATION", "avatar_url": "https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png"}' https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux
+    MSG="No internet access. Cannot create Conda environment. Exiting."
+    echo "$MSG"
+    curl -d "$MSG" -H "Title: Error" -H "Priority: urgent" -H "Topic: gilbreth-notify-amt" ntfy.sh/gilbreth-notify-amt
+    curl -s -X POST -H "Content-Type: application/json" -d '{"content": "URGENT: NO INTERNET ACCESS FOR CONDA CREATION"}' https://discord.com/api/webhooks/...
     exit 1
 fi
 
+# ------------------------------
+# Environment Setup
+# ------------------------------
+echo "Loading modules and setting up Conda..."
 source /etc/profile.d/modules.sh
 module --force purge
-module load external
-module load ffmpeg
-module load conda
+module load external ffmpeg conda
 
-echo "--------------------------------------------------"
-echo "Running cloning for all testing repositories"
-
-CONDA_ENV_PATH="$HOME/.conda/envs/cloning-env"
-if [ -d "$CONDA_ENV_PATH" ] && [ ! -f "$CONDA_ENV_PATH/bin/activate" ]; then
-    echo "Removing invalid conda environment at $CONDA_ENV_PATH"
-    rm -rf "$CONDA_ENV_PATH"
+CONDA_ENV_NAME="cloning-env"
+eval "$(conda shell.bash hook)"
+if conda env list | grep -q "$CONDA_ENV_NAME"; then
+    conda remove -y --name "$CONDA_ENV_NAME" --all
 fi
 
-conda create -y -q --name cloning-env
-source activate cloning-env
+conda create -y -q --name "$CONDA_ENV_NAME"
+conda activate "$CONDA_ENV_NAME"
 conda install -y -q pip
 pip install -q requests gitpython
 conda install -c conda-forge -y -q git-lfs
 git lfs install
 
+# ------------------------------
+# Run Cloning Script
+# ------------------------------
+echo "--------------------------------------------------"
+echo "Running Python cloning script..."
 python cloning.py
 
+# ------------------------------
+# Git LFS Pull per Team
+# ------------------------------
 echo "--------------------------------------------------"
-echo "Paring the json file with all team data"
-count=0
-mapfile -t lines < <(jq -c '.values[1:][]' models.json)
-for line in "${lines[@]}"; do
-    TEAM_NAME=$(echo "$line" | jq -r '.[0]')
-    count=$((count + 1))
-done
+echo "Parsing team data and running git lfs pull..."
 
-for line in "${lines[@]}"; do
+mapfile -t TEAM_LINES < <(jq -c '.values[1:][]' models.json)
+TEAM_COUNT=${#TEAM_LINES[@]}
+
+for line in "${TEAM_LINES[@]}"; do
     TEAM_NAME=$(echo "$line" | jq -r '.[0]')
     TEAM_DIR="$TEAM_NAME"
 
     if [ -d "$TEAM_DIR" ]; then
-        cd "$TEAM_DIR" || {
-            echo "Failed to enter directory $TEAM_DIR"
-            continue
-        }
-
-        echo "Running git lfs pull in $TEAM_DIR"
-        git lfs pull
-
-        cd .. || {
-            echo "Failed to return to parent directory"
-            continue
-        }
+        echo "Pulling LFS for $TEAM_DIR"
+        cd "$TEAM_DIR"
+        git lfs pull || echo "LFS pull failed for $TEAM_DIR"
+        cd ..
     else
         echo "Directory $TEAM_DIR does not exist."
     fi
 done
 
-conda deactivate
-if conda env list | grep -q "cloning-env"; then
-    echo "Removing conda environment 'cloning-env'"
-    conda env remove -y -q --name cloning-env
+# ------------------------------
+# Build MuseScore Singularity Container
+# ------------------------------
+echo "--------------------------------------------------"
+echo "Building MuseScore Singularity container..."
+
+MUSESCORE_SIF="musescore.sif"
+MUSESCORE_DEF="musescore.def"
+
+if [ ! -f "$MUSESCORE_SIF" ]; then
+    cat <<EOF >"$MUSESCORE_DEF"
+BootStrap: docker
+From: ubuntu:22.04
+
+%post
+    apt update && apt install -y musescore ffmpeg curl imagemagick
+    echo "MuseScore and ImageMagick Installed"
+
+%runscript
+    export QT_QPA_PLATFORM=offscreen
+    exec /usr/bin/mscore "\$@"
+EOF
+
+    singularity build --force "$MUSESCORE_SIF" "$MUSESCORE_DEF" &>/dev/null
+    rm "$MUSESCORE_DEF"
+else
+    echo "Singularity container already exists."
 fi
+
+# ------------------------------
+# Cleanup Conda Environment
+# ------------------------------
+conda deactivate
+conda env remove -y -q --name "$CONDA_ENV_NAME"
 conda clean --all --yes -q
 
+# ------------------------------
+# Job Submission Control
+# ------------------------------
 echo "--------------------------------------------------"
 echo "Creating Slurm jobs for each team"
 
-MAX_ALLOWED=$((50000 - count + 1))
-echo "Max allowed: $MAX_ALLOWED"
+MAX_ALLOWED=$((50000 - TEAM_COUNT + 1))
+SLEEP_INTERVAL=300
 
-SLEEP_INTERVAL=300 # Time in seconds between checks (e.g., 5 minutes)
-
-# Function to count jobs in cluster
 count_jobs() {
     squeue -A standby | wc -l
 }
 
 while true; do
-    COUNT=$(count_jobs)
-    echo "$(date): Current jobs = $COUNT"
+    CURRENT_JOBS=$(count_jobs)
+    echo "$(date): Current jobs = $CURRENT_JOBS"
 
-    if [ "$COUNT" -lt "$MAX_ALLOWED" ]; then
+    if [ "$CURRENT_JOBS" -lt "$MAX_ALLOWED" ]; then
         echo "Job count is within limit. Running job generation..."
         python run.py
         break
     else
         echo "Too many jobs. Sleeping for $SLEEP_INTERVAL seconds..."
-        sleep $SLEEP_INTERVAL
+        sleep "$SLEEP_INTERVAL"
     fi
 done
 
+# ------------------------------
+# Final Notification
+# ------------------------------
 echo "--------------------------------------------------"
 echo "Script execution completed!"
 
-curl -s -X POST -H "Content-Type: application/json" -d '{"content": "Main script for paper has been executed!", "avatar_url": "https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png"}' https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux
+curl -s -X POST -H "Content-Type: application/json" -d '{"content": "Main script for paper has been executed!"}' https://discord.com/api/webhooks/...
 curl -d "Main script for paper has been executed!" -H "Title: Main script execution" -H "Priority: default" -H "Topic: gilbreth-notify-amt" ntfy.sh/gilbreth-notify-amt
