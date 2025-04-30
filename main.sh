@@ -44,15 +44,14 @@ python cloning.py
 echo "--------------------------------------------------"
 echo "Paring the json file with all team data"
 count=0
-mapfile -t lines < <(jq -c '.[]' teams.json)
+mapfile -t lines < <(jq -c '.values[1:][]' models.json)
 for line in "${lines[@]}"; do
-    TEAM_NAME=$(echo "$line" | jq -r '.[2]')
-    echo "$TEAM_NAME"
+    TEAM_NAME=$(echo "$line" | jq -r '.[0]')
     count=$((count + 1))
 done
 
 for line in "${lines[@]}"; do
-    TEAM_NAME=$(echo "$line" | jq -r '.[2]')
+    TEAM_NAME=$(echo "$line" | jq -r '.[0]')
     TEAM_DIR="$TEAM_NAME"
 
     if [ -d "$TEAM_DIR" ]; then
@@ -61,10 +60,9 @@ for line in "${lines[@]}"; do
             continue
         }
 
-        # Perform git lfs pull
+        echo "Running git lfs pull in $TEAM_DIR"
         git lfs pull
 
-        # Return to the parent directory
         cd .. || {
             echo "Failed to return to parent directory"
             continue
