@@ -7,8 +7,9 @@
 #SBATCH --time=01:30:00
 #SBATCH -J main
 
+export MODULEPATH=${MODULEPATH:-""}
+export ROOTSAFE=${ROOTSAFE:-""}
 set -euo pipefail
-ROOTSAFE=${ROOTSAFE:-""}
 trap 'echo "Script terminated unexpectedly."; exit 1' ERR
 
 echo "--------------------------------------------------"
