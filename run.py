@@ -46,7 +46,7 @@ def submit_slurm_job(
 
     print(f"\nSubmitting {script_name} for team: {team_dir or '[global]'}")
     if dependency:
-        print(f"  Dependency: afterany:{dependency}")
+        print(f"  Dependency: {dependency}")
 
     try:
         result = subprocess.run(
