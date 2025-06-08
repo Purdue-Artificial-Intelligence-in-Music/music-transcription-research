@@ -1,29 +1,65 @@
 {
-    "values": [
-        ["Model Name", "GitHub URL", "Username", "Token"],
-        [
-            "MT3",
-            "https://github.com/ojas-chaturvedi/mt3-pytorch.git",
-            "ojas-chaturvedi",
-            "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"
-        ],
-        [
-            "Basic Pitch",
-            "https://github.com/KayshavBhardwaj/basic-pitch-test-1.git",
-            "KayshavBhardwaj",
-            "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"
-        ],
-        [
-            "ReconVAT",
-            "https://github.com/ojas-chaturvedi/ReconVAT.git",
-            "ojas-chaturvedi",
-            "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"
-        ],
-        [
-            "Bytedance Piano transcription",
-            "https://github.com/ojas-chaturvedi/piano_transcription_inference.git",
-            "ojas-chaturvedi",
-            "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"
-        ]
+  "values": [
+    ["Model Name", "GitHub URL", "Username", "Token"],
+    [
+      "MT3",
+      "https://github.com/ojas-chaturvedi/mt3-pytorch.git",
+      "ojas-chaturvedi",
+      "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"
+    ],
+    [
+      "Basic Pitch",
+      "https://github.com/KayshavBhardwaj/basic-pitch-test-1.git",
+      "KayshavBhardwaj",
+      "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"
+    ],
+    [
+      "ReconVAT",
+      "https://github.com/ojas-chaturvedi/ReconVAT.git",
+      "ojas-chaturvedi",
+      "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"
+    ],
+    [
+      "Bytedance Piano transcription",
+      "https://github.com/ojas-chaturvedi/piano_transcription_inference.git",
+      "ojas-chaturvedi",
+      "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"
+    ],
+    [
+      "CREPE AMT",
+      "https://github.com/tgondil/crepe-amt",
+      "tgondil",
+      "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"
+    ],
+    [
+      "Transkun AMT",
+      "https://github.com/tgondil/transkun-amt",
+      "tgondil",
+      "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"
+    ],
+    [
+      "Sound2MIDI Monophonic",
+      "https://github.com/tgondil/sound2midi-monophonic",
+      "tgondil",
+      "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"
+    ],
+    [
+      "basicpitch",
+      "https://github.com/tgondil/research-AMT",
+      "tgondil",
+      "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"
+    ],
+    [
+      "madmom",
+      "https://github.com/tgondil/research-AMT",
+      "tgondil",
+      "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"
+    ],
+    [
+      "melodia",
+      "https://github.com/tgondil/research-AMT",
+      "tgondil",
+      "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"
     ]
+  ]
 }
