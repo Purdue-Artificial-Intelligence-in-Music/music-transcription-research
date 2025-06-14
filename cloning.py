@@ -15,7 +15,6 @@ from git import Repo
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 MODELS_FILE = "models.json"
-MAX_WORKERS = min(32, (os.cpu_count() or 4) * 2)
 
 
 def clone_repo(model):
@@ -62,7 +61,7 @@ def main():
     header, spreadsheet = all_rows[0], all_rows[1:]
     valid_models = []
 
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+    with ThreadPoolExecutor(max_workers=None) as executor:
         futures = [executor.submit(clone_repo, model) for model in spreadsheet]
         for future in as_completed(futures):
             model, success, error = future.result()
