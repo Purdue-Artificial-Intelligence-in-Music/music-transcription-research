@@ -60,18 +60,18 @@ def main() -> None:
             print(f"\nUploading {script} to {remote_path}")
             scp.put(script, remote_path=remote_path)
 
-    execute_cmd(client, f"rm -rf {remote_path}evaluation_mid")
-    execute_cmd(client, f"mkdir -p {remote_path}evaluation_mid")
-    execute_cmd(client, f"rm -rf {remote_path}evaluation_mp3")
-    execute_cmd(client, f"mkdir -p {remote_path}evaluation_mp3")
+    # execute_cmd(client, f"rm -rf {remote_path}evaluation_mid")
+    # execute_cmd(client, f"mkdir -p {remote_path}evaluation_mid")
+    # execute_cmd(client, f"rm -rf {remote_path}evaluation_mp3")
+    # execute_cmd(client, f"mkdir -p {remote_path}evaluation_mp3")
 
-    for script in os.listdir("evaluation_mid"):
-        print(f"\nUploading {script} to {remote_path}evaluation_mid/")
-        scp.put(f"evaluation_mid/{script}", remote_path=remote_path + "evaluation_mid/")
+    # for script in os.listdir("evaluation_mid"):
+    #     print(f"\nUploading {script} to {remote_path}evaluation_mid/")
+    #     scp.put(f"evaluation_mid/{script}", remote_path=remote_path + "evaluation_mid/")
 
-    for script in os.listdir("evaluation_mp3"):
-        print(f"\nUploading {script} to {remote_path}evaluation_mp3/")
-        scp.put(f"evaluation_mp3/{script}", remote_path=remote_path + "evaluation_mp3/")
+    # for script in os.listdir("evaluation_mp3"):
+    #     print(f"\nUploading {script} to {remote_path}evaluation_mp3/")
+    #     scp.put(f"evaluation_mp3/{script}", remote_path=remote_path + "evaluation_mp3/")
 
     # Execute the job script
     execute_cmd(client, f"cd {remote_path} && sbatch main.sh")
