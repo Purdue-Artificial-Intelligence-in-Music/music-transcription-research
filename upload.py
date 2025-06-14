@@ -13,8 +13,6 @@ from pydrive2.drive import GoogleDrive
 import os
 import argparse
 import datetime
-import json
-from contact import send_email
 
 
 def authenticate_service_account():
@@ -51,8 +49,9 @@ def check_folder_exists(drive, folder_name, parent_folder_id):
     return None, None  # Folder does not exist
 
 
-def create_folder(drive, folder_name, parent_folder_id=None):
+def create_folder(drive, model_name, dataset_name, parent_folder_id=None):
     """Create a folder in Google Drive (or return existing folder details) and return its ID and link."""
+    folder_name = f"{model_name} - {dataset_name}"
     folder_id, folder_link = check_folder_exists(drive, folder_name, parent_folder_id)
     if folder_id:
         return folder_id, folder_link  # Return existing folder details
@@ -87,9 +86,7 @@ def create_folder(drive, folder_name, parent_folder_id=None):
     return folder_id, folder_link
 
 
-def upload_files_to_folder(
-    drive, local_directory, folder_id, mp3_folder_id=None, output_folder_id=None
-):
+def upload_files_to_folder(drive, local_directory, folder_id, output_folder_id=None):
     """Upload all files from a local directory to the specified Google Drive folder.
     MP3 files will be uploaded to a separate MP3 Input folder if provided.
     """
@@ -97,9 +94,7 @@ def upload_files_to_folder(
         file_path = os.path.join(local_directory, filename)
         if os.path.isfile(file_path):
             file_ext = os.path.splitext(filename)[1].lower()
-            if file_ext == ".mp3":
-                target_folder_id = mp3_folder_id
-            elif file_ext == ".mid" or file_ext == ".midi" or file_ext == ".pdf":
+            if file_ext == ".mid" or file_ext == ".midi" or file_ext == ".pdf":
                 target_folder_id = output_folder_id
             else:
                 target_folder_id = folder_id
@@ -110,20 +105,6 @@ def upload_files_to_folder(
             file.SetContentFile(file_path)
             file.Upload()
             print(f"Uploaded {filename} to folder ID: {target_folder_id}")
-
-
-def get_team_info(team_name):
-    """Retrieve the main contact email and team lead name from teams.json"""
-    with open("teams.json", "r", encoding="utf-8") as file:
-        teams_data = json.load(file)
-
-    for team in teams_data:
-        if team[2] == team_name:  # Match team name
-            email = team[1]  # Extract email
-            name = team[3].split(",")[0]  # Extract main team member's name
-            return name, email
-
-    return None, None  # If team not found
 
 
 def main():
@@ -137,9 +118,14 @@ def main():
         help="ID of the main parent folder in Google Drive",
     )
     parser.add_argument(
-        "--team-name",
+        "--model-name",
         required=True,
-        help="Name of the team",
+        help="Name of the model",
+    )
+    parser.add_argument(
+        "--dataset-name",
+        required=True,
+        help="Name of the dataset",
     )
     parser.add_argument(
         "--local-directory",
@@ -150,45 +136,28 @@ def main():
 
     print("Arguments Received:")
     print(f"\tMain Folder ID: {args.main_folder}")
-    print(f"\tTeam Name: {args.team_name}")
+    print(f"\tModel Name: {args.model_name}")
+    print(f"\tDataset Name: {args.dataset_name}")
     print(f"\tLocal Directory: {args.local_directory}")
 
     drive = authenticate_service_account()
 
-    # Get team lead name and email
-    team_lead_name, team_email = get_team_info(args.team_name)
-    if not team_email:
-        print(f"Error: No email found for team '{args.team_name}'")
-        return
-
-    # Determine if the folder is new or already existed
-    email_type = (
-        "existing"
-        if check_folder_exists(drive, args.team_name, args.main_folder)[0]
-        else "new"
+    # Get or create the model folder
+    model_folder_id, model_folder_link = create_folder(
+        drive, args.model_name, args.dataset_name, args.main_folder
     )
+    print(f"Using folder for {args.model_name} with ID: {model_folder_id}")
+    print(f"\tModel folder link: {model_folder_link}")
 
-    # Get or create the team folder
-    team_folder_id, team_folder_link = create_folder(
-        drive, args.team_name, args.main_folder
-    )
-    print(f"Using folder for {args.team_name} with ID: {team_folder_id}")
-    print(f"\tTeam folder link: {team_folder_link}")
-
-    # Create a timestamped submission folder inside the team folder
+    # Create a timestamped submission folder inside the model folder
     subfolder_name = (
         f"Submission graded at: {datetime.datetime.now().strftime('%m-%d-%Y %H:%M:%S')}"
     )
-    subfolder_id, subfolder_link = create_folder(drive, subfolder_name, team_folder_id)
+    subfolder_id, subfolder_link = create_folder(drive, subfolder_name, model_folder_id)
     print(
-        f"Created subfolder '{subfolder_name}' inside '{args.team_name}' with ID: {subfolder_id}"
+        f"Created subfolder '{subfolder_name}' inside '{args.model_name}' with ID: {subfolder_id}"
     )
     print(f"\tSubfolder link: {subfolder_link}")
-
-    # Create MP3 Input subfolder inside the submission folder
-    mp3_folder_name = "MP3 Input"
-    mp3_folder_id, mp3_folder_link = create_folder(drive, mp3_folder_name, subfolder_id)
-    print(f"\tMP3 Input subfolder link: {mp3_folder_link}")
 
     # Create Output subfolder inside the submission folder
     output_folder_name = "Model Output"
@@ -198,9 +167,7 @@ def main():
     print(f"\tModel Output subfolder link: {output_folder_link}")
 
     # Upload files, routing .mp3s into the MP3 Input folder
-    upload_files_to_folder(
-        drive, args.local_directory, subfolder_id, mp3_folder_id, output_folder_id
-    )
+    upload_files_to_folder(drive, args.local_directory, subfolder_id, output_folder_id)
 
 
 if __name__ == "__main__":
