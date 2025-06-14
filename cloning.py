@@ -13,6 +13,7 @@ import shutil
 import json
 from git import Repo
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import subprocess
 
 MODELS_FILE = "models.json"
 
@@ -33,6 +34,10 @@ def clone_repo(model):
     try:
         print(f"Cloning: {github_link} to {repo_path}")
         Repo.clone_from(f"https://{username}:{pat}@{github_link}", repo_path)
+
+        subprocess.run(["git", "lfs", "install"], check=True)
+        subprocess.run(["git", "lfs", "pull"], cwd=repo_path, check=True)
+
         with open(f"{repo_path}/details.txt", "w") as f:
             f.write(f"Model Name: {model_name}\n\n")
         return (model, True, None)
