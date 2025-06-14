@@ -41,19 +41,25 @@
             "madmom",
             "https://github.com/tgondil/madmom-amt",
             "tgondil",
-            "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"
+            "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"
         ],
         [
             "melodia",
             "https://github.com/tgondil/melodia-amt",
             "tgondil",
-            "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"
+            "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"
         ],
         [
             "Basic Pitch",
             "https://github.com/KayshavBhardwaj/basic-pitch-test-1.git",
             "KayshavBhardwaj",
             "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"
+        ]
+        [
+            "Transkun",
+            "https://github.com/tgondil/transkun-amt",
+            "tgondil",
+            "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"
         ]
     ]
 }
