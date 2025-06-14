@@ -14,6 +14,7 @@ import os
 from typing import Optional
 
 MODELS_FILE = "models.json"
+DATASETS_FILE = "datasets.json"
 RUN_SCRIPT = "run.sh"
 CLEANUP_SCRIPT = "cleanup.sh"
 
@@ -24,16 +25,16 @@ def extract_slurm_id(output: str) -> str:
 
 
 def submit_slurm_job(
-    script_name: str, team_dir: str = "", dependency: Optional[str] = None
+    script_name: str, model_dir: str = "", dependency: Optional[str] = None
 ) -> str:
     """Submit a SLURM job and return the job ID."""
     sbatch_cmd = ["sbatch"]
 
-    job_name = team_dir if team_dir else script_name
+    job_name = model_dir if model_dir else script_name
     output_file = (
-        f"{team_dir}/research_output/slurm_output.txt"
-        if team_dir
-        else f"slurm_output-{script_name}.txt"
+        f"{model_dir}/research_output/slurm_output.txt"
+        if model_dir
+        else f"slurm_output-{script_name}.out"
     )
 
     sbatch_cmd.extend(["-J", job_name, "-o", output_file])
@@ -41,10 +42,10 @@ def submit_slurm_job(
         sbatch_cmd.append(f"--dependency=afterany:{dependency}")
 
     sbatch_cmd.extend([script_name])
-    if team_dir:
-        sbatch_cmd.append(team_dir)
+    if model_dir:
+        sbatch_cmd.append(model_dir)
 
-    print(f"\nSubmitting {script_name} for team: {team_dir or '[global]'}")
+    print(f"\nSubmitting {script_name} for model: {model_dir or '[global]'}")
     if dependency:
         print(f"  Dependency: {dependency}")
 
@@ -74,31 +75,76 @@ def main():
     if not os.path.exists(MODELS_FILE):
         print(f"Error: {MODELS_FILE} not found.")
         return
+    if not os.path.exists(DATASETS_FILE):
+        print(f"Error: {DATASETS_FILE} not found.")
+        return
 
     try:
         with open(MODELS_FILE, "r") as f:
-            data = json.load(f)
-            teams = data.get("values", [])[1:]  # Skip header
+            model_data = json.load(f).get("values", [])[1:]
     except Exception as e:
         print(f"Error loading {MODELS_FILE}: {e}")
         return
 
-    if not teams:
-        print("No teams found in the JSON file.")
+    try:
+        with open(DATASETS_FILE, "r") as f:
+            dataset_data = json.load(f).get("values", [])[1:]
+    except Exception as e:
+        print(f"Error loading {DATASETS_FILE}: {e}")
         return
 
-    print(f"Found {len(teams)} teams in {MODELS_FILE}.")
+    if not model_data:
+        print("No models found.")
+        return
+    if not dataset_data:
+        print("No datasets found.")
+        return
+
+    print(f"Found {len(model_data)} models and {len(dataset_data)} datasets.")
     print(f"Current working directory: {os.getcwd()}")
 
-    last_job_id = None
+    all_jobs = []
 
-    for team in teams:
-        team_dir = team[0]
-        print(f"\nProcessing team: {team_dir}")
-        last_job_id = submit_slurm_job(RUN_SCRIPT, team_dir, last_job_id)
+    for model_row in model_data:
+        model_name = model_row[0]
+        print(f"\nProcessing model: {model_name}")
 
-    # Submit final cleanup job after all team jobs complete
-    submit_slurm_job(CLEANUP_SCRIPT, dependency=last_job_id)
+        for dataset_row in dataset_data:
+            print(f"  - Dataset row: {dataset_row}")
+            dataset_name, dataset_path, _ = dataset_row
+            print(f"  - Dataset: {dataset_name}")
+
+            sbatch_cmd = [
+                "sbatch",
+                "-J",
+                f"{model_name}_{dataset_name}",
+                "-o",
+                f"{model_name}/research_output/{dataset_name}_slurm_output.txt",
+                RUN_SCRIPT,
+                model_name,
+                dataset_name,
+                dataset_path,
+            ]
+
+            try:
+                result = subprocess.run(
+                    sbatch_cmd,
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+                output = result.stdout.decode().strip()
+                job_id = extract_slurm_id(output)
+                print(f"    Submitted SLURM job ID: {job_id}")
+                all_jobs.append(job_id)
+
+            except subprocess.CalledProcessError as e:
+                print(f"    Failed to submit job: {e.stderr.decode().strip()}")
+
+    # Optionally submit a cleanup job dependent on all
+    if all_jobs:
+        dependency_str = ":".join(filter(None, all_jobs))
+        submit_slurm_job(CLEANUP_SCRIPT, dependency=dependency_str)
 
     print("\nSLURM Job Submission Process Completed!")
 
