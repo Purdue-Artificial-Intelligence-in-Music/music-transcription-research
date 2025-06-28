@@ -12,6 +12,15 @@ echo "--------------------------------------------------"
 echo "Grading model: $1"
 echo "Processing dataset: $2"
 echo "Searching in: $3"
+echo ""
+
+model_name=${1// /_}
+dataset_name=${2// /_}
+export dataset_name
+
+environment_name="${model_name}_${dataset_name}"
+export environment_name
+echo "Environment name: $environment_name"
 
 source /etc/profile.d/modules.sh
 module --force purge
@@ -67,15 +76,22 @@ conda deactivate
 echo "--------------------------------------------------"
 echo "Running the model: $1"
 MODEL_DIR="$1"
-mkdir -p "./$1/research_output"
+mkdir -p "./$1/research_output_$dataset_name"
 cd "$1"
 shopt -s nullglob
 
+touch "./details_$dataset_name.txt"
+{
+    echo "Model Name: $model_name"
+    echo ""
+    echo ""
+} >"./details_$dataset_name.txt"
+
 # Temporary file to store per-file runtimes
-runtimes_dir="./runtimes"
-rm -rf "$runtimes_dir"
-mkdir "$runtimes_dir"
-export runtimes_dir
+temp_dir="./temp_$dataset_name"
+rm -rf "$temp_dir"
+mkdir "$temp_dir"
+export temp_dir
 
 # Function to process one .mp3 file
 process_file() {
@@ -181,24 +197,47 @@ for file in "$temp_dir"/*.runtime; do
         fi
     fi
 done
-
 if [[ $count -gt 0 ]]; then
     avg_runtime=$(echo "scale=4; $total / $count" | bc)
     echo "--------------------------------------------------"
     echo "Average runtime per file: $avg_runtime seconds"
-    printf 'Average runtime per file: %s seconds\n\n' "$avg_runtime" >>"./$MODEL_DIR/details.txt"
+    printf 'Average runtime per file: %s seconds\n\n' "$avg_runtime" >>"./details_$dataset_name.txt"
 else
     echo "No valid runtimes collected or no files processed."
+    echo "No valid runtimes collected or no files processed." >>"./details_$dataset_name.txt"
 fi
 
+# Compute average F-measure
+total=0
+count=0
+for file in "$runtimes_dir"/*.fmeasure; do
+    if [[ -f "$file" ]]; then
+        value=$(cat "$file")
+        if [[ "$value" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+            total=$(echo "$total + $value" | bc)
+            ((count++))
+        fi
     fi
 done
+if [[ $count -gt 0 ]]; then
+    avg_fmeasure=$(echo "scale=4; $total / $count" | bc)
+    echo "Average F-measure per file: $avg_fmeasure"
+    printf 'Average F-measure per file: %s\n' "$avg_fmeasure" >>"./$MODEL_DIR/details_$dataset_name.txt"
 else
+    echo "No valid F-measures collected."
+    echo "No valid F-measures collected." >>"./$MODEL_DIR/details_$dataset_name.txt"
 fi
 
+# Clean up
+rm -rf "$temp_dir"
+
+cd ..
 
 conda deactivate
 conda clean --all --yes -q
+
+curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished running model $1 for dataset $dataset_name\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux
+curl -d "Finished running model $1 for dataset $dataset_name" -H "Title: Finished running model" -H "Priority: default" -H "Topic: gilbreth-notify-amt" ntfy.sh/gilbreth-notify-amt
 
 # CONVERSION.SH
 
@@ -207,8 +246,8 @@ if ! command -v singularity &>/dev/null; then
     exit 1
 fi
 
-MUSESCORE_CONTAINER="musescore.sif"
-MUSESCORE_DEFINITION="musescore.def"
+MUSESCORE_CONTAINER="musescore_$environment_name.sif"
+MUSESCORE_DEFINITION="musescore_$environment_name.def"
 
 # Create the Singularity definition file dynamically
 cat <<EOF >$MUSESCORE_DEFINITION
@@ -231,6 +270,9 @@ export XDG_RUNTIME_DIR=/tmp/runtime-ochaturv
 
 echo "--------------------------------------------------"
 echo "Converting the output files"
+OUTPUT_DIR="$1/research_output_$dataset_name"
+OUTPUT_DIR=$(realpath "$OUTPUT_DIR")
+export OUTPUT_DIR
 if [ ! -d "$OUTPUT_DIR" ]; then
     echo "Error: Output directory $OUTPUT_DIR does not exist!"
     exit 1
@@ -247,32 +289,30 @@ done
 
 rm -f "$MUSESCORE_CONTAINER" "$MUSESCORE_DEFINITION"
 
-curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished scoring model: $1\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux
-curl -d "Finished scoring model: $1" -H "Title: Finished scoring model" -H "Priority: default" -H "Topic: gilbreth-notify-amt" ntfy.sh/gilbreth-notify-amt
-
 # UPLOAD.SH
 
 echo "--------------------------------------------------"
 echo "Deleting any existing conda environment"
-conda env remove -p /scratch/gilbreth/ochaturv/.conda/envs/upload-env -y
+conda env remove -p /scratch/gilbreth/ochaturv/.conda/envs/upload-env-"$environment_name" -y
 
 echo "--------------------------------------------------"
 echo "Creating conda environment"
-conda create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/upload-env
+conda create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/upload-env-"$environment_name"
 
 echo "--------------------------------------------------"
 echo "Activating conda environment"
-if [ ! -d "/scratch/gilbreth/ochaturv/.conda/envs/upload-env" ]; then
+if [ ! -d "/scratch/gilbreth/ochaturv/.conda/envs/upload-env-"$environment_name"" ]; then
     echo "Environment failed to create. Skipping upload."
     exit 1
 fi
-conda activate /scratch/gilbreth/ochaturv/.conda/envs/upload-env
+conda activate /scratch/gilbreth/ochaturv/.conda/envs/upload-env-"$environment_name"
 pip install -q pydrive2
 
 echo "--------------------------------------------------"
 echo "Uploading the output files"
 
-mv "$1/details.txt" "$OUTPUT_DIR"/details.txt
+mv "$1/details_$dataset_name.txt" "$OUTPUT_DIR"/details_$dataset_name.txt
+mv "$1/research_output/"$2"_slurm_output.txt" "$OUTPUT_DIR"/"$2"_slurm_output.txt
 
 python ./upload.py --main-folder="11zBLIit-Cg7Tu5KHJXZBvaUauFr5Dtbc" --model-name="$MODEL_DIR" --dataset-name="$2" --local-directory="$OUTPUT_DIR"
 
@@ -282,5 +322,5 @@ conda clean --all --yes -q
 echo "--------------------------------------------------"
 echo "Script execution completed!"
 
-curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished script for model: $1\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux
-curl -d "Finished script for model: $1" -H "Title: Finished script for model" -H "Priority: default" -H "Topic: gilbreth-notify-amt" ntfy.sh/gilbreth-notify-amt
+curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished script for model $1 and dataset $dataset_name\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux
+curl -d "Finished script for model: $1 and dataset: $dataset_name" -H "Title: Finished script for model" -H "Priority: default" -H "Topic: gilbreth-notify-amt" ntfy.sh/gilbreth-notify-amt

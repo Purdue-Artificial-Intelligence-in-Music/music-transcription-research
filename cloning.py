@@ -38,8 +38,8 @@ def clone_repo(model):
         subprocess.run(["git", "lfs", "install"], check=True)
         subprocess.run(["git", "lfs", "pull"], cwd=repo_path, check=True)
 
-        with open(f"{repo_path}/details.txt", "w") as f:
-            f.write(f"Model Name: {model_name}\n\n")
+        # with open(f"{repo_path}/details.txt", "w") as f:
+        #     f.write(f"Model Name: {model_name}\n\n")
         return (model, True, None)
     except Exception as e:
         shutil.rmtree(repo_path, ignore_errors=True)
