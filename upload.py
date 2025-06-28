@@ -50,7 +50,10 @@ def check_folder_exists(drive, folder_name, parent_folder_id):
 
 def create_folder(drive, model_name, dataset_name, parent_folder_id=None):
     """Create a folder in Google Drive (or return existing folder details) and return its ID and link."""
-    folder_name = f"{model_name} - {dataset_name}"
+    if dataset_name:
+        folder_name = f"{model_name} - {dataset_name}"
+    else:
+        folder_name = model_name
     folder_id, folder_link = check_folder_exists(drive, folder_name, parent_folder_id)
     if folder_id:
         return folder_id, folder_link  # Return existing folder details
@@ -151,12 +154,14 @@ def main():
     # Create Output subfolder inside the submission folder
     output_folder_name = "Model Output"
     output_folder_id, output_folder_link = create_folder(
-        drive, output_folder_name, subfolder_id
+        drive, output_folder_name, None, model_folder_id
     )
     print(f"\tModel Output subfolder link: {output_folder_link}")
 
-    # Upload files, routing .mp3s into the MP3 Input folder
-    upload_files_to_folder(drive, args.local_directory, subfolder_id, output_folder_id)
+    # Upload files
+    upload_files_to_folder(
+        drive, args.local_directory, model_folder_id, output_folder_id
+    )
 
 
 if __name__ == "__main__":
