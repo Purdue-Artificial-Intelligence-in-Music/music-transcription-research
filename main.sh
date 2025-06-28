@@ -81,6 +81,8 @@ if conda env list | grep -q "cloning-env"; then
 fi
 conda clean --all --yes -q
 
+rm -rf /scratch/gilbreth/ochaturv/.conda/envs/
+
 echo "--------------------------------------------------"
 echo "Creating Slurm jobs for each model"
 
@@ -91,7 +93,7 @@ SLEEP_INTERVAL=300 # Time in seconds between checks (e.g., 5 minutes)
 
 # Function to count jobs in cluster
 count_jobs() {
-    squeue -A standby | wc -l
+    squeue -A yunglu-k | wc -l
 }
 
 while true; do
