@@ -12,7 +12,6 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 import os
 import argparse
-import datetime
 
 
 def authenticate_service_account():
@@ -148,16 +147,6 @@ def main():
     )
     print(f"Using folder for {args.model_name} with ID: {model_folder_id}")
     print(f"\tModel folder link: {model_folder_link}")
-
-    # Create a timestamped submission folder inside the model folder
-    subfolder_name = (
-        f"Submission graded at: {datetime.datetime.now().strftime('%m-%d-%Y %H:%M:%S')}"
-    )
-    subfolder_id, subfolder_link = create_folder(drive, subfolder_name, model_folder_id)
-    print(
-        f"Created subfolder '{subfolder_name}' inside '{args.model_name}' with ID: {subfolder_id}"
-    )
-    print(f"\tSubfolder link: {subfolder_link}")
 
     # Create Output subfolder inside the submission folder
     output_folder_name = "Model Output"
