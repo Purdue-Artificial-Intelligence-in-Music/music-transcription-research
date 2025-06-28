@@ -29,7 +29,7 @@ def midi_to_txt(midi_file, txt_file):
     notes_data.sort(key=lambda x: x[0])
     with open(txt_file, "w") as f:
         for note in notes_data:
-            f.write(f"{note[0]:.2f}\t{note[1]:.2f}\t{note[2]:.2f}\n")
+            f.write(f"{note[0]}\t{note[1]}\t{note[2]}\n")
 
 
 def main():
