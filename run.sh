@@ -83,6 +83,7 @@ shopt -s nullglob
 touch "./details_$dataset_name.txt"
 {
     echo "Model Name: $model_name"
+    echo "Dataset Name: $2"
     echo ""
     echo ""
 } >"./details_$dataset_name.txt"
@@ -312,7 +313,7 @@ echo "--------------------------------------------------"
 echo "Uploading the output files"
 
 mv "$1/details_$dataset_name.txt" "$OUTPUT_DIR"/details_$dataset_name.txt
-mv "$1/research_output/"$2"_slurm_output.txt" "$OUTPUT_DIR"/"$2"_slurm_output.txt
+mv "$1/research_output/${2}_slurm_output.txt" "$OUTPUT_DIR"/
 
 python ./upload.py --main-folder="11zBLIit-Cg7Tu5KHJXZBvaUauFr5Dtbc" --model-name="$MODEL_DIR" --dataset-name="$2" --local-directory="$OUTPUT_DIR"
 
