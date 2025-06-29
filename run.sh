@@ -186,30 +186,6 @@ fi
 # Run jobs in parallel using GNU Parallel
 find "$3" -type f -name "*.$audio_type" | parallel -j "$cores" process_file
 
-# Compute average runtime using a loop
-total=0
-count=0
-for file in "$temp_dir"/*.runtime; do
-    if [[ -f "$file" ]]; then
-        value=$(cat "$file")
-        # Remove any whitespace
-        value=$(echo "$value" | tr -d '[:space:]')
-        if [[ "$value" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
-            total=$(echo "$total + $value" | bc)
-            ((count++))
-        fi
-    fi
-done
-if [[ $count -gt 0 ]]; then
-    avg_runtime=$(echo "scale=4; $total / $count" | bc)
-    echo "--------------------------------------------------"
-    echo "Average runtime per file: $avg_runtime seconds"
-    printf 'Average runtime per file: %s seconds\n\n' "$avg_runtime" >>"./details_$dataset_name.txt"
-else
-    echo "No valid runtimes collected or no files processed."
-    echo "No valid runtimes collected or no files processed." >>"./details_$dataset_name.txt"
-fi
-
 # Compute average F-measure
 total=0
 count=0
@@ -229,6 +205,30 @@ if [[ $count -gt 0 ]]; then
 else
     echo "No valid F-measures collected."
     echo "No valid F-measures collected." >>"./details_$dataset_name.txt"
+fi
+
+# Compute average runtime
+total=0
+count=0
+for file in "$temp_dir"/*.runtime; do
+    if [[ -f "$file" ]]; then
+        value=$(cat "$file")
+        # Remove any whitespace
+        value=$(echo "$value" | tr -d '[:space:]')
+        if [[ "$value" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+            total=$(echo "$total + $value" | bc)
+            ((count++))
+        fi
+    fi
+done
+if [[ $count -gt 0 ]]; then
+    avg_runtime=$(echo "scale=4; $total / $count" | bc)
+    echo "--------------------------------------------------"
+    echo "Average runtime per file: $avg_runtime seconds"
+    printf 'Average runtime per file: %s seconds\n' "$avg_runtime" >>"./details_$dataset_name.txt"
+else
+    echo "No valid runtimes collected or no files processed."
+    echo "No valid runtimes collected or no files processed." >>"./details_$dataset_name.txt"
 fi
 
 # Clean up
