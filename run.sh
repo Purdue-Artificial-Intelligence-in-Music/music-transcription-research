@@ -112,6 +112,7 @@ process_file() {
     local runtime_file="$temp_dir/${base_name}.runtime"
     local fmeasure_file="$temp_dir/${base_name}.fmeasure"
 
+    local duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$file")
 
     conda activate /scratch/gilbreth/ochaturv/.conda/envs/running-env-"$environment_name"
 
