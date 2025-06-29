@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH -A standby
+#SBATCH -A yunglu-k
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gpus-per-node=1
 #SBATCH --cpus-per-task=32
-#SBATCH --time=04:00:00
+#SBATCH --time=1-00:00:00
 
 # RUN.SH
 

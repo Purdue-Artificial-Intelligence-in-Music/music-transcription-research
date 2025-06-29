@@ -93,7 +93,7 @@ SLEEP_INTERVAL=300 # Time in seconds between checks (e.g., 5 minutes)
 
 # Function to count jobs in cluster
 count_jobs() {
-    squeue -A standby | wc -l
+    squeue -A yunglu-k | wc -l
 }
 
 while true; do
