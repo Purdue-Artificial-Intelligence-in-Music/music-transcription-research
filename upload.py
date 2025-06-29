@@ -33,19 +33,16 @@ def authenticate_service_account():
     return GoogleDrive(gauth)
 
 
-def check_folder_exists(drive, folder_name, parent_folder_id):
-    """Check if a folder with a given name already exists in Google Drive and return its ID and link."""
+def delete_existing_folder(drive, folder_name, parent_folder_id):
+    """Check if a folder with a given name already exists in Google Drive and delete it if found."""
     query = f"'{parent_folder_id}' in parents and mimeType='application/vnd.google-apps.folder' and title='{folder_name}'"
     file_list = drive.ListFile({"q": query}).GetList()
 
     if file_list:
         folder_id = file_list[0]["id"]
-        folder_link = f"https://drive.google.com/drive/folders/{folder_id}"
-        print(f"Folder '{folder_name}' already exists with ID: {folder_id}")
-        print(f"Folder link: {folder_link}")
-        return folder_id, folder_link  # Return folder ID and link
-
-    return None, None  # Folder does not exist
+        folder_to_delete = drive.CreateFile({"id": folder_id})
+        folder_to_delete.Delete()
+        print(f"Existing folder '{folder_name}' has been deleted.")
 
 
 def create_folder(drive, model_name, dataset_name, parent_folder_id=None):
@@ -54,13 +51,11 @@ def create_folder(drive, model_name, dataset_name, parent_folder_id=None):
         folder_name = f"{model_name} - {dataset_name}"
     else:
         folder_name = model_name
-    folder_id, folder_link = check_folder_exists(drive, folder_name, parent_folder_id)
-    if folder_id:
-        return folder_id, folder_link  # Return existing folder details
 
-    print(f"Folder '{folder_name}' does not exist.")
+    # Delete existing folder if it exists
+    delete_existing_folder(drive, folder_name, parent_folder_id)
 
-    # Create a new folder if it does not exist
+    # Create a new folder
     folder_metadata = {
         "title": folder_name,
         "mimeType": "application/vnd.google-apps.folder",
