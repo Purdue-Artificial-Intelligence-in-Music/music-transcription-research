@@ -14,11 +14,18 @@ echo "--------------------------------------------------"
 echo "Grading model: $1"
 echo "Processing dataset: $2"
 echo "Searching in: $3"
+echo "Audio type: $4"
+echo "Midi file extension: $5"
 echo ""
 
 model_name=${1// /_}
 dataset_name=${2// /_}
 export dataset_name
+
+audio_type=${4// /_}
+midi_extension=${5// /_}
+export audio_type
+export midi_extension
 
 environment_name="${model_name}_${dataset_name}"
 export environment_name
@@ -105,10 +112,10 @@ process_file() {
 
     echo "Processing file: $1"
     local file="$1"
-    local base_name=$(basename "$file" .wav)
+    local base_name=$(basename "$file" .$audio_type)
 
-    local reference_file=$(realpath "${file%.wav}.midi")
-    local transcription_path=".$MODEL_DIR/research_output_$dataset_name/${base_name}.midi"
+    local reference_file=$(realpath "${file%.$audio_type}.$midi_extension")
+    local transcription_path=".$MODEL_DIR/research_output_$dataset_name/${base_name}.$midi_extension"
     local runtime_file="$temp_dir/${base_name}.runtime"
     local fmeasure_file="$temp_dir/${base_name}.fmeasure"
 
@@ -127,7 +134,7 @@ process_file() {
     # Runtime calculation
     local runtime=$(echo "$end_time - $start_time" | bc)
     echo "$runtime" >"$runtime_file"
-    echo "Processed ${base_name}.wav in $runtime seconds"
+    echo "Processed ${base_name}.$audio_type in $runtime seconds"
 
     # Scoring
     if [[ ! -f "$reference_file" ]]; then
@@ -148,6 +155,7 @@ process_file() {
 
     {
         printf '%s\n' "$(basename "$file")"
+        printf 'Duration: %s seconds\n' "$duration"
         printf '%s\n' "$output"
         printf 'Runtime: %f seconds\n\n' "$runtime"
     } >>"./details_$dataset_name.txt"
@@ -176,7 +184,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 fi
 
 # Run jobs in parallel using GNU Parallel
-find "$3" -type f -name '*.wav' | parallel -j "$cores" process_file
+find "$3" -type f -name "*.$audio_type" | parallel -j "$cores" process_file
 
 # Compute average runtime using a loop
 total=0

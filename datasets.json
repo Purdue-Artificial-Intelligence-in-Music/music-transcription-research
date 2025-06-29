@@ -1,15 +1,15 @@
 {
     "values": [
-        ["Dataset Name", "Gilbreth Location", "Type"],
-        ["Maestro 2004", "/depot/yunglu/data/datasets_ben/maestro/maestro-v3.0.0/2004", "Piano"],
-        ["Maestro 2006", "/depot/yunglu/data/datasets_ben/maestro/maestro-v3.0.0/2006", "Piano"],
-        ["Maestro 2008", "/depot/yunglu/data/datasets_ben/maestro/maestro-v3.0.0/2008", "Piano"],
-        ["Maestro 2009", "/depot/yunglu/data/datasets_ben/maestro/maestro-v3.0.0/2009", "Piano"],
-        ["Maestro 2011", "/depot/yunglu/data/datasets_ben/maestro/maestro-v3.0.0/2011", "Piano"],
-        ["Maestro 2013", "/depot/yunglu/data/datasets_ben/maestro/maestro-v3.0.0/2013", "Piano"],
-        ["Maestro 2014", "/depot/yunglu/data/datasets_ben/maestro/maestro-v3.0.0/2014", "Piano"],
-        ["Maestro 2015", "/depot/yunglu/data/datasets_ben/maestro/maestro-v3.0.0/2015", "Piano"],
-        ["Maestro 2017", "/depot/yunglu/data/datasets_ben/maestro/maestro-v3.0.0/2017", "Piano"],
-        ["Maestro 2018", "/depot/yunglu/data/datasets_ben/maestro/maestro-v3.0.0/2018", "Piano"]
+        ["Dataset Name", "Gilbreth Location", "Instrument Type", "Audio Type", "Midi File Extension"],
+        ["Maestro 2004", "/depot/yunglu/data/datasets_ben/maestro/maestro-v3.0.0/2004", "Piano", "wav", "midi"],
+        ["Maestro 2006", "/depot/yunglu/data/datasets_ben/maestro/maestro-v3.0.0/2006", "Piano", "wav", "midi"],
+        ["Maestro 2008", "/depot/yunglu/data/datasets_ben/maestro/maestro-v3.0.0/2008", "Piano", "wav", "midi"],
+        ["Maestro 2009", "/depot/yunglu/data/datasets_ben/maestro/maestro-v3.0.0/2009", "Piano", "wav", "midi"],
+        ["Maestro 2011", "/depot/yunglu/data/datasets_ben/maestro/maestro-v3.0.0/2011", "Piano", "wav", "midi"],
+        ["Maestro 2013", "/depot/yunglu/data/datasets_ben/maestro/maestro-v3.0.0/2013", "Piano", "wav", "midi"],
+        ["Maestro 2014", "/depot/yunglu/data/datasets_ben/maestro/maestro-v3.0.0/2014", "Piano", "wav", "midi"],
+        ["Maestro 2015", "/depot/yunglu/data/datasets_ben/maestro/maestro-v3.0.0/2015", "Piano", "wav", "midi"],
+        ["Maestro 2017", "/depot/yunglu/data/datasets_ben/maestro/maestro-v3.0.0/2017", "Piano", "wav", "midi"],
+        ["Maestro 2018", "/depot/yunglu/data/datasets_ben/maestro/maestro-v3.0.0/2018", "Piano", "wav", "midi"]
     ]
 }

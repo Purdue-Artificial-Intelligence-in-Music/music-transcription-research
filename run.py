@@ -110,8 +110,7 @@ def main():
         print(f"\nProcessing model: {model_name}")
 
         for dataset_row in dataset_data:
-            print(f"  - Dataset row: {dataset_row}")
-            dataset_name, dataset_path, _ = dataset_row
+            dataset_name, dataset_path, _, audio_type, midi_extension = dataset_row
             print(f"  - Dataset: {dataset_name}")
 
             sbatch_cmd = [
@@ -124,6 +123,8 @@ def main():
                 model_name,
                 dataset_name,
                 dataset_path,
+                audio_type,
+                midi_extension,
             ]
 
             try:
