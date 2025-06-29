@@ -213,7 +213,7 @@ fi
 # Compute average F-measure
 total=0
 count=0
-for file in "$runtimes_dir"/*.fmeasure; do
+for file in "$temp_dir"/*.fmeasure; do
     if [[ -f "$file" ]]; then
         value=$(cat "$file")
         if [[ "$value" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
@@ -225,10 +225,10 @@ done
 if [[ $count -gt 0 ]]; then
     avg_fmeasure=$(echo "scale=4; $total / $count" | bc)
     echo "Average F-measure per file: $avg_fmeasure"
-    printf 'Average F-measure per file: %s\n' "$avg_fmeasure" >>"./$MODEL_DIR/details_$dataset_name.txt"
+    printf 'Average F-measure per file: %s\n' "$avg_fmeasure" >>"./details_$dataset_name.txt"
 else
     echo "No valid F-measures collected."
-    echo "No valid F-measures collected." >>"./$MODEL_DIR/details_$dataset_name.txt"
+    echo "No valid F-measures collected." >>"./details_$dataset_name.txt"
 fi
 
 # Clean up
