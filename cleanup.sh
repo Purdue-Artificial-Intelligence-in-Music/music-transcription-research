@@ -35,9 +35,6 @@ for line in "${lines[@]}"; do
     fi
 done
 
-echo "Removing $MODELS_FILE..."
-rm -f "$MODELS_FILE"
-
 echo "--------------------------------------------------"
 echo "Cleanup script execution completed successfully!"
 curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Cleaned up all of the repositories\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux
