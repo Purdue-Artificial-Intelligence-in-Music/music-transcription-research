@@ -100,36 +100,26 @@ process_file() {
 
     echo "Processing file: $1"
     local file="$1"
-    local base_name
-    base_name=$(basename "$file" .wav)
+    local base_name=$(basename "$file" .wav)
 
-    # Paths
     local reference_file=$(realpath "${file%.wav}.midi")
     local transcription_path=".$MODEL_DIR/research_output_$dataset_name/${base_name}.midi"
     local runtime_file="$temp_dir/${base_name}.runtime"
     local fmeasure_file="$temp_dir/${base_name}.fmeasure"
 
-    echo "Reference file: $reference_file"
-    echo "Transcription path: $transcription_path"
-    echo "Runtime file: $runtime_file"
-    echo "F-measure file: $fmeasure_file"
-    echo "Temp directory: $temp_dir"
 
     conda activate /scratch/gilbreth/ochaturv/.conda/envs/running-env-"$environment_name"
 
-    local start_time
-    start_time=$(date +%s.%N)
+    local start_time=$(date +%s.%N)
 
     python3 main.py -i "$file" -o "$transcription_path"
 
-    local end_time
-    end_time=$(date +%s.%N)
+    local end_time=$(date +%s.%N)
 
     conda deactivate
 
     # Runtime calculation
-    local runtime
-    runtime=$(echo "$end_time - $start_time" | bc)
+    local runtime=$(echo "$end_time - $start_time" | bc)
     echo "$runtime" >"$runtime_file"
     echo "Processed ${base_name}.wav in $runtime seconds"
 
@@ -148,8 +138,7 @@ process_file() {
 
     conda activate /scratch/gilbreth/ochaturv/.conda/envs/scoring-env-"$environment_name"
 
-    local output
-    output=$(python3 ../scoring.py --reference "$reference_file" --transcription "$transcription_path")
+    local output=$(python3 ../scoring.py --reference "$reference_file" --transcription "$transcription_path")
 
     {
         printf '%s\n' "$(basename "$file")"
@@ -158,8 +147,7 @@ process_file() {
     } >>"./details_$dataset_name.txt"
 
     # Extract F-measure and store it
-    local fmeasure
-    fmeasure=$(echo "$output" | grep -m1 "F-measure:" | awk '{print $2}')
+    local fmeasure=$(echo "$output" | grep -m1 "F-measure:" | awk '{print $2}')
 
     if [[ "$fmeasure" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
         echo "$fmeasure" >"$fmeasure_file"
