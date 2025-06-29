@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH -A yunglu-k
+#SBATCH -A standby
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gpus-per-node=1
 #SBATCH --cpus-per-task=32
-#SBATCH --time=1-00:00:00
+#SBATCH --time=0-04:00:00
 
 # RUN.SH
 
@@ -47,8 +47,8 @@ if ! ping -c 1 repo.anaconda.com &>/dev/null; then
     exit 1
 fi
 
-curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Started running model $1 for dataset $dataset_name\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
-curl -s -d "Started running model $1 for dataset $dataset_name" -H "Title: Started running model" -H "Priority: default" -H "Topic: gilbreth-notify-amt" ntfy.sh/gilbreth-notify-amt >/dev/null
+# curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Started running model $1 for dataset $dataset_name\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
+# curl -s -d "Started running model $1 for dataset $dataset_name" -H "Title: Started running model" -H "Priority: default" -H "Topic: gilbreth-notify-amt" ntfy.sh/gilbreth-notify-amt >/dev/null
 
 echo "--------------------------------------------------"
 echo "Deleting any existing conda environment"
@@ -238,8 +238,8 @@ cd ..
 conda deactivate
 conda clean --all --yes -q
 
-curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished running model $1 for dataset $dataset_name\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
-curl -s -d "Finished running model $1 for dataset $dataset_name" -H "Title: Finished running model" -H "Priority: default" -H "Topic: gilbreth-notify-amt" ntfy.sh/gilbreth-notify-amt >/dev/null
+# curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished running model $1 for dataset $dataset_name\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
+# curl -s -d "Finished running model $1 for dataset $dataset_name" -H "Title: Finished running model" -H "Priority: default" -H "Topic: gilbreth-notify-amt" ntfy.sh/gilbreth-notify-amt >/dev/null
 
 # CONVERSION.SH
 
@@ -328,5 +328,5 @@ end_time=$(date +%s.%N)
 overall_runtime=$(echo "$end_time - $start_time" | bc)
 overall_runtime_formatted=$(printf '%02d:%02d:%02d' $(echo "$overall_runtime / 3600" | bc) $(echo "($overall_runtime % 3600) / 60" | bc) $(echo "$overall_runtime % 60" | bc))
 
-curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished script for model $1 and dataset $dataset_name. Total runtime: $overall_runtime_formatted\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
-curl -s -d "Finished script for model: $1 and dataset: $dataset_name" -H "Title: Finished script for model" -H "Priority: default" -H "Topic: gilbreth-notify-amt" ntfy.sh/gilbreth-notify-amt >/dev/null
+# curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished script for model $1 and dataset $dataset_name. Total runtime: $overall_runtime_formatted\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
+# curl -s -d "Finished script for model: $1 and dataset: $dataset_name" -H "Title: Finished script for model" -H "Priority: default" -H "Topic: gilbreth-notify-amt" ntfy.sh/gilbreth-notify-amt >/dev/null
