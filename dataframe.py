@@ -208,6 +208,46 @@ def process_folder(folder_path: str) -> pd.DataFrame:
     )
     return df
 
+
+def print_dataframe_info(df: pd.DataFrame):
+    """
+    Print basic information about the DataFrame.
+
+    Args:
+        df: DataFrame to analyze
+    """
+    if df.empty:
+        print("DataFrame is empty.")
+        return
+
+    print("\n" + "=" * 60)
+    print("DATAFRAME INFORMATION")
+    print("=" * 60)
+
+    print(f"Shape: {df.shape}")
+    print(f"\nColumns: {list(df.columns)}")
+
+    print(f"\nUnique models: {df['model_name'].nunique()}")
+    print(f"Models: {df['model_name'].unique().tolist()}")
+
+    print(f"\nUnique datasets: {df['dataset_name'].nunique()}")
+    print(f"Datasets: {df['dataset_name'].unique().tolist()}")
+
+    # Basic statistics for key metrics
+    print(f"\nKey Metrics Summary:")
+    print("-" * 30)
+    key_metrics = ["precision", "recall", "f_measure", "runtime"]
+    for metric in key_metrics:
+        if metric in df.columns:
+            print(
+                f"{metric.capitalize()}: "
+                f"mean={df[metric].mean():.4f}, "
+                f"std={df[metric].std():.4f}, "
+                f"min={df[metric].min():.4f}, "
+                f"max={df[metric].max():.4f}"
+            )
+
+
 if __name__ == "__main__":
     print("Downloading details files from cloud...")
     print("=" * 60)
@@ -225,6 +265,8 @@ if __name__ == "__main__":
     df = process_folder(local_directory)
 
     if not df.empty:
+        print_dataframe_info(df)
+
         # Save DataFrame to CSV and pickle
         df.to_csv(f"{local_directory}/dataframe.csv", index=False)
         df.to_pickle(f"{local_directory}/dataframe.pkl")
