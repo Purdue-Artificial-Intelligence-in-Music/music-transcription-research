@@ -46,10 +46,10 @@ def download_details_files(folder_id, local_directory):
 
     downloaded_count = 0
     downloaded_files = []
-    folders_to_search = [folder_id]
+    folders_to_search = [(folder_id, None)]  # (folder_id, folder_name)
 
     while folders_to_search:
-        current_folder_id = folders_to_search.pop(0)
+        current_folder_id, parent_folder_name = folders_to_search.pop(0)
         query = f"'{current_folder_id}' in parents and trashed=false"
         file_list = drive.ListFile({"q": query}).GetList()
 
@@ -59,18 +59,31 @@ def download_details_files(folder_id, local_directory):
 
             # Add subfolders to search queue
             if mime_type == "application/vnd.google-apps.folder":
-                folders_to_search.append(file["id"])
+                folders_to_search.append((file["id"], file_name))
 
             # Download .txt files containing 'details'
             elif file_name.lower().endswith(".txt") and "details" in file_name.lower():
                 try:
                     drive_file = drive.CreateFile({"id": file["id"]})
-                    safe_filename = file_name.replace("/", "_").replace("\\", "_")
-                    local_file_path = os.path.join(local_directory, safe_filename)
+
+                    # Create new filename based on folder name
+                    if parent_folder_name:
+                        # Replace spaces and hyphens with underscores, remove extra spaces
+                        clean_folder_name = (
+                            parent_folder_name.replace(" - ", "_")
+                            .replace(" ", "_")
+                            .replace("-", "_")
+                        )
+                        new_filename = f"{clean_folder_name}.txt"
+                    else:
+                        # Fallback to original filename if no folder name
+                        new_filename = file_name.replace("/", "_").replace("\\", "_")
+
+                    local_file_path = os.path.join(local_directory, new_filename)
                     drive_file.GetContentFile(local_file_path)
                     downloaded_count += 1
-                    downloaded_files.append(safe_filename)
-                    print(f"Downloaded: {safe_filename}")
+                    downloaded_files.append(new_filename)
+                    print(f"Downloaded: {new_filename}")
                 except Exception as e:
                     print(f"Error downloading {file_name}: {str(e)}")
 
