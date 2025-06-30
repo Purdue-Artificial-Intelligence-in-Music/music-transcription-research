@@ -275,3 +275,8 @@ if __name__ == "__main__":
         print(
             f"No data processed. Please check your '{local_directory}' folder and file formats."
         )
+
+    # Delete all .txt files in the local directory
+    for file in os.listdir(local_directory):
+        if file.endswith(".txt"):
+            os.remove(os.path.join(local_directory, file))
