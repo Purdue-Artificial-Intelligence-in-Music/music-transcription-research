@@ -103,7 +103,8 @@ def main():
     print(f"Found {len(model_data)} models and {len(dataset_data)} datasets.")
     print(f"Current working directory: {os.getcwd()}")
 
-    all_jobs = []
+    previous_job_id = None
+    total_jobs_submitted = 0
 
     for model_row in model_data:
         model_name = model_row[0]
@@ -119,13 +120,23 @@ def main():
                 f"{model_name}_{dataset_name}",
                 "-o",
                 f"{model_name}/research_output/{dataset_name}_slurm_output.txt",
-                RUN_SCRIPT,
-                model_name,
-                dataset_name,
-                dataset_path,
-                audio_type,
-                midi_extension,
             ]
+
+            # Add dependency on previous job if it exists
+            if previous_job_id:
+                sbatch_cmd.append(f"--dependency=afterany:{previous_job_id}")
+                print(f"    Dependency on job: {previous_job_id}")
+
+            sbatch_cmd.extend(
+                [
+                    RUN_SCRIPT,
+                    model_name,
+                    dataset_name,
+                    dataset_path,
+                    audio_type,
+                    midi_extension,
+                ]
+            )
 
             try:
                 result = subprocess.run(
@@ -136,18 +147,28 @@ def main():
                 )
                 output = result.stdout.decode().strip()
                 job_id = extract_slurm_id(output)
-                print(f"    Submitted SLURM job ID: {job_id}")
-                all_jobs.append(job_id)
+
+                if job_id:
+                    print(f"    Submitted SLURM job ID: {job_id}")
+                    previous_job_id = job_id  # Use this job as dependency for next job
+                    total_jobs_submitted += 1
+                else:
+                    print(
+                        f"    Warning: Failed to extract job ID, continuing without dependency"
+                    )
 
             except subprocess.CalledProcessError as e:
                 print(f"    Failed to submit job: {e.stderr.decode().strip()}")
 
-    # Optionally submit a cleanup job dependent on all
-    if all_jobs:
-        dependency_str = ":".join(filter(None, all_jobs))
-        submit_slurm_job(CLEANUP_SCRIPT, dependency=dependency_str)
+    # Submit cleanup job dependent on the last successful job
+    if previous_job_id:
+        print(f"\nSubmitting cleanup job dependent on final job: {previous_job_id}")
+        cleanup_job_id = submit_slurm_job(CLEANUP_SCRIPT, dependency=previous_job_id)
+        if cleanup_job_id:
+            print(f"Cleanup job submitted with ID: {cleanup_job_id}")
 
-    print("\nSLURM Job Submission Process Completed!")
+    print(f"\nSLURM Job Submission Process Completed!")
+    print(f"Total jobs submitted: {total_jobs_submitted}")
 
 
 if __name__ == "__main__":
