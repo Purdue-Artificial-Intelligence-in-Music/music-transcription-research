@@ -1,7 +1,7 @@
 #!/opt/homebrew/bin/python3
 """
-Name: gilbreth.py
-Purpose: Upload files to the Gilbreth computing cluster at Purdue University RCAC
+Name: server.py
+Purpose: Upload files to the Gilbreth/Anvil computing cluster server at Purdue University RCAC
 """
 
 __author__ = "Ojas Chaturvedi"
@@ -12,8 +12,8 @@ from paramiko import SSHClient, AutoAddPolicy
 from scp import SCPClient
 import os
 
-hostname = "gilbreth.rcac.purdue.edu"
-username = "ochaturv"
+hostname = "anvil.rcac.purdue.edu"
+username = "x-ochaturvedi"
 
 
 def execute_cmd(client, cmd):
@@ -43,7 +43,7 @@ def main() -> None:
 
     scp = SCPClient(client.get_transport())
 
-    remote_path = f"/scratch/gilbreth/{username}/research/"
+    remote_path = f"/anvil/scratch/{username}/research/"
 
     execute_cmd(client, f"rm -rf {remote_path}")
     execute_cmd(client, f"mkdir -p {remote_path}")
