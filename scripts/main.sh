@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -A standby
+#SBATCH -p gpu
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gpus-per-node=1
@@ -18,7 +18,6 @@ fi
 
 source /etc/profile.d/modules.sh
 module --force purge
-module load external
 module load ffmpeg
 module load conda
 
@@ -80,7 +79,7 @@ if conda env list | grep -q "cloning-env"; then
 fi
 conda clean --all --yes -q
 
-rm -rf /scratch/gilbreth/ochaturv/.conda/envs/
+rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/
 
 echo "--------------------------------------------------"
 echo "Creating Slurm jobs for each model"
@@ -90,24 +89,27 @@ echo "Max allowed: $MAX_ALLOWED"
 
 SLEEP_INTERVAL=300 # Time in seconds between checks (e.g., 5 minutes)
 
-# Function to count jobs in cluster
-count_jobs() {
-    squeue -A standby | wc -l
-}
+# (Optional) Enable for Gilbreth usage
+# # Function to count jobs in cluster
+# count_jobs() {
+#     squeue -A standby | wc -l
+# }
 
-while true; do
-    COUNT=$(count_jobs)
-    echo "$(date): Current jobs = $COUNT"
+# while true; do
+#     COUNT=$(count_jobs)
+#     echo "$(date): Current jobs = $COUNT"
 
-    if [ "$COUNT" -lt "$MAX_ALLOWED" ]; then
-        echo "Job count is within limit. Running job generation..."
-        python run.py
-        break
-    else
-        echo "Too many jobs. Sleeping for $SLEEP_INTERVAL seconds..."
-        sleep $SLEEP_INTERVAL
-    fi
-done
+#     if [ "$COUNT" -lt "$MAX_ALLOWED" ]; then
+#         echo "Job count is within limit. Running job generation..."
+#         # python run.py
+#         break
+#     else
+#         echo "Too many jobs. Sleeping for $SLEEP_INTERVAL seconds..."
+#         sleep $SLEEP_INTERVAL
+#     fi
+# done
+
+python run.py
 
 echo "--------------------------------------------------"
 echo "Script execution completed!"

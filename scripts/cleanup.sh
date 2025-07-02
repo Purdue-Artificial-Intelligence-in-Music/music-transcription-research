@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH -A standby
+#SBATCH -p gpu
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gpus-per-node=1
 #SBATCH --cpus-per-task=8
 #SBATCH --time=00:15:00
 #SBATCH -J cleanup
-#SBATCH -o cleanup_output.txt
+#SBATCH -o cleanup_output.out
 
 set -euo pipefail
 trap 'echo "Cleanup script terminated unexpectedly."; exit 1' ERR

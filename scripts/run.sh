@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH -A standby
+#SBATCH -p gpu
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --gpus-per-node=1
+#SBATCH --gpus-per-node=2
 #SBATCH --cpus-per-task=32
-#SBATCH --time=0-04:00:00
+#SBATCH --time=2-00:00:00
 
 # RUN.SH
 
@@ -33,7 +33,6 @@ echo "Environment name: $environment_name"
 
 source /etc/profile.d/modules.sh
 module --force purge
-module load external
 module load ffmpeg
 module load conda
 
@@ -48,36 +47,36 @@ fi
 
 echo "--------------------------------------------------"
 echo "Deleting any existing conda environment"
-conda env remove -p /scratch/gilbreth/ochaturv/.conda/envs/running-env-"$environment_name" -y
-conda env remove -p /scratch/gilbreth/ochaturv/.conda/envs/scoring-env-"$environment_name" -y
-rm -rf /scratch/gilbreth/ochaturv/.conda/envs/running-env-"$environment_name"
-rm -rf /scratch/gilbreth/ochaturv/.conda/envs/scoring-env-"$environment_name"
+conda env remove -p /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name" -y
+conda env remove -p /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_name" -y
+rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"
+rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_name"
 
 echo "--------------------------------------------------"
 echo "Creating conda environment"
-cd /scratch/gilbreth/ochaturv/research || {
-    echo "Failed to change directory to /scratch/gilbreth/ochaturv/research"
+cd /anvil/scratch/x-ochaturvedi/research || {
+    echo "Failed to change directory to /anvil/scratch/x-ochaturvedi/research"
     exit 1
 }
 if [ ! -f "./$1/environment.yml" ]; then
     echo "Error: environment.yml file not found for model $1"
     exit 1
 fi
-conda env create -q -f "./$1/environment.yml" --prefix /scratch/gilbreth/ochaturv/.conda/envs/running-env-"$environment_name"
-conda create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/scoring-env-"$environment_name"
+conda env create -q -f "./$1/environment.yml" --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"
+conda create -y -q --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_name"
 
 echo "--------------------------------------------------"
 echo "Activating conda environment"
-if [ ! -d "/scratch/gilbreth/ochaturv/.conda/envs/running-env-"$environment_name"" ]; then
+if [ ! -d "/anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"" ]; then
     echo "Environment failed to create. Skipping execution."
     exit 1
 fi
-if [ ! -d "/scratch/gilbreth/ochaturv/.conda/envs/scoring-env-"$environment_name"" ]; then
+if [ ! -d "/anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_name"" ]; then
     echo "Environment failed to create. Skipping scoring."
     exit 1
 fi
-# conda activate /scratch/gilbreth/ochaturv/.conda/envs/running-env-"$environment_name"
-conda activate /scratch/gilbreth/ochaturv/.conda/envs/scoring-env-"$environment_name"
+# conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"
+conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_name"
 pip install -q mir_eval pretty_midi numpy pyyaml
 conda deactivate
 
@@ -119,7 +118,7 @@ process_file() {
 
     local duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$file")
 
-    conda activate /scratch/gilbreth/ochaturv/.conda/envs/running-env-"$environment_name"
+    conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"
 
     local start_time=$(date +%s.%N)
 
@@ -147,7 +146,7 @@ process_file() {
         return
     fi
 
-    conda activate /scratch/gilbreth/ochaturv/.conda/envs/scoring-env-"$environment_name"
+    conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_name"
 
     local output=$(python3 ../scoring.py --reference "$reference_file" --transcription "$transcription_path")
 
@@ -292,19 +291,19 @@ rm -f "$MUSESCORE_CONTAINER" "$MUSESCORE_DEFINITION"
 
 echo "--------------------------------------------------"
 echo "Deleting any existing conda environment"
-conda env remove -p /scratch/gilbreth/ochaturv/.conda/envs/upload-env-"$environment_name" -y
+conda env remove -p /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env-"$environment_name" -y
 
 echo "--------------------------------------------------"
 echo "Creating conda environment"
-conda create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/upload-env-"$environment_name"
+conda create -y -q --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env-"$environment_name"
 
 echo "--------------------------------------------------"
 echo "Activating conda environment"
-if [ ! -d "/scratch/gilbreth/ochaturv/.conda/envs/upload-env-"$environment_name"" ]; then
+if [ ! -d "/anvil/scratch/x-ochaturvedi/.conda/envs/upload-env-"$environment_name"" ]; then
     echo "Environment failed to create. Skipping upload."
     exit 1
 fi
-conda activate /scratch/gilbreth/ochaturv/.conda/envs/upload-env-"$environment_name"
+conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env-"$environment_name"
 pip install -q pydrive2
 
 echo "--------------------------------------------------"
