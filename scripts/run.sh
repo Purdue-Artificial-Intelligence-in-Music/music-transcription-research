@@ -77,9 +77,6 @@ if [ ! -d "/anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_na
     echo "Environment failed to create. Skipping scoring."
     exit 1
 fi
-# conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"
-conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_name"
-conda deactivate
 
 echo "--------------------------------------------------"
 echo "Running the model: $1"
