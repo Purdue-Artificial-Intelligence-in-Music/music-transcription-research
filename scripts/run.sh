@@ -47,8 +47,8 @@ fi
 
 echo "--------------------------------------------------"
 echo "Deleting any existing conda environment"
-conda env remove -p /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name" -y
-conda env remove -p /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_name" -y
+conda env remove -q -p /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name" -y
+conda env remove -q -p /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_name" -y
 rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"
 rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_name"
 
@@ -63,7 +63,7 @@ if [ ! -f "./$1/environment.yml" ]; then
     exit 1
 fi
 conda env create -q -f "./$1/environment.yml" --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"
-conda create -y -q --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_name"
+conda create -y -q --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_name" python=3.10 pip setuptools mir_eval pretty_midi numpy=1.23 pyyaml
 
 echo "--------------------------------------------------"
 echo "Activating conda environment"
@@ -77,7 +77,6 @@ if [ ! -d "/anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_na
 fi
 # conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"
 conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_name"
-pip install -q mir_eval pretty_midi numpy pyyaml
 conda deactivate
 
 echo "--------------------------------------------------"
@@ -295,7 +294,7 @@ conda env remove -p /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env-"$enviro
 
 echo "--------------------------------------------------"
 echo "Creating conda environment"
-conda create -y -q --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env-"$environment_name"
+conda create -y -q --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env-"$environment_name" python=3.10 pip pydrive2
 
 echo "--------------------------------------------------"
 echo "Activating conda environment"
@@ -304,7 +303,6 @@ if [ ! -d "/anvil/scratch/x-ochaturvedi/.conda/envs/upload-env-"$environment_nam
     exit 1
 fi
 conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env-"$environment_name"
-pip install -q pydrive2
 
 echo "--------------------------------------------------"
 echo "Uploading the output files"

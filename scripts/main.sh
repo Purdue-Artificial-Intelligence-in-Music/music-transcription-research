@@ -31,7 +31,7 @@ if [ -d "$CONDA_ENV_PATH" ] && [ ! -f "$CONDA_ENV_PATH/bin/activate" ]; then
     rm -rf "$CONDA_ENV_PATH"
 fi
 
-conda create -y -q --name cloning-env
+conda create -y -q --name cloning-env python=3.13 pip -y
 source activate cloning-env
 conda install -y -q pip
 pip install -q requests gitpython
