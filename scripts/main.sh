@@ -6,6 +6,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --time=01:30:00
 #SBATCH -J main
+#SBATCH -o 0_main_output.out
 
 echo "--------------------------------------------------"
 echo "Running main.sh"

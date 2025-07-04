@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --time=00:15:00
 #SBATCH -J cleanup
-#SBATCH -o cleanup_output.out
+#SBATCH -o 0_cleanup_output.out
 
 set -euo pipefail
 trap 'echo "Cleanup script terminated unexpectedly."; exit 1' ERR
