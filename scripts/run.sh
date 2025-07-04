@@ -35,6 +35,8 @@ source /etc/profile.d/modules.sh
 module --force purge
 module load ffmpeg
 module load conda
+module load parallel
+module load gcc/11.2.0
 
 conda clean --all --yes
 
@@ -111,7 +113,7 @@ process_file() {
     local base_name=$(basename "$file" .$audio_type)
 
     local reference_file=$(realpath "${file%.$audio_type}.$midi_extension")
-    local transcription_path=".$MODEL_DIR/research_output_$dataset_name/${base_name}.$midi_extension"
+    local transcription_path=".$MODEL_DIR/research_output_$dataset_name/${base_name}.mid"
     local runtime_file="$temp_dir/${base_name}.runtime"
     local fmeasure_file="$temp_dir/${base_name}.fmeasure"
 
@@ -236,56 +238,6 @@ conda clean --all --yes -q
 
 curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished running model $1 for dataset $dataset_name\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
 
-# CONVERSION.SH
-
-if ! command -v singularity &>/dev/null; then
-    echo "Error: Singularity is not installed. Please contact your system administrator."
-    exit 1
-fi
-
-MUSESCORE_CONTAINER="musescore_$environment_name.sif"
-MUSESCORE_DEFINITION="musescore_$environment_name.def"
-
-# Create the Singularity definition file dynamically
-cat <<EOF >$MUSESCORE_DEFINITION
-BootStrap: docker
-From: ubuntu:22.04
-
-%post
-    apt update && apt install -y musescore ffmpeg curl imagemagick
-    echo "MuseScore and ImageMagick Installed"
-
-%runscript
-    export QT_QPA_PLATFORM=offscreen
-    exec /usr/bin/mscore "\$@"
-EOF
-
-# Build the Singularity container (force overwrite if it exists)
-singularity build --force "$MUSESCORE_CONTAINER" "$MUSESCORE_DEFINITION" >/dev/null 2>&1
-
-export XDG_RUNTIME_DIR=/tmp/runtime-ochaturv
-
-echo "--------------------------------------------------"
-echo "Converting the output files"
-OUTPUT_DIR="$1/research_output_$dataset_name"
-OUTPUT_DIR=$(realpath "$OUTPUT_DIR")
-export OUTPUT_DIR
-if [ ! -d "$OUTPUT_DIR" ]; then
-    echo "Error: Output directory $OUTPUT_DIR does not exist!"
-    exit 1
-fi
-
-# Convert each .mid file using MuseScore inside Singularity (headless mode)
-for file in "$OUTPUT_DIR"/*.mid; do
-    # Generate PDF using MuseScore
-    singularity exec "$MUSESCORE_CONTAINER" env QT_QPA_PLATFORM=offscreen mscore -o "$OUTPUT_DIR/$(basename "$file" .mid).pdf" "$file"
-
-    # Fix the ICC profile issue using ImageMagick's mogrify
-    singularity exec "$MUSESCORE_CONTAINER" mogrify -strip "$OUTPUT_DIR/$(basename "$file" .mid).pdf"
-done
-
-rm -f "$MUSESCORE_CONTAINER" "$MUSESCORE_DEFINITION"
-
 # UPLOAD.SH
 
 echo "--------------------------------------------------"
@@ -307,6 +259,14 @@ conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env-"$environment
 echo "--------------------------------------------------"
 echo "Uploading the output files"
 
+OUTPUT_DIR="$1/research_output_$dataset_name"
+OUTPUT_DIR=$(realpath "$OUTPUT_DIR")
+export OUTPUT_DIR
+if [ ! -d "$OUTPUT_DIR" ]; then
+    echo "Error: Output directory $OUTPUT_DIR does not exist!"
+    exit 1
+fi
+
 mv "$1/details_$dataset_name.txt" "$OUTPUT_DIR"/details_$dataset_name.txt
 mv "$1/research_output/${2}_slurm_output.txt" "$OUTPUT_DIR"/
 
@@ -319,7 +279,13 @@ echo "--------------------------------------------------"
 echo "Script execution completed!"
 
 end_time=$(date +%s.%N)
-overall_runtime=$(echo "$end_time - $start_time" | bc)
-overall_runtime_formatted=$(printf '%02d:%02d:%02d' $(echo "$overall_runtime / 3600" | bc) $(echo "($overall_runtime % 3600) / 60" | bc) $(echo "$overall_runtime % 60" | bc))
+overall_runtime=$(echo "scale=2; $end_time - $start_time" | bc)
+
+hours=$(echo "$overall_runtime / 3600" | bc)
+minutes=$(echo "($overall_runtime % 3600) / 60" | bc)
+seconds=$(echo "$overall_runtime % 60" | bc | cut -d'.' -f1)
+
+overall_runtime_formatted=$(printf '%02d:%02d:%02d' "$hours" "$minutes" "$seconds")
+echo "Total runtime: $overall_runtime_formatted"
 
 curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished script for model $1 and dataset $dataset_name. Total runtime: $overall_runtime_formatted\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
