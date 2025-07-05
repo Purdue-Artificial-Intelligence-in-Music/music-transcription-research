@@ -32,6 +32,14 @@ def midi_to_txt(midi_file, txt_file):
             f.write(f"{note[0]}\t{note[1]}\t{note[2]}\n")
 
 
+def count_instruments(midi_file):
+    """
+    Counts the number of instruments in a MIDI file.
+    """
+    midi_data = pretty_midi.PrettyMIDI(midi_file)
+    return len(midi_data.instruments)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Score a transcription against a reference MIDI file."
@@ -61,6 +69,14 @@ def main():
     scores = mir_eval.transcription.evaluate(
         ref_intervals, ref_pitches, est_intervals, est_pitches
     )
+
+    # Count the number of instruments in both MIDI files
+    ref_instruments = count_instruments(reference_midi)
+    est_instruments = count_instruments(transcription_midi)
+
+    print(f"Reference MIDI Instruments: {ref_instruments}")
+    print(f"Transcription MIDI Instruments: {est_instruments}")
+
     for key, value in scores.items():
         print(f"{key}: {value:.6f}")
 
