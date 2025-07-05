@@ -2,7 +2,7 @@
 #SBATCH -p gpu
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --gpus-per-node=2
+#SBATCH --gres=gpu:2
 #SBATCH --cpus-per-task=32
 #SBATCH --time=2-00:00:00
 
@@ -16,6 +16,8 @@ echo "Processing dataset: $2"
 echo "Searching in: $3"
 echo "Audio type: $4"
 echo "Midi file extension: $5"
+echo ""
+echo "Running on: $(hostname)"
 echo ""
 
 model_name=${1// /_}
@@ -37,6 +39,10 @@ module load ffmpeg
 module load conda
 module load parallel
 module load gcc/11.2.0
+
+export CUDA_HOME=/usr/local/cuda
+export PATH=$CUDA_HOME/bin:$PATH
+export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
 
 conda clean --all --yes
 
