@@ -238,6 +238,7 @@ cd ..
 
 conda deactivate
 conda clean --all --yes -q
+rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs
 
 curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished running model $1 for dataset $dataset_name\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
 
@@ -277,6 +278,8 @@ python ./upload.py --main-folder="11zBLIit-Cg7Tu5KHJXZBvaUauFr5Dtbc" --model-nam
 
 conda deactivate
 conda clean --all --yes -q
+
+rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs
 
 echo "--------------------------------------------------"
 echo "Script execution completed!"
