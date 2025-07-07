@@ -1,12 +1,9 @@
-import lzma
 import math
 import os
-import sys
-import csv
 import statistics
 import argparse
 from fractions import Fraction
-from music21 import midi, note, chord, pitch, abcFormat, stream, converter, key
+from music21 import midi, note, chord, converter
 from music21.exceptions21 import StreamException
 
 
