@@ -128,6 +128,8 @@ def parse_results_file(file_path: str) -> list:
     midi_sections = re.findall(
         r"(MIDI-[^\n]+\.wav)\n"
         r"Duration:\s*([\d.]+)\s*seconds\n"
+        r"Reference MIDI Instruments:\s*([\d.]+)\n"
+        r"Transcription MIDI Instruments:\s*([\d.]+)\n"
         r"Precision:\s*([\d.]+)\n"
         r"Recall:\s*([\d.]+)\n"
         r"F-measure:\s*([\d.]+)\n"
@@ -154,21 +156,23 @@ def parse_results_file(file_path: str) -> list:
             "dataset_name": dataset_name,
             "midi_filename": section[0],
             "duration_seconds": float(section[1]),
-            "precision": float(section[2]),
-            "recall": float(section[3]),
-            "f_measure": float(section[4]),
-            "average_overlap_ratio": float(section[5]),
-            "precision_no_offset": float(section[6]),
-            "recall_no_offset": float(section[7]),
-            "f_measure_no_offset": float(section[8]),
-            "average_overlap_ratio_no_offset": float(section[9]),
-            "onset_precision": float(section[10]),
-            "onset_recall": float(section[11]),
-            "onset_f_measure": float(section[12]),
-            "offset_precision": float(section[13]),
-            "offset_recall": float(section[14]),
-            "offset_f_measure": float(section[15]),
-            "runtime": float(section[16]),
+            "reference_midi_instruments": int(section[2]),
+            "transcription_midi_instruments": int(section[3]),
+            "precision": float(section[4]),
+            "recall": float(section[5]),
+            "f_measure": float(section[6]),
+            "average_overlap_ratio": float(section[7]),
+            "precision_no_offset": float(section[8]),
+            "recall_no_offset": float(section[9]),
+            "f_measure_no_offset": float(section[10]),
+            "average_overlap_ratio_no_offset": float(section[11]),
+            "onset_precision": float(section[12]),
+            "onset_recall": float(section[13]),
+            "onset_f_measure": float(section[14]),
+            "offset_precision": float(section[15]),
+            "offset_recall": float(section[16]),
+            "offset_f_measure": float(section[17]),
+            "runtime": float(section[18]),
         }
         midi_data_list.append(midi_data)
 
