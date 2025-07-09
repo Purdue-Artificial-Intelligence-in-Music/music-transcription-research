@@ -635,57 +635,310 @@ plt.savefig("figures/04_statistical_summary.png", dpi=300, bbox_inches="tight")
 plt.show()
 
 # ============================================================================
-# PRINT COMPREHENSIVE ANALYSIS
+# SAVE ALL OUTPUT TO FILE
 # ============================================================================
-print("\n" + "=" * 80)
-print("COMPREHENSIVE MODEL ANALYSIS")
-print("=" * 80)
+import sys
+from datetime import datetime
 
-print(f"\nTOTAL DATASET: {len(df)} files across {len(models)} models")
-print(f"MODELS ANALYZED: {list(models)}")
+# Create a string buffer to capture all output
+output_buffer = []
 
-print("\n" + "-" * 50)
-print("MODEL PERFORMANCE SUMMARY")
-print("-" * 50)
+
+def print_and_save(*args, **kwargs):
+    # Print to console
+    print(*args, **kwargs)
+    # Save to buffer
+    output_buffer.append(" ".join(str(arg) for arg in args))
+
+
+# ============================================================================
+# COMPREHENSIVE ANALYSIS WITH DETAILED STATISTICS
+# ============================================================================
+print_and_save("\n" + "=" * 80)
+print_and_save("COMPREHENSIVE MODEL ANALYSIS")
+print_and_save("=" * 80)
+print_and_save(f"Analysis Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+print_and_save(f"Total Dataset: {len(df)} files across {len(models)} models")
+print_and_save(f"Models Analyzed: {list(models)}")
+print_and_save(f"Datasets: {sorted(df['dataset_name'].unique())}")
+
+print_and_save("\n" + "-" * 60)
+print_and_save("DETAILED MODEL PERFORMANCE SUMMARY")
+print_and_save("-" * 60)
 
 for model in models:
     model_data = df[df["model_name"] == model]
-    print(f"\n{model.upper()}:")
-    print(f"  Files processed: {len(model_data)}")
-    print(
-        f"  Mean F-measure: {model_data['f_measure'].mean():.3f} ± {model_data['f_measure'].std():.3f}"
+    print_and_save(f"\n{model.upper()}:")
+    print_and_save(f"  Files processed: {len(model_data)}")
+    print_and_save(
+        f"  Mean F-measure: {model_data['f_measure'].mean():.4f} ± {model_data['f_measure'].std():.4f}"
     )
-    print(
-        f"  Mean Precision: {model_data['precision'].mean():.3f} ± {model_data['precision'].std():.3f}"
+    print_and_save(
+        f"  Mean Precision: {model_data['precision'].mean():.4f} ± {model_data['precision'].std():.4f}"
     )
-    print(
-        f"  Mean Recall: {model_data['recall'].mean():.3f} ± {model_data['recall'].std():.3f}"
+    print_and_save(
+        f"  Mean Recall: {model_data['recall'].mean():.4f} ± {model_data['recall'].std():.4f}"
     )
-    print(
-        f"  Mean Runtime: {model_data['runtime'].mean():.1f} ± {model_data['runtime'].std():.1f} seconds"
+    print_and_save(
+        f"  Mean Runtime: {model_data['runtime'].mean():.2f} ± {model_data['runtime'].std():.2f} seconds"
     )
-    print(f"  Onset F-measure: {model_data['onset_f_measure'].mean():.3f}")
-    print(f"  Offset F-measure: {model_data['offset_f_measure'].mean():.3f}")
+    print_and_save(f"  Median Runtime: {model_data['runtime'].median():.2f} seconds")
+    print_and_save(
+        f"  Mean Duration: {model_data['duration_seconds'].mean():.1f} ± {model_data['duration_seconds'].std():.1f} seconds"
+    )
+    print_and_save(
+        f"  Onset Precision: {model_data['onset_precision'].mean():.4f} ± {model_data['onset_precision'].std():.4f}"
+    )
+    print_and_save(
+        f"  Onset Recall: {model_data['onset_recall'].mean():.4f} ± {model_data['onset_recall'].std():.4f}"
+    )
+    print_and_save(
+        f"  Onset F-measure: {model_data['onset_f_measure'].mean():.4f} ± {model_data['onset_f_measure'].std():.4f}"
+    )
+    print_and_save(
+        f"  Offset Precision: {model_data['offset_precision'].mean():.4f} ± {model_data['offset_precision'].std():.4f}"
+    )
+    print_and_save(
+        f"  Offset Recall: {model_data['offset_recall'].mean():.4f} ± {model_data['offset_recall'].std():.4f}"
+    )
+    print_and_save(
+        f"  Offset F-measure: {model_data['offset_f_measure'].mean():.4f} ± {model_data['offset_f_measure'].std():.4f}"
+    )
+    print_and_save(
+        f"  Average Overlap Ratio: {model_data['average_overlap_ratio'].mean():.4f} ± {model_data['average_overlap_ratio'].std():.4f}"
+    )
+    print_and_save(
+        f"  No-Offset Precision: {model_data['precision_no_offset'].mean():.4f} ± {model_data['precision_no_offset'].std():.4f}"
+    )
+    print_and_save(
+        f"  No-Offset Recall: {model_data['recall_no_offset'].mean():.4f} ± {model_data['recall_no_offset'].std():.4f}"
+    )
+    print_and_save(
+        f"  No-Offset F-measure: {model_data['f_measure_no_offset'].mean():.4f} ± {model_data['f_measure_no_offset'].std():.4f}"
+    )
+    print_and_save(
+        f"  Performance Range (F-measure): {model_data['f_measure'].min():.4f} to {model_data['f_measure'].max():.4f}"
+    )
+    print_and_save(
+        f"  Efficiency (F-measure/runtime): {(model_data['f_measure'] / model_data['runtime']).mean():.6f}"
+    )
 
-print("\n" + "-" * 50)
-print("KEY CORRELATIONS (Overall)")
-print("-" * 50)
-print(f"Duration vs F-measure: {df['duration_seconds'].corr(df['f_measure']):.3f}")
-print(f"Precision vs Recall: {df['precision'].corr(df['recall']):.3f}")
-print(f"F-measure vs Overlap: {df['f_measure'].corr(df['average_overlap_ratio']):.3f}")
-print(
-    f"Onset vs Offset F-measure: {df['onset_f_measure'].corr(df['offset_f_measure']):.3f}"
+print_and_save("\n" + "-" * 60)
+print_and_save("OVERALL CORRELATIONS (All Models Combined)")
+print_and_save("-" * 60)
+print_and_save(
+    f"Duration vs F-measure: {df['duration_seconds'].corr(df['f_measure']):.4f}"
 )
-print(f"Runtime vs F-measure: {df['runtime'].corr(df['f_measure']):.3f}")
+print_and_save(
+    f"Duration vs Precision: {df['duration_seconds'].corr(df['precision']):.4f}"
+)
+print_and_save(f"Duration vs Recall: {df['duration_seconds'].corr(df['recall']):.4f}")
+print_and_save(f"Duration vs Runtime: {df['duration_seconds'].corr(df['runtime']):.4f}")
+print_and_save(f"Precision vs Recall: {df['precision'].corr(df['recall']):.4f}")
+print_and_save(
+    f"F-measure vs Overlap Ratio: {df['f_measure'].corr(df['average_overlap_ratio']):.4f}"
+)
+print_and_save(
+    f"F-measure vs No-Offset F-measure: {df['f_measure'].corr(df['f_measure_no_offset']):.4f}"
+)
+print_and_save(
+    f"Onset vs Offset Precision: {df['onset_precision'].corr(df['offset_precision']):.4f}"
+)
+print_and_save(
+    f"Onset vs Offset Recall: {df['onset_recall'].corr(df['offset_recall']):.4f}"
+)
+print_and_save(
+    f"Onset vs Offset F-measure: {df['onset_f_measure'].corr(df['offset_f_measure']):.4f}"
+)
+print_and_save(f"Runtime vs F-measure: {df['runtime'].corr(df['f_measure']):.4f}")
+print_and_save(f"Runtime vs Precision: {df['runtime'].corr(df['precision']):.4f}")
+print_and_save(f"Runtime vs Recall: {df['runtime'].corr(df['recall']):.4f}")
+print_and_save(
+    f"Overlap Ratio vs Precision: {df['average_overlap_ratio'].corr(df['precision']):.4f}"
+)
+print_and_save(
+    f"Overlap Ratio vs Recall: {df['average_overlap_ratio'].corr(df['recall']):.4f}"
+)
 
-print("\n" + "-" * 50)
-print("FIGURES SAVED")
-print("-" * 50)
-print("1. figures/01_core_performance_analysis.png - Main performance comparisons")
-print("2. figures/02_onset_offset_analysis.png - Onset/offset detailed analysis")
-print("3. figures/03_advanced_performance_patterns.png - Advanced pattern analysis")
-print("4. figures/04_statistical_summary.png - Statistical summary and rankings")
+print_and_save("\n" + "-" * 60)
+print_and_save("MODEL-SPECIFIC CORRELATIONS")
+print_and_save("-" * 60)
 
-print("\n" + "=" * 80)
-print("ANALYSIS COMPLETE!")
-print("=" * 80)
+for model in models:
+    model_data = df[df["model_name"] == model]
+    print_and_save(f"\n{model.upper()} Correlations:")
+    print_and_save(
+        f"  Duration vs F-measure: {model_data['duration_seconds'].corr(model_data['f_measure']):.4f}"
+    )
+    print_and_save(
+        f"  Precision vs Recall: {model_data['precision'].corr(model_data['recall']):.4f}"
+    )
+    print_and_save(
+        f"  F-measure vs Overlap: {model_data['f_measure'].corr(model_data['average_overlap_ratio']):.4f}"
+    )
+    print_and_save(
+        f"  Onset vs Offset F-measure: {model_data['onset_f_measure'].corr(model_data['offset_f_measure']):.4f}"
+    )
+    print_and_save(
+        f"  Runtime vs F-measure: {model_data['runtime'].corr(model_data['f_measure']):.4f}"
+    )
+    print_and_save(
+        f"  Runtime vs Duration: {model_data['runtime'].corr(model_data['duration_seconds']):.4f}"
+    )
+
+print_and_save("\n" + "-" * 60)
+print_and_save("DATASET PERFORMANCE BREAKDOWN")
+print_and_save("-" * 60)
+
+for dataset in sorted(df["dataset_name"].unique()):
+    dataset_data = df[df["dataset_name"] == dataset]
+    print_and_save(f"\n{dataset}:")
+    print_and_save(f"  Total files: {len(dataset_data)}")
+    print_and_save(
+        f"  Mean F-measure: {dataset_data['f_measure'].mean():.4f} ± {dataset_data['f_measure'].std():.4f}"
+    )
+    print_and_save(
+        f"  Mean Duration: {dataset_data['duration_seconds'].mean():.1f} ± {dataset_data['duration_seconds'].std():.1f} seconds"
+    )
+    print_and_save(
+        f"  Mean Runtime: {dataset_data['runtime'].mean():.2f} ± {dataset_data['runtime'].std():.2f} seconds"
+    )
+
+    # Model breakdown within dataset
+    for model in models:
+        model_dataset_data = dataset_data[dataset_data["model_name"] == model]
+        if len(model_dataset_data) > 0:
+            print_and_save(
+                f"    {model}: {len(model_dataset_data)} files, F-measure: {model_dataset_data['f_measure'].mean():.4f}"
+            )
+
+print_and_save("\n" + "-" * 60)
+print_and_save("PERFORMANCE RANKINGS")
+print_and_save("-" * 60)
+
+metrics_for_ranking = [
+    "f_measure",
+    "precision",
+    "recall",
+    "onset_f_measure",
+    "offset_f_measure",
+    "average_overlap_ratio",
+]
+
+for metric in metrics_for_ranking:
+    print_and_save(f"\n{metric.upper().replace('_', ' ')} Rankings:")
+    model_scores = [
+        (model, df[df["model_name"] == model][metric].mean()) for model in models
+    ]
+    model_scores.sort(key=lambda x: x[1], reverse=True)
+
+    for rank, (model, score) in enumerate(model_scores, 1):
+        print_and_save(f"  {rank}. {model}: {score:.4f}")
+
+print_and_save("\n" + "-" * 60)
+print_and_save("EFFICIENCY ANALYSIS")
+print_and_save("-" * 60)
+
+efficiency_metrics = []
+for model in models:
+    model_data = df[df["model_name"] == model]
+    efficiency = (model_data["f_measure"] / model_data["runtime"]).mean()
+    efficiency_per_minute = efficiency * 60
+    efficiency_metrics.append((model, efficiency, efficiency_per_minute))
+
+# Sort by efficiency
+efficiency_metrics.sort(key=lambda x: x[1], reverse=True)
+
+print_and_save("Runtime Efficiency Rankings (F-measure per second):")
+for rank, (model, eff_sec, eff_min) in enumerate(efficiency_metrics, 1):
+    print_and_save(
+        f"  {rank}. {model}: {eff_sec:.6f} F-measure/sec ({eff_min:.4f} F-measure/min)"
+    )
+
+print_and_save("\n" + "-" * 60)
+print_and_save("STATISTICAL SIGNIFICANCE TESTS")
+print_and_save("-" * 60)
+
+# Perform ANOVA test for F-measure differences between models
+from scipy import stats
+
+f_measure_groups = [
+    df[df["model_name"] == model]["f_measure"].values for model in models
+]
+f_stat, p_value = stats.f_oneway(*f_measure_groups)
+print_and_save(f"ANOVA F-statistic for F-measure differences: {f_stat:.4f}")
+print_and_save(f"ANOVA p-value: {p_value:.6f}")
+print_and_save(
+    f"Significant difference between models: {'Yes' if p_value < 0.05 else 'No'}"
+)
+
+# Pairwise comparisons
+print_and_save("\nPairwise t-tests between models (F-measure):")
+for i, model1 in enumerate(models):
+    for j, model2 in enumerate(models):
+        if i < j:  # Avoid duplicate comparisons
+            data1 = df[df["model_name"] == model1]["f_measure"]
+            data2 = df[df["model_name"] == model2]["f_measure"]
+            t_stat, p_val = stats.ttest_ind(data1, data2)
+            print_and_save(f"  {model1} vs {model2}: t={t_stat:.4f}, p={p_val:.6f}")
+
+print_and_save("\n" + "-" * 60)
+print_and_save("COMPLETE CORRELATION MATRIX")
+print_and_save("-" * 60)
+
+all_numeric_cols = [
+    "duration_seconds",
+    "precision",
+    "recall",
+    "f_measure",
+    "average_overlap_ratio",
+    "precision_no_offset",
+    "recall_no_offset",
+    "f_measure_no_offset",
+    "average_overlap_ratio_no_offset",
+    "onset_precision",
+    "onset_recall",
+    "onset_f_measure",
+    "offset_precision",
+    "offset_recall",
+    "offset_f_measure",
+    "runtime",
+]
+
+corr_matrix = df[all_numeric_cols].corr()
+print_and_save("\nCorrelation Matrix (only values > 0.3 or < -0.3):")
+for i, col1 in enumerate(all_numeric_cols):
+    for j, col2 in enumerate(all_numeric_cols):
+        if i < j:  # Avoid duplicate pairs
+            corr_val = corr_matrix.loc[col1, col2]
+            if abs(corr_val) > 0.3:
+                print_and_save(f"  {col1} vs {col2}: {corr_val:.4f}")
+
+print_and_save("\n" + "-" * 60)
+print_and_save("FIGURES SAVED")
+print_and_save("-" * 60)
+print_and_save(
+    "1. figures/01_core_performance_analysis.png - Main performance comparisons"
+)
+print_and_save(
+    "2. figures/02_onset_offset_analysis.png - Onset/offset detailed analysis"
+)
+print_and_save(
+    "3. figures/03_advanced_performance_patterns.png - Advanced pattern analysis"
+)
+print_and_save(
+    "4. figures/04_statistical_summary.png - Statistical summary and rankings"
+)
+
+print_and_save("\n" + "=" * 80)
+print_and_save("ANALYSIS COMPLETE!")
+print_and_save("=" * 80)
+
+# Save all output to file
+output_filename = (
+    f"statistics/analysis_output_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+)
+with open(output_filename, "w") as f:
+    f.write("\n".join(output_buffer))
+
+print_and_save(f"\nComplete analysis saved to: {output_filename}")
