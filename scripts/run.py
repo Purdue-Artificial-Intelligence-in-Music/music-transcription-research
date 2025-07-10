@@ -107,12 +107,19 @@ def main():
     total_jobs_submitted = 0
 
     for model_row in model_data:
-        model_name = model_row[0]
+        model_name, _, _, _, model_type = model_row
         print(f"\nProcessing model: {model_name}")
 
         for dataset_row in dataset_data:
-            dataset_name, dataset_path, _, audio_type = dataset_row
+            dataset_name, dataset_path, dataset_instrument, audio_type = dataset_row
             print(f"  - Dataset: {dataset_name}")
+
+            # Instrument compatibility check
+            if dataset_instrument == "Piano" and model_type != "Piano":
+                print(
+                    f"\tSkipping: {model_name} is not compatible with Piano dataset {dataset_name}"
+                )
+                continue
 
             sbatch_cmd = [
                 "sbatch",
