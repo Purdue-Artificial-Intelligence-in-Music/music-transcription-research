@@ -11,5 +11,6 @@
         ["Maestro 2015", "/anvil/scratch/x-ochaturvedi/maestro-v3.0.0/2015", "Piano", "wav", "midi"],
         ["Maestro 2017", "/anvil/scratch/x-ochaturvedi/maestro-v3.0.0/2017", "Piano", "wav", "midi"],
         ["Maestro 2018", "/anvil/scratch/x-ochaturvedi/maestro-v3.0.0/2018", "Piano", "wav", "midi"]
+        ["Slakh 2100", "/anvil/scratch/x-ochaturvedi/datasets/slakh2100", "Polyphonic", "wav", "mid"]
     ]
 }
