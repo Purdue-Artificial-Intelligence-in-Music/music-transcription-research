@@ -166,12 +166,6 @@ def main():
             except subprocess.CalledProcessError as e:
                 print(f"\tFailed to submit job: {e.stderr.decode().strip()}")
 
-    # Submit cleanup job dependent on the last successful job
-    if previous_job_id:
-        cleanup_job_id = submit_slurm_job(CLEANUP_SCRIPT, dependency=previous_job_id)
-        if cleanup_job_id:
-            print(f"Cleanup job submitted with ID: {cleanup_job_id}")
-
     print(f"\nSLURM Job Submission Process Completed!")
     print(f"Total jobs submitted: {total_jobs_submitted}")
 
