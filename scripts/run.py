@@ -111,7 +111,7 @@ def main():
         print(f"\nProcessing model: {model_name}")
 
         for dataset_row in dataset_data:
-            dataset_name, dataset_path, _, audio_type, midi_extension = dataset_row
+            dataset_name, dataset_path, _, audio_type = dataset_row
             print(f"  - Dataset: {dataset_name}")
 
             sbatch_cmd = [
@@ -125,7 +125,7 @@ def main():
             # Add dependency on previous job if it exists
             if previous_job_id:
                 sbatch_cmd.append(f"--dependency=afterany:{previous_job_id}")
-                print(f"    Dependency on job: {previous_job_id}")
+                print(f"\tDependency on job: {previous_job_id}")
 
             sbatch_cmd.extend(
                 [
@@ -134,7 +134,6 @@ def main():
                     dataset_name,
                     dataset_path,
                     audio_type,
-                    midi_extension,
                 ]
             )
 
@@ -149,16 +148,16 @@ def main():
                 job_id = extract_slurm_id(output)
 
                 if job_id:
-                    print(f"    Submitted SLURM job ID: {job_id}")
+                    print(f"\tSubmitted SLURM job ID: {job_id}")
                     previous_job_id = job_id  # Use this job as dependency for next job
                     total_jobs_submitted += 1
                 else:
                     print(
-                        f"    Warning: Failed to extract job ID, continuing without dependency"
+                        f"\tWarning: Failed to extract job ID, continuing without dependency"
                     )
 
             except subprocess.CalledProcessError as e:
-                print(f"    Failed to submit job: {e.stderr.decode().strip()}")
+                print(f"\tFailed to submit job: {e.stderr.decode().strip()}")
 
     # Submit cleanup job dependent on the last successful job
     if previous_job_id:

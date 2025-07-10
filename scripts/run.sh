@@ -15,7 +15,6 @@ echo "Grading model: $1"
 echo "Processing dataset: $2"
 echo "Searching in: $3"
 echo "Audio type: $4"
-echo "Midi file extension: $5"
 echo ""
 echo "Running on: $(hostname)"
 echo ""
@@ -25,9 +24,7 @@ dataset_name=${2// /_}
 export dataset_name
 
 audio_type=${4// /_}
-midi_extension=${5// /_}
 export audio_type
-export midi_extension
 
 environment_name="${model_name}_${dataset_name}"
 export environment_name
@@ -115,7 +112,7 @@ process_file() {
     local file="$1"
     local base_name=$(basename "$file" .$audio_type)
 
-    local reference_file=$(realpath "${file%.$audio_type}.$midi_extension")
+    local reference_file=$(realpath "${file%.$audio_type}.mid")
     local transcription_path=".$MODEL_DIR/research_output_$dataset_name/${base_name}.mid"
     local runtime_file="$temp_dir/${base_name}.runtime"
     local fmeasure_file="$temp_dir/${base_name}.fmeasure"
@@ -138,6 +135,9 @@ process_file() {
     echo "Processed ${base_name}.$audio_type in $runtime seconds"
 
     # Scoring
+    if [[ ! -f "$reference_file" ]]; then
+        reference_file=$(realpath "${file%.$audio_type}.midi")
+    fi
     if [[ ! -f "$reference_file" ]]; then
         echo "Reference MIDI not found for $file, skipping scoring."
         echo "MISSING_REF" >"$fmeasure_file"
