@@ -104,18 +104,28 @@ rm -rf "$temp_dir"
 mkdir "$temp_dir"
 export temp_dir
 
-# Function to process one .mp3 file
+# Function to process one audio file
 process_file() {
     source "$(conda info --base)/etc/profile.d/conda.sh"
 
     echo "Processing file: $1"
-    local file="$1"
-    local base_name=$(basename "$file" .$audio_type)
+    local original_file="$1"
+    local file="$original_file" # Default file to process
+    local base_name=$(basename "$original_file" .$audio_type)
 
-    local reference_file=$(realpath "${file%.$audio_type}.mid")
+    local reference_file=$(realpath "${original_file%.$audio_type}.mid")
     local transcription_path=".$MODEL_DIR/research_output_$dataset_name/${base_name}.mid"
     local runtime_file="$temp_dir/${base_name}.runtime"
     local fmeasure_file="$temp_dir/${base_name}.fmeasure"
+
+    local temp_wav_created=0
+    if [[ "$audio_type" != "wav" ]]; then
+        local temp_wav="$temp_dir/${base_name}.wav"
+        echo "Converting $original_file to temporary WAV file..."
+        ffmpeg -loglevel error -y -i "$original_file" "$temp_wav"
+        file="$temp_wav"
+        temp_wav_created=1
+    fi
 
     local duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$file")
 
@@ -129,6 +139,11 @@ process_file() {
 
     conda deactivate
 
+    # Delete temporary WAV file if created
+    if [[ "$temp_wav_created" -eq 1 ]]; then
+        rm -f "$file"
+    fi
+
     # Runtime calculation
     local runtime=$(echo "$end_time - $start_time" | bc)
     echo "$runtime" >"$runtime_file"
@@ -136,10 +151,10 @@ process_file() {
 
     # Scoring
     if [[ ! -f "$reference_file" ]]; then
-        reference_file=$(realpath "${file%.$audio_type}.midi")
+        reference_file=$(realpath "${original_file%.$audio_type}.midi")
     fi
     if [[ ! -f "$reference_file" ]]; then
-        echo "Reference MIDI not found for $file, skipping scoring."
+        echo "Reference MIDI not found for $original_file, skipping scoring."
         echo "MISSING_REF" >"$fmeasure_file"
         return
     fi
@@ -155,7 +170,7 @@ process_file() {
     local output=$(python3 ../scoring.py --reference "$reference_file" --transcription "$transcription_path")
 
     {
-        printf '%s\n' "$(basename "$file")"
+        printf '%s\n' "$(basename "$original_file")"
         printf 'Duration: %s seconds\n' "$duration"
         printf '%s\n' "$output"
         printf 'Runtime: %f seconds\n\n' "$runtime"
@@ -168,7 +183,7 @@ process_file() {
         echo "$fmeasure" >"$fmeasure_file"
     else
         echo "INVALID" >"$fmeasure_file"
-        echo "Warning: Invalid F-measure detected: '$fmeasure' for $file"
+        echo "Warning: Invalid F-measure detected: '$fmeasure' for $original_file"
     fi
 
     conda deactivate
@@ -240,7 +255,7 @@ conda deactivate
 conda clean --all --yes -q
 rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs
 
-curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished running model $1 for dataset $dataset_name\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
+curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished running model $1 for dataset $2\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
 
 # UPLOAD.SH
 
@@ -294,4 +309,4 @@ seconds=$(echo "$overall_runtime % 60" | bc | cut -d'.' -f1)
 overall_runtime_formatted=$(printf '%02d:%02d:%02d' "$hours" "$minutes" "$seconds")
 echo "Total runtime: $overall_runtime_formatted"
 
-curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished script for model $1 and dataset $dataset_name. Total runtime: $overall_runtime_formatted\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
+curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished script for model $1 and dataset $2. Total runtime: $overall_runtime_formatted\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
