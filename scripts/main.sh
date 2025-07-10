@@ -8,6 +8,8 @@
 #SBATCH -J main
 #SBATCH -o 0_main_output.out
 
+start_time=$(date +%s.%N)
+
 echo "--------------------------------------------------"
 echo "Running main.sh"
 
@@ -85,12 +87,11 @@ rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/
 echo "--------------------------------------------------"
 echo "Creating Slurm jobs for each model"
 
-MAX_ALLOWED=$((50000 - count + 1))
-echo "Max allowed: $MAX_ALLOWED"
-
-SLEEP_INTERVAL=300 # Time in seconds between checks (e.g., 5 minutes)
-
 # (Optional) Enable for Gilbreth usage
+
+# MAX_ALLOWED=$((50000 - count + 1))
+# SLEEP_INTERVAL=300 # Time in seconds between checks (e.g., 5 minutes)
+
 # # Function to count jobs in cluster
 # count_jobs() {
 #     squeue -A standby | wc -l
@@ -114,5 +115,15 @@ python run.py
 
 echo "--------------------------------------------------"
 echo "Script execution completed!"
+
+end_time=$(date +%s.%N)
+overall_runtime=$(echo "scale=2; $end_time - $start_time" | bc)
+
+hours=$(echo "$overall_runtime / 3600" | bc)
+minutes=$(echo "($overall_runtime % 3600) / 60" | bc)
+seconds=$(echo "$overall_runtime % 60" | bc | cut -d'.' -f1)
+
+overall_runtime_formatted=$(printf '%02d:%02d:%02d' "$hours" "$minutes" "$seconds")
+echo "Total runtime: $overall_runtime_formatted"
 
 curl -s -X POST -H "Content-Type: application/json" -d '{"content": "Main script for paper has been executed!", "avatar_url": "https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png"}' https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
