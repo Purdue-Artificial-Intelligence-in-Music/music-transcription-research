@@ -1,6 +1,5 @@
 {
     "values": [
-        ["Dataset Name", "Server Location", "Instrument Type", "Audio Type", "Midi File Extension"],
         ["Maestro 2004", "/anvil/scratch/x-ochaturvedi/maestro-v3.0.0/2004", "Piano", "wav", "midi"],
         ["Maestro 2006", "/anvil/scratch/x-ochaturvedi/maestro-v3.0.0/2006", "Piano", "wav", "midi"],
         ["Maestro 2008", "/anvil/scratch/x-ochaturvedi/maestro-v3.0.0/2008", "Piano", "wav", "midi"],
@@ -12,5 +11,7 @@
         ["Maestro 2017", "/anvil/scratch/x-ochaturvedi/maestro-v3.0.0/2017", "Piano", "wav", "midi"],
         ["Maestro 2018", "/anvil/scratch/x-ochaturvedi/maestro-v3.0.0/2018", "Piano", "wav", "midi"]
         ["Slakh 2100", "/anvil/scratch/x-ochaturvedi/datasets/slakh2100", "Polyphonic", "wav", "mid"]
+        ["Dataset Name", "Server Location", "Instrument Type", "Audio Type"],
+        ["Slakh 2100", "/anvil/scratch/x-ochaturvedi/datasets/slakh2100", "Polyphonic", "wav"]
     ]
 }
