@@ -115,9 +115,12 @@ def main():
             print(f"  - Dataset: {dataset_name}")
 
             # Instrument compatibility check
-            if dataset_instrument == "Piano" and model_type != "Piano":
+            if model_type == "Piano" and dataset_instrument != "Piano":
                 print(
-                    f"\tSkipping: {model_name} is not compatible with Piano dataset {dataset_name}"
+                    f"\tSkipping: {model_name} is not compatible with dataset {dataset_name}"
+                )
+                print(
+                    f"\tModel type: {model_type}, Dataset instrument: {dataset_instrument}"
                 )
                 continue
 
