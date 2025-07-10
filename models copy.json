@@ -1,71 +1,75 @@
 {
     "values": [
-        ["Model Name", "GitHub URL", "Username", "Token"],
+        ["Model Name", "GitHub URL", "Username", "Token", "Type"],
         [
             "MT3",
             "https://github.com/ojas-chaturvedi/mt3-pytorch.git",
             "ojas-chaturvedi",
-            "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"
+            "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",
+            "Polyphonic"
         ],
         [
             "ReconVAT",
             "https://github.com/ojas-chaturvedi/ReconVAT.git",
             "ojas-chaturvedi",
-            "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"
+            "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",
+            "Polyphonic"
         ],
         [
             "Bytedance Piano transcription",
             "https://github.com/ojas-chaturvedi/piano_transcription_inference.git",
             "ojas-chaturvedi",
-            "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"
+            "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",
+            "Piano"
+        ],
+        [
+            "Transkun AMT",
+            "https://github.com/ojas-chaturvedi/Transkun.git",
+            "ojas-chaturvedi",
+            "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",
+            "Piano"
         ],
         [
             "CREPE AMT",
             "https://github.com/tgondil/crepe-amt",
             "tgondil",
-            "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"
-        ],
-        [
-            "Transkun AMT",
-            "https://github.com/tgondil/transkun-amt",
-            "tgondil",
-            "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"
+            "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",
+            "Monophonic"
         ],
         [
             "Sound2MIDI Monophonic",
             "https://github.com/tgondil/sound2midi-monophonic",
             "tgondil",
-            "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"
+            "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",
+            "Monophonic"
         ],
         [
             "madmom",
             "https://github.com/tgondil/madmom-amt",
             "tgondil",
-            "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"
+            "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",
+            ""
         ],
         [
             "melodia",
             "https://github.com/tgondil/melodia-amt",
             "tgondil",
-            "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"
+            "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",
+            ""
         ],
         [
             "Basic Pitch",
             "https://github.com/KayshavBhardwaj/basic-pitch-test-1.git",
             "KayshavBhardwaj",
-            "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"
-        ],
-        [
-            "DeepSalience",
-            "https://github.com/skum156/ismir2017-deepsalience.git",
-            "skum156",
-            "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"
+            "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",
+            "Polyphonic"
         ],
         [
             "Jointist",
             "https://github.com/skum156/skum156-jointist.git",
             "skum156",
-            "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"
+            "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",
+            "Polyphonic"
         ]
     ]
 }
