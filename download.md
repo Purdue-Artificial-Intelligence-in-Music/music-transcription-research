@@ -11,39 +11,17 @@ echo "6680fea5be2339ea15091a249fbd70e49551246ddbd5ca50f1b2352c08c95291  maestro-
 
 # Unzip the dataset
 unzip maestro-v3.0.0.zip
+
+# Rename all .midi files to .mid
+find maestro-v3.0.0 -type f -name "*.midi" | while read -r file; do
+    mv "$file" "${file%.midi}.mid"
+done
 ```
 
 ## Slakh 2100
 
 ```bash
-# Check if Singularity is installed
-if ! command -v singularity &>/dev/null; then
-    echo "Error: Singularity is not installed. Please contact your system administrator."
-    exit 1
-fi
-
-MUSESCORE_CONTAINER="musescore_slakh.sif"
-MUSESCORE_DEFINITION="musescore_slakh.def"
 OUTDIR="./slakh2100"
-
-# Create and build MuseScore container if needed
-if [ ! -f "$MUSESCORE_CONTAINER" ]; then
-    cat <<EOF >"$MUSESCORE_DEFINITION"
-BootStrap: docker
-From: ubuntu:22.04
-
-%post
-    apt update && apt install -y musescore ffmpeg
-    echo "MuseScore and FFmpeg installed"
-
-%runscript
-    export QT_QPA_PLATFORM=offscreen
-    exec /usr/bin/mscore "\$@"
-EOF
-
-    singularity build "$MUSESCORE_CONTAINER" "$MUSESCORE_DEFINITION"
-    rm "$MUSESCORE_DEFINITION"
-fi
 
 # Download the dataset
 wget -O slakh2100_flac_redux.tar.gz "https://zenodo.org/record/4599666/files/slakh2100_flac_redux.tar.gz?download=1" >/dev/null
@@ -77,6 +55,4 @@ for split in train test validation; do
         find "$track_dir" -mindepth 1 ! -name "${track_name}.mid" ! -name "${track_name}.wav" -exec rm -rf {} +
     done
 done
-
-rm "$MUSESCORE_CONTAINER"
 ```
