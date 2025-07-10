@@ -37,11 +37,10 @@ module load conda
 module load parallel
 module load gcc/11.2.0
 
-export CUDA_HOME=/usr/local/cuda
-export PATH=$CUDA_HOME/bin:$PATH
-export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
+conda clean --packages --tarballs --yes
 
-conda clean --all --yes
+export CONDA_PKGS_DIRS="/anvil/scratch/x-ochaturvedi/.conda/pkgs_$environment_name"
+mkdir -p "$CONDA_PKGS_DIRS"
 
 # Check for internet access
 if ! ping -c 1 repo.anaconda.com &>/dev/null; then
@@ -253,9 +252,10 @@ cd ..
 
 conda deactivate
 conda clean --all --yes -q
-rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs
+rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"
+rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_name"
 
-curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished running model $1 for dataset $2\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
+curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished running model $1 for dataset $2. Average F-measure: $avg_fmeasure\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
 
 # UPLOAD.SH
 
@@ -294,7 +294,7 @@ python ./upload.py --main-folder="11zBLIit-Cg7Tu5KHJXZBvaUauFr5Dtbc" --model-nam
 conda deactivate
 conda clean --all --yes -q
 
-rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs
+rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env-"$environment_name"
 
 echo "--------------------------------------------------"
 echo "Script execution completed!"

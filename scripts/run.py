@@ -133,9 +133,9 @@ def main():
             ]
 
             # Add dependency on previous job if it exists
-            if previous_job_id:
-                sbatch_cmd.append(f"--dependency=afterany:{previous_job_id}")
-                print(f"\tDependency on job: {previous_job_id}")
+            # if previous_job_id:
+            #     sbatch_cmd.append(f"--dependency=afterany:{previous_job_id}")
+            #     print(f"\tDependency on job: {previous_job_id}")
 
             sbatch_cmd.extend(
                 [
