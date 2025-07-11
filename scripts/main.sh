@@ -25,6 +25,27 @@ module load ffmpeg
 module load conda
 
 echo "--------------------------------------------------"
+echo "Creating shared conda environments for scoring and Google Drive upload"
+
+conda env remove -q -p /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env -y
+conda env remove -p /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env -y
+
+rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env
+rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env
+
+conda create -y -q --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env python=3.10 pip setuptools mir_eval pretty_midi numpy=1.23 pyyaml
+conda create -y -q --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env python=3.10 pip pydrive2
+
+if [ ! -d "/anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env" ]; then
+    echo "Scoring environment failed to create. Skipping scoring."
+    exit 1
+fi
+if [ ! -d "/anvil/scratch/x-ochaturvedi/.conda/envs/upload-env" ]; then
+    echo "Upload environment failed to create. Skipping upload."
+    exit 1
+fi
+
+echo "--------------------------------------------------"
 echo "Running cloning for all model repositories"
 
 CONDA_ENV_PATH="$HOME/.conda/envs/cloning-env"

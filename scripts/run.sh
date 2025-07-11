@@ -50,11 +50,9 @@ if ! ping -c 1 repo.anaconda.com &>/dev/null; then
 fi
 
 echo "--------------------------------------------------"
-echo "Deleting any existing conda environment"
+echo "Deleting existing conda environment"
 conda env remove -q -p /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name" -y
-conda env remove -q -p /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_name" -y
 rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"
-rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_name"
 
 echo "--------------------------------------------------"
 echo "Creating conda environment"
@@ -67,16 +65,8 @@ if [ ! -f "./$1/environment.yml" ]; then
     exit 1
 fi
 conda env create -q -f "./$1/environment.yml" --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"
-conda create -y -q --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_name" python=3.10 pip setuptools mir_eval pretty_midi numpy=1.23 pyyaml
-
-echo "--------------------------------------------------"
-echo "Activating conda environment"
 if [ ! -d "/anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"" ]; then
     echo "Environment failed to create. Skipping execution."
-    exit 1
-fi
-if [ ! -d "/anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_name"" ]; then
-    echo "Environment failed to create. Skipping scoring."
     exit 1
 fi
 
@@ -164,7 +154,7 @@ process_file() {
         return
     fi
 
-    conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_name"
+    conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env
 
     local output=$(python3 ../scoring.py --reference "$reference_file" --transcription "$transcription_path")
 
@@ -187,7 +177,6 @@ process_file() {
 
     conda deactivate
 }
-
 export -f process_file
 
 # Determine number of parallel jobs
@@ -253,30 +242,15 @@ cd ..
 conda deactivate
 conda clean --all --yes -q
 rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"
-rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env-"$environment_name"
 
 curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished running model $1 for dataset $2. Average F-measure: $avg_fmeasure\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
 
 # UPLOAD.SH
 
 echo "--------------------------------------------------"
-echo "Deleting any existing conda environment"
-conda env remove -p /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env-"$environment_name" -y
-
-echo "--------------------------------------------------"
-echo "Creating conda environment"
-conda create -y -q --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env-"$environment_name" python=3.10 pip pydrive2
-
-echo "--------------------------------------------------"
-echo "Activating conda environment"
-if [ ! -d "/anvil/scratch/x-ochaturvedi/.conda/envs/upload-env-"$environment_name"" ]; then
-    echo "Environment failed to create. Skipping upload."
-    exit 1
-fi
-conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env-"$environment_name"
-
-echo "--------------------------------------------------"
 echo "Uploading the output files"
+
+conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env
 
 OUTPUT_DIR="$1/research_output_$dataset_name"
 OUTPUT_DIR=$(realpath "$OUTPUT_DIR")
@@ -293,8 +267,6 @@ python ./upload.py --main-folder="11zBLIit-Cg7Tu5KHJXZBvaUauFr5Dtbc" --model-nam
 
 conda deactivate
 conda clean --all --yes -q
-
-rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env-"$environment_name"
 
 echo "--------------------------------------------------"
 echo "Script execution completed!"
