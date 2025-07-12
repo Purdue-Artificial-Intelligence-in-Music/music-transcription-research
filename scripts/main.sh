@@ -24,6 +24,8 @@ module --force purge
 module load ffmpeg
 module load conda
 
+rm -rf /anvil/scratch/x-ochaturvedi/.conda/
+
 echo "--------------------------------------------------"
 echo "Creating shared conda environments for scoring and Google Drive upload"
 
@@ -103,7 +105,7 @@ if conda env list | grep -q "cloning-env"; then
 fi
 conda clean --all --yes -q
 
-rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/
+rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/cloning-env
 
 echo "--------------------------------------------------"
 echo "Creating Slurm jobs for each model"
