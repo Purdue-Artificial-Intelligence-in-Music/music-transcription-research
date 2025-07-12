@@ -180,15 +180,10 @@ process_file() {
 export -f process_file
 
 # Determine number of parallel jobs
-cores=4
-if command -v nproc &>/dev/null; then
-    cores=$(nproc)
-elif [[ "$OSTYPE" == "darwin"* ]]; then
-    cores=$(sysctl -n hw.ncpu)
-fi
+gpu_count=$(nvidia-smi -L | wc -l)
 
 # Run jobs in parallel using GNU Parallel
-find "$3" -type f -name "*.$audio_type" | parallel -j "$cores" process_file
+find "$3" -type f -name "*.$audio_type" | parallel -j "$gpu_count" process_file
 
 # Compute average F-measure
 total=0
@@ -267,6 +262,8 @@ python ./upload.py --main-folder="11zBLIit-Cg7Tu5KHJXZBvaUauFr5Dtbc" --model-nam
 
 conda deactivate
 conda clean --all --yes -q
+
+rm -rf $CONDA_PKGS_DIRS
 
 echo "--------------------------------------------------"
 echo "Script execution completed!"
