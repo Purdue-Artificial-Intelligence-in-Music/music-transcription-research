@@ -126,7 +126,7 @@ def parse_results_file(file_path: str) -> list:
 
     # Find all MIDI file sections using regex
     midi_sections = re.findall(
-        r"(MIDI-[^\n]+\.wav)\n"
+        r"([^\n]+\.wav)\n"
         r"Duration:\s*([\d.]+)\s*seconds\n"
         r"Reference MIDI Instruments:\s*([\d.]+)\n"
         r"Transcription MIDI Instruments:\s*([\d.]+)\n"
