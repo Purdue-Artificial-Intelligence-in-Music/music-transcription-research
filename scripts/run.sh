@@ -37,6 +37,13 @@ module load conda
 module load parallel
 module load gcc/11.2.0
 
+export CUDA_HOME=/usr/local/cuda
+export PATH=$CUDA_HOME/bin:$PATH
+export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
+echo $CUDA_HOME
+echo $PATH
+echo $LD_LIBRARY_PATH
+
 conda clean --packages --tarballs --yes
 
 export CONDA_PKGS_DIRS="/anvil/scratch/x-ochaturvedi/.conda/pkgs_$environment_name"
