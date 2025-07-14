@@ -81,8 +81,13 @@ def main():
         print(f"{key}: {value:.6f}")
 
     # Delete the intermediate .txt files
-    os.remove(reference_txt)
-    os.remove(transcription_txt)
+    try:
+        os.remove(reference_txt)
+        os.remove(transcription_txt)
+    except FileNotFoundError as e:
+        print(
+            f"ERROR. Reference_midi: {reference_midi}. Transcription_midi: {transcription_midi}."
+        )
 
 
 if __name__ == "__main__":
