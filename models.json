@@ -30,6 +30,13 @@
             "Piano"
         ],
         [
+            "Omnizart",
+            "https://github.com/ojas-chaturvedi/omnizart.git",
+            "ojas-chaturvedi",
+            "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",
+            "Piano"
+        ],
+        [
             "CREPE AMT",
             "https://github.com/tgondil/crepe-amt",
             "tgondil",
@@ -71,6 +78,5 @@
             "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",
             "Multiple"
         ]
-        
     ]
 }
