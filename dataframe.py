@@ -270,7 +270,7 @@ if __name__ == "__main__":
     print("=" * 60)
 
     folder_id = "11zBLIit-Cg7Tu5KHJXZBvaUauFr5Dtbc"
-    local_directory = "./results"
+    local_directory = "./data"
     count = download_details_files(folder_id, local_directory)
     print(f"Downloaded {count} files")
 

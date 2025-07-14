@@ -14,7 +14,7 @@ sns.set_palette("Set2")
 
 # Load the data
 print("Loading music results data...")
-df = pd.read_pickle("./results/dataframe.pkl")
+df = pd.read_pickle("./data/dataframe.pkl")
 print(f"Loaded {len(df)} records")
 print(f"Models: {df['model_name'].unique()}")
 print(f"Data shape: {df.shape}")
