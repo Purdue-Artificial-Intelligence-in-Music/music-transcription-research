@@ -86,18 +86,23 @@ mkdir -p "./$1/research_output_$dataset_name"
 cd "$1"
 shopt -s nullglob
 
-curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Started running model $1 for dataset $dataset_name\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
+curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Started running model $1 for dataset $dataset_name $chunk_basename\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
 
-touch "./details_$dataset_name.txt"
-{
-    echo "Model Name: $model_name"
-    echo "Dataset Name: $2"
-    echo ""
-    echo ""
-} >"./details_$dataset_name.txt"
+details_file="./details_${dataset_name}.txt"
+export details_file
+touch "$details_file"
+
+if [ ! -s "$details_file" ]; then
+    {
+        echo "Model Name: $model_name"
+        echo "Dataset Name: $2"
+        echo ""
+        echo ""
+    } >"$details_file"
+fi
 
 # Temporary file to store per-file runtimes
-temp_dir="./temp_$dataset_name"
+temp_dir="./temp_${dataset_name}_${chunk_basename}"
 rm -rf "$temp_dir"
 mkdir "$temp_dir"
 export temp_dir
@@ -112,7 +117,7 @@ process_file() {
     local base_name=$(basename "$original_file" .$audio_type)
 
     local reference_file=$(realpath "${original_file%.$audio_type}.mid")
-    local transcription_path=".$MODEL_DIR/research_output_$dataset_name/${base_name}.mid"
+    local transcription_path=".$MODEL_DIR/research_output_${dataset_name}/${base_name}.mid"
     local runtime_file="$temp_dir/${base_name}.runtime"
     local fmeasure_file="$temp_dir/${base_name}.fmeasure"
 
@@ -172,7 +177,7 @@ process_file() {
         printf 'Duration: %s seconds\n' "$duration"
         printf '%s\n' "$output"
         printf 'Runtime: %f seconds\n\n' "$runtime"
-    } >>"./details_$dataset_name.txt"
+    } >>"$details_file"
 
     # Extract F-measure and store it
     local fmeasure=$(echo "$output" | grep -m1 "F-measure:" | awk '{print $2}')
@@ -192,7 +197,7 @@ export -f process_file
 gpu_count=$(nvidia-smi -L | wc -l)
 
 # Run jobs in parallel using GNU Parallel
-find "$3" -type f -name "*.$audio_type" | parallel -j "$gpu_count" process_file
+cat "$chunk_file" | parallel -j "$gpu_count" process_file
 
 # Compute average F-measure
 total=0
@@ -209,10 +214,10 @@ done
 if [[ $count -gt 0 ]]; then
     avg_fmeasure=$(echo "scale=4; $total / $count" | bc)
     echo "Average F-measure per file: $avg_fmeasure"
-    printf 'Average F-measure per file: %s\n' "$avg_fmeasure" >>"./details_$dataset_name.txt"
+    printf 'Average F-measure per file: %s\n' "$avg_fmeasure" >>"$details_file"
 else
     echo "No valid F-measures collected."
-    echo "No valid F-measures collected." >>"./details_$dataset_name.txt"
+    echo "No valid F-measures collected." >>"$details_file"
 fi
 
 # Compute average runtime
@@ -233,10 +238,10 @@ if [[ $count -gt 0 ]]; then
     avg_runtime=$(echo "scale=4; $total / $count" | bc)
     echo "--------------------------------------------------"
     echo "Average runtime per file: $avg_runtime seconds"
-    printf 'Average runtime per file: %s seconds\n' "$avg_runtime" >>"./details_$dataset_name.txt"
+    printf 'Average runtime per file: %s seconds\n' "$avg_runtime" >>"$details_file"
 else
     echo "No valid runtimes collected or no files processed."
-    echo "No valid runtimes collected or no files processed." >>"./details_$dataset_name.txt"
+    echo "No valid runtimes collected or no files processed." >>"$details_file"
 fi
 
 # Clean up
@@ -247,7 +252,6 @@ conda deactivate
 conda clean --all --yes -q
 rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"
 
-curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished running model $1 for dataset $2. Average F-measure: $avg_fmeasure\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
 
 # UPLOAD.SH
 
@@ -271,6 +275,7 @@ python ./upload.py --main-folder="11zBLIit-Cg7Tu5KHJXZBvaUauFr5Dtbc" --model-nam
 
 conda deactivate
 conda clean --all --yes -q
+curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished running model $1 for dataset $2 $chunk_basename. Average F-measure: $avg_fmeasure\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
 
 rm -rf $CONDA_PKGS_DIRS
 
@@ -287,4 +292,4 @@ seconds=$(echo "$overall_runtime % 60" | bc | cut -d'.' -f1)
 overall_runtime_formatted=$(printf '%02d:%02d:%02d' "$hours" "$minutes" "$seconds")
 echo "Total runtime: $overall_runtime_formatted"
 
-curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished script for model $1 and dataset $2. Total runtime: $overall_runtime_formatted\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
+curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished script for model $1, dataset $2, and $chunk_basename. Total runtime: $overall_runtime_formatted\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null

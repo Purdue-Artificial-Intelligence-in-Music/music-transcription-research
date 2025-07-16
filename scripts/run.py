@@ -11,12 +11,12 @@ __license__ = "MIT"
 import json
 import subprocess
 import os
-from typing import Optional
+import math
 
+CHUNK_SIZE = 1000
 MODELS_FILE = "models.json"
 DATASETS_FILE = "datasets.json"
 RUN_SCRIPT = "run.sh"
-CLEANUP_SCRIPT = "cleanup.sh"
 
 
 def extract_slurm_id(output: str) -> str:
@@ -24,53 +24,21 @@ def extract_slurm_id(output: str) -> str:
     return next((word for word in output.split() if word.isdigit()), "")
 
 
-def submit_slurm_job(
-    script_name: str, model_dir: str = "", dependency: Optional[str] = None
-) -> str:
-    """Submit a SLURM job and return the job ID."""
-    sbatch_cmd = ["sbatch"]
-
-    job_name = model_dir if model_dir else script_name
-    output_file = (
-        f"{model_dir}/research_output/slurm_output.txt"
-        if model_dir
-        else f"slurm_output-{script_name}.out"
-    )
-
-    sbatch_cmd.extend(["-J", job_name, "-o", output_file])
-    if dependency:
-        sbatch_cmd.append(f"--dependency=afterany:{dependency}")
-
-    sbatch_cmd.extend([script_name])
-    if model_dir:
-        sbatch_cmd.append(model_dir)
-
-    print(f"\nSubmitting {script_name} for model: {model_dir or '[global]'}")
-    if dependency:
-        print(f"  Dependency: {dependency}")
-
+def submit_job(command):
+    """Run sbatch command and return job ID if successful."""
     try:
         result = subprocess.run(
-            sbatch_cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
-        slurm_output = result.stdout.decode("utf-8").strip()
-        print(f"  SLURM Output: {slurm_output}")
-
-        slurm_id = extract_slurm_id(slurm_output)
-        if slurm_id:
-            print(f"  SLURM Job ID: {slurm_id}")
-        else:
-            print("  Warning: Failed to extract job ID from SLURM output.")
-
-        return slurm_id
-
+        output = result.stdout.decode().strip()
+        return extract_slurm_id(output)
     except subprocess.CalledProcessError as e:
-        print(f"  Error submitting job: {e.stderr.decode('utf-8')}")
-        return dependency or ""  # Allow pipeline to continue
+        print(f"\tFailed to submit job: {e.stderr.decode().strip()}")
+        return None
 
 
 def main():
-    print("Starting SLURM Job Submission Process\n")
+    print("Starting SLURM Job Submission Process")
 
     if not os.path.exists(MODELS_FILE):
         print(f"Error: {MODELS_FILE} not found.")
@@ -101,75 +69,79 @@ def main():
         return
 
     print(f"Found {len(model_data)} models and {len(dataset_data)} datasets.")
-    print(f"Current working directory: {os.getcwd()}")
 
-    previous_job_id = None
     total_jobs_submitted = 0
+    job_dependencies: Dict[str, Dict[str, List[str]]] = {}
 
     for model_row in model_data:
         model_name, _, _, _, model_type = model_row
-        print(f"\nProcessing model: {model_name}")
+        print(f"Processing model: {model_name}")
+
+        job_dependencies[model_name] = {}
 
         for dataset_row in dataset_data:
             dataset_name, dataset_path, dataset_instrument, audio_type = dataset_row
-            print(f"  - Dataset: {dataset_name}")
+            print(f"\t- Dataset: {dataset_name}")
 
-            # Instrument compatibility check
             if model_type == "Piano" and dataset_instrument != "Piano":
-                print(
-                    f"\tSkipping: {model_name} is not compatible with dataset {dataset_name}"
-                )
-                print(
-                    f"\tModel type: {model_type}, Dataset instrument: {dataset_instrument}"
-                )
+                print(f"\t\t- Skipping: model and dataset instrument mismatch.")
                 continue
 
-            sbatch_cmd = [
-                "sbatch",
-                "-J",
-                f"{model_name}_{dataset_name}",
-                "-o",
-                f"{model_name}/research_output/{dataset_name}_slurm_output.txt",
-            ]
+            list_file_path = f"{dataset_path}.txt"
+            if not os.path.isfile(list_file_path):
+                print(f"\t\t- Missing file list: {list_file_path}, skipping.")
+                continue
 
-            # Add dependency on previous job if it exists
-            # if previous_job_id:
-            #     sbatch_cmd.append(f"--dependency=afterany:{previous_job_id}")
-            #     print(f"\tDependency on job: {previous_job_id}")
+            with open(list_file_path, "r") as f:
+                all_files = [line.strip() for line in f if line.strip()]
 
-            sbatch_cmd.extend(
-                [
+            total_files = len(all_files)
+            num_chunks = math.ceil(total_files / CHUNK_SIZE)
+            print(f"\t\t- Total files: {total_files}, Chunks: {num_chunks}")
+
+            chunk_dir = f"chunks/{dataset_name}"
+            os.makedirs(chunk_dir, exist_ok=True)
+            job_dependencies[model_name][dataset_name] = []
+
+            for i in range(num_chunks):
+                chunk_files = all_files[i * CHUNK_SIZE : (i + 1) * CHUNK_SIZE]
+                chunk_path = os.path.abspath(f"{chunk_dir}/chunk_{i:03d}.txt")
+
+                with open(chunk_path, "w") as chunk_file:
+                    chunk_file.write("\n".join(chunk_files) + "\n")
+
+                job_name = f"{model_name}_{dataset_name}_chunk{i:03d}"
+                output_file = f"{model_name}/research_output/{dataset_name}_chunk{i:03d}_slurm_output.txt"
+
+                sbatch_cmd = [
+                    "sbatch",
+                    "-J",
+                    job_name,
+                    "-o",
+                    output_file,
                     RUN_SCRIPT,
                     model_name,
                     dataset_name,
                     dataset_path,
                     audio_type,
+                    chunk_path,
                 ]
-            )
 
-            try:
-                result = subprocess.run(
-                    sbatch_cmd,
-                    check=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-                output = result.stdout.decode().strip()
-                job_id = extract_slurm_id(output)
-
+                job_id = submit_job(sbatch_cmd)
                 if job_id:
-                    print(f"\tSubmitted SLURM job ID: {job_id}")
-                    previous_job_id = job_id  # Use this job as dependency for next job
+                    job_dependencies[model_name][dataset_name].append(job_id)
                     total_jobs_submitted += 1
-                else:
                     print(
-                        f"\tWarning: Failed to extract job ID, continuing without dependency"
+                        f"\t\t- Submitted chunk {i + 1}/{num_chunks} as job ID: {job_id}"
                     )
+                else:
+                    print(f"\t\t- Failed to submit chunk {i + 1}/{num_chunks}")
 
-            except subprocess.CalledProcessError as e:
-                print(f"\tFailed to submit job: {e.stderr.decode().strip()}")
+    # Submit upload jobs with dependency per (model, dataset)
+    print("\nSubmitting upload jobs with dependency on completed chunks...")
 
-    print(f"\nSLURM Job Submission Process Completed!")
+
+    print("\nSLURM Job Submission Complete.")
     print(f"Total jobs submitted: {total_jobs_submitted}")
 
 
