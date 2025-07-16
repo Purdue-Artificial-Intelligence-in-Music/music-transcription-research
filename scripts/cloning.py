@@ -35,7 +35,12 @@ def clone_repo(model):
         print(f"Cloning: {github_link} to {repo_path}")
         Repo.clone_from(f"https://{username}:{pat}@{github_link}", repo_path)
 
-        subprocess.run(["git", "lfs", "install"], check=True)
+        subprocess.run(
+            ["git", "lfs", "install"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=True,
+        )
         subprocess.run(["git", "lfs", "pull"], cwd=repo_path, check=True)
 
         return (model, True, None)
