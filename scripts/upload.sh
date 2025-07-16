@@ -24,7 +24,7 @@ source /etc/profile.d/modules.sh
 module purge
 module load conda
 
-conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env
+conda activate /anvil/projects/x-cis240580/.conda/envs/upload-env
 
 # Attach details file if present
 DETAILS_FILE="$MODEL_DIR/details_${dataset_name}.txt"

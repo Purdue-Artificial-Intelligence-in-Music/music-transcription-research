@@ -24,19 +24,19 @@ module --force purge
 module load ffmpeg
 module load conda
 
-rm -rf /anvil/scratch/x-ochaturvedi/.conda/
+rm -rf /anvil/projects/x-cis240580/.conda/
 
 echo "--------------------------------------------------"
 echo "Creating shared conda environments for scoring and Google Drive upload"
 
-conda create -y -q --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env python=3.10 pip setuptools mir_eval pretty_midi numpy=1.23 pyyaml >/dev/null
-conda create -y -q --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env python=3.10 pip pydrive2 >/dev/null
+conda create -y -q --prefix /anvil/projects/x-cis240580/.conda/envs/scoring-env python=3.10 pip setuptools mir_eval pretty_midi numpy=1.23 pyyaml >/dev/null
+conda create -y -q --prefix /anvil/projects/x-cis240580/.conda/envs/upload-env python=3.10 pip pydrive2 >/dev/null
 
-if [ ! -d "/anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env" ]; then
+if [ ! -d "/anvil/projects/x-cis240580/.conda/envs/scoring-env" ]; then
     echo "Scoring environment failed to create. Skipping scoring."
     exit 1
 fi
-if [ ! -d "/anvil/scratch/x-ochaturvedi/.conda/envs/upload-env" ]; then
+if [ ! -d "/anvil/projects/x-cis240580/.conda/envs/upload-env" ]; then
     echo "Upload environment failed to create. Skipping upload."
     exit 1
 fi
@@ -97,7 +97,7 @@ if conda env list | grep -q "cloning-env"; then
 fi
 conda clean --all --yes -q
 
-rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/cloning-env
+rm -rf /anvil/projects/x-cis240580/.conda/envs/cloning-env
 
 echo "--------------------------------------------------"
 # (Optional) Enable for Gilbreth usage

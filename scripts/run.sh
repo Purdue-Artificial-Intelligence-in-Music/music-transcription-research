@@ -42,13 +42,15 @@ module load conda
 module load parallel
 module load gcc/11.2.0
 
+export PIP_NO_CACHE_DIR=true
+
 export CUDA_HOME=/usr/local/cuda
 export PATH=$CUDA_HOME/bin:$PATH
 export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
 
 conda clean --packages --tarballs --yes >/dev/null
 
-export CONDA_PKGS_DIRS="/anvil/scratch/x-ochaturvedi/.conda/pkgs_$environment_name"
+export CONDA_PKGS_DIRS="/anvil/projects/x-cis240580/.conda/pkgs_$environment_name"
 mkdir -p "$CONDA_PKGS_DIRS"
 
 # Check for internet access
@@ -60,8 +62,7 @@ fi
 
 echo "--------------------------------------------------"
 echo "Deleting existing conda environment"
-conda env remove -q -p /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name" -y >/dev/null
-rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"
+rm -rf /anvil/projects/x-cis240580/.conda/envs/running-env-"$environment_name"
 
 echo "--------------------------------------------------"
 echo "Creating conda environment"
@@ -73,8 +74,8 @@ if [ ! -f "./$1/environment.yml" ]; then
     echo "Error: environment.yml file not found for model $1"
     exit 1
 fi
-conda env create -q -f "./$1/environment.yml" --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"
-if [ ! -d "/anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"" ]; then
+conda env create -q -f "./$1/environment.yml" --prefix /anvil/projects/x-cis240580/.conda/envs/running-env-"$environment_name"
+if [ ! -d "/anvil/projects/x-cis240580/.conda/envs/running-env-"$environment_name"" ]; then
     echo "Environment failed to create. Skipping execution."
     exit 1
 fi
@@ -132,7 +133,7 @@ process_file() {
 
     local duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$file")
 
-    conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"
+    conda activate /anvil/projects/x-cis240580/.conda/envs/running-env-"$environment_name"
 
     local start_time=$(date +%s.%N)
 
@@ -168,7 +169,7 @@ process_file() {
         return
     fi
 
-    conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env
+    conda activate /anvil/projects/x-cis240580/.conda/envs/scoring-env
 
     local output=$(python3 ../scoring.py --reference "$reference_file" --transcription "$transcription_path")
 
@@ -250,7 +251,7 @@ cd ..
 
 conda deactivate
 conda clean --all --yes -q
-rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"
+rm -rf /anvil/projects/x-cis240580/.conda/envs/running-env-"$environment_name"
 
 curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished running model $1 for dataset $2 $chunk_basename. Average F-measure: $avg_fmeasure\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
 
