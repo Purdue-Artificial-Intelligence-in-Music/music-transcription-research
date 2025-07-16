@@ -90,3 +90,6 @@ find ./xmidi_dataset -type f -name "*.mid" | parallel -j 32 convert_midi {}
 
 # Clean up
 rm "$FS_DEFINITION" "$FS_CONTAINER"
+
+# Generate a sorted list of all input files
+find "$(realpath ./xmidi_dataset)" -type f -name "*.wav" | sort >xmidi_dataset.txt

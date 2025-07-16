@@ -6,6 +6,9 @@
 #SBATCH --cpus-per-task=32
 #SBATCH --time=1-00:00:00
 
+module load parallel
+module load ffmpeg
+
 OUTDIR="./slakh2100"
 
 # Download the dataset
@@ -44,3 +47,11 @@ export -f process_track
 
 # Find all Track directories and process them in parallel
 find train test validation -type d -name 'Track*' | parallel -j 32 process_track
+
+cd ../
+
+# Clean up
+rm slakh2100_flac_redux.tar.gz
+
+# Generate a sorted list of all input files
+find "$(realpath ./slakh2100)" -type f -name "*.wav" | sort >slakh2100.txt
