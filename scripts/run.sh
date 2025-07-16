@@ -2,8 +2,8 @@
 #SBATCH -p gpu
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --gres=gpu:2
-#SBATCH --cpus-per-task=32
+#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=8
 #SBATCH --time=2-00:00:00
 
 # RUN.SH
@@ -12,26 +12,31 @@ start_time=$(date +%s.%N)
 
 echo "--------------------------------------------------"
 echo "Grading model: $1"
-echo "Processing dataset: $2"
-echo "Searching in: $3"
-echo "Audio type: $4"
-echo ""
-echo "Running on: $(hostname)"
-echo ""
-
 model_name=${1// /_}
+
+echo "Processing dataset: $2"
 dataset_name=${2// /_}
 export dataset_name
 
+echo "Searching in: $3"
+
+echo "Audio type: $4"
 audio_type=${4// /_}
 export audio_type
 
-environment_name="${model_name}_${dataset_name}"
+echo "Chunk file: $5"
+chunk_file="$5"
+chunk_basename=$(basename "$chunk_file" .txt)
+export chunk_basename
+
+echo ""
+
+environment_hash=$(echo "${model_name}_${dataset_name}_${chunk_basename}" | md5sum | cut -d ' ' -f1)
+environment_name="env_${environment_hash}"
 export environment_name
-echo "Environment name: $environment_name"
 
 source /etc/profile.d/modules.sh
-module --force purge
+module --force purge >/dev/null
 module load ffmpeg
 module load conda
 module load parallel
@@ -40,11 +45,8 @@ module load gcc/11.2.0
 export CUDA_HOME=/usr/local/cuda
 export PATH=$CUDA_HOME/bin:$PATH
 export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
-echo $CUDA_HOME
-echo $PATH
-echo $LD_LIBRARY_PATH
 
-conda clean --packages --tarballs --yes
+conda clean --packages --tarballs --yes >/dev/null
 
 export CONDA_PKGS_DIRS="/anvil/scratch/x-ochaturvedi/.conda/pkgs_$environment_name"
 mkdir -p "$CONDA_PKGS_DIRS"
@@ -58,7 +60,7 @@ fi
 
 echo "--------------------------------------------------"
 echo "Deleting existing conda environment"
-conda env remove -q -p /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name" -y
+conda env remove -q -p /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name" -y >/dev/null
 rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"
 
 echo "--------------------------------------------------"

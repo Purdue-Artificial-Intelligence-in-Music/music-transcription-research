@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=4
 #SBATCH --time=01:30:00
 #SBATCH -J main
 #SBATCH -o 0_main_output.out
@@ -29,14 +29,8 @@ rm -rf /anvil/scratch/x-ochaturvedi/.conda/
 echo "--------------------------------------------------"
 echo "Creating shared conda environments for scoring and Google Drive upload"
 
-conda env remove -q -p /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env -y
-conda env remove -p /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env -y
-
-rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env
-rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env
-
-conda create -y -q --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env python=3.10 pip setuptools mir_eval pretty_midi numpy=1.23 pyyaml
-conda create -y -q --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env python=3.10 pip pydrive2
+conda create -y -q --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env python=3.10 pip setuptools mir_eval pretty_midi numpy=1.23 pyyaml >/dev/null
+conda create -y -q --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env python=3.10 pip pydrive2 >/dev/null
 
 if [ ! -d "/anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env" ]; then
     echo "Scoring environment failed to create. Skipping scoring."
@@ -56,12 +50,11 @@ if [ -d "$CONDA_ENV_PATH" ] && [ ! -f "$CONDA_ENV_PATH/bin/activate" ]; then
     rm -rf "$CONDA_ENV_PATH"
 fi
 
-conda create -y -q --name cloning-env python=3.13 pip -y
-source activate cloning-env
-conda install -y -q pip
-pip install -q requests gitpython
-conda install -c conda-forge -y -q git-lfs
-git lfs install
+conda create -y -q --name cloning-env python=3.13 pip >/dev/null
+conda activate cloning-env
+pip install -q requests gitpython >/dev/null
+conda install -c conda-forge -y -q git-lfs >/dev/null
+git lfs install >/dev/null
 
 python cloning.py
 
@@ -100,16 +93,13 @@ done
 
 conda deactivate
 if conda env list | grep -q "cloning-env"; then
-    echo "Removing conda environment 'cloning-env'"
-    conda env remove -y -q --name cloning-env
+    conda env remove -y -q --name cloning-env >/dev/null
 fi
 conda clean --all --yes -q
 
 rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/cloning-env
 
 echo "--------------------------------------------------"
-echo "Creating Slurm jobs for each model"
-
 # (Optional) Enable for Gilbreth usage
 
 # MAX_ALLOWED=$((50000 - count + 1))
@@ -149,4 +139,4 @@ seconds=$(echo "$overall_runtime % 60" | bc | cut -d'.' -f1)
 overall_runtime_formatted=$(printf '%02d:%02d:%02d' "$hours" "$minutes" "$seconds")
 echo "Total runtime: $overall_runtime_formatted"
 
-curl -s -X POST -H "Content-Type: application/json" -d '{"content": "Main script for paper has been executed!", "avatar_url": "https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png"}' https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
+curl -s -X POST -H "Content-Type: application/json" -d '{"content": "Main script for paper has been executed! Total runtime: '"$overall_runtime_formatted"'", "avatar_url": "https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png"}' https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
