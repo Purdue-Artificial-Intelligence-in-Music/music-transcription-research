@@ -16,4 +16,4 @@ done
 rm maestro-v3.0.0.zip
 
 # Generate a sorted list of all input files
-find "$(realpath ./maestro-v3.0.0)" -type f -name "*.wav" | sort >maestro_v3.0.0.txt
+find "$(realpath ./maestro-v3.0.0)" -type f -name "*.wav" | sort >maestro-v3.0.0.txt
