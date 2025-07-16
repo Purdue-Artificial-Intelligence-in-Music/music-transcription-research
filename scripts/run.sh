@@ -252,29 +252,6 @@ conda deactivate
 conda clean --all --yes -q
 rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$environment_name"
 
-
-# UPLOAD.SH
-
-echo "--------------------------------------------------"
-echo "Uploading the output files"
-
-conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env
-
-OUTPUT_DIR="$1/research_output_$dataset_name"
-OUTPUT_DIR=$(realpath "$OUTPUT_DIR")
-export OUTPUT_DIR
-if [ ! -d "$OUTPUT_DIR" ]; then
-    echo "Error: Output directory $OUTPUT_DIR does not exist!"
-    exit 1
-fi
-
-mv "$1/details_$dataset_name.txt" "$OUTPUT_DIR"/details_$dataset_name.txt
-mv "$1/research_output/${2}_slurm_output.txt" "$OUTPUT_DIR"/
-
-python ./upload.py --main-folder="11zBLIit-Cg7Tu5KHJXZBvaUauFr5Dtbc" --model-name="$MODEL_DIR" --dataset-name="$2" --local-directory="$OUTPUT_DIR"
-
-conda deactivate
-conda clean --all --yes -q
 curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished running model $1 for dataset $2 $chunk_basename. Average F-measure: $avg_fmeasure\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
 
 rm -rf $CONDA_PKGS_DIRS

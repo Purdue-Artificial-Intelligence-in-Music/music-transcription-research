@@ -17,6 +17,7 @@ CHUNK_SIZE = 1000
 MODELS_FILE = "models.json"
 DATASETS_FILE = "datasets.json"
 RUN_SCRIPT = "run.sh"
+UPLOAD_SCRIPT = "upload.sh"
 
 
 def extract_slurm_id(output: str) -> str:
@@ -140,6 +141,35 @@ def main():
     # Submit upload jobs with dependency per (model, dataset)
     print("\nSubmitting upload jobs with dependency on completed chunks...")
 
+    for model_name, dataset_map in job_dependencies.items():
+        for dataset_name, ids in dataset_map.items():
+            if not ids:
+                print(
+                    f"\t- Skipping upload for {model_name}/{dataset_name} (no jobs submitted)."
+                )
+                continue
+
+            dependency_str = ":".join(ids)
+            upload_job_name = f"Upload-{model_name}-{dataset_name}"
+            upload_cmd = [
+                "sbatch",
+                "-J",
+                upload_job_name,
+                "--dependency=afterok:" + dependency_str,
+                UPLOAD_SCRIPT,
+                model_name,
+                dataset_name,
+            ]
+
+            upload_job_id = submit_job(upload_cmd)
+            if upload_job_id:
+                print(
+                    f"\t- Upload job submitted for {model_name}/{dataset_name} (Job ID: {upload_job_id})"
+                )
+            else:
+                print(
+                    f"\t- Failed to submit upload job for {model_name}/{dataset_name}"
+                )
 
     print("\nSLURM Job Submission Complete.")
     print(f"Total jobs submitted: {total_jobs_submitted}")
