@@ -174,6 +174,9 @@ def main():
     print("\nSLURM Job Submission Complete.")
     print(f"Total jobs submitted: {total_jobs_submitted}")
 
+    with open("jobs_submitted.txt", "w") as f:
+        f.write(str(total_jobs_submitted))
+
 
 if __name__ == "__main__":
     main()

@@ -126,6 +126,12 @@ echo "--------------------------------------------------"
 
 python run.py
 
+job_count="UNKNOWN"
+if [ -f "jobs_submitted.txt" ]; then
+    job_count=$(cat jobs_submitted.txt)
+fi
+rm -f jobs_submitted.txt
+
 echo "--------------------------------------------------"
 echo "Script execution completed!"
 
@@ -139,4 +145,4 @@ seconds=$(echo "$overall_runtime % 60" | bc | cut -d'.' -f1)
 overall_runtime_formatted=$(printf '%02d:%02d:%02d' "$hours" "$minutes" "$seconds")
 echo "Total runtime: $overall_runtime_formatted"
 
-curl -s -X POST -H "Content-Type: application/json" -d '{"content": "Main script for paper has been executed! Total runtime: '"$overall_runtime_formatted"'", "avatar_url": "https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png"}' https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
+curl -s -X POST -H "Content-Type: application/json" -d '{"content": "Main script for paper has been executed!\nTotal runtime: '"$overall_runtime_formatted"'\nJobs submitted: '"$job_count"'", "avatar_url": "https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png"}' https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
