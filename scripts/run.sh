@@ -87,7 +87,12 @@ mkdir -p "./$1/research_output_$dataset_name"
 cd "$1"
 shopt -s nullglob
 
-curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Started running model $1 for dataset $dataset_name $chunk_basename\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
+curl -s -X POST -H "Content-Type: application/json" -d "{
+  \"content\": \"**Job Started**\n**Model:** \`$1\`\n**Dataset:** \`$dataset_name\`\n**Chunk:** \`$chunk_basename\`\",
+  \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"
+}" \
+    -H "Content-Type: application/json" \
+    "https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux" >/dev/null
 
 details_file="./details_${dataset_name}.txt"
 export details_file
@@ -253,7 +258,12 @@ conda deactivate
 conda clean --all --yes -q
 rm -rf /anvil/projects/x-cis240580/.conda/envs/running-env-"$environment_name"
 
-curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished running model $1 for dataset $2 $chunk_basename. Average F-measure: $avg_fmeasure\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
+curl -s -X POST -H "Content-Type: application/json" -d "{
+  \"content\": \"**Model Evaluation Complete**\n**Model:** \`$1\`\n**Dataset:** \`$2\`\n**Chunk:** \`$chunk_basename\`\n**Average F-measure:** \`$avg_fmeasure\`\",
+    \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"
+}" \
+    -H "Content-Type: application/json" \
+    "https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux" >/dev/null
 
 rm -rf $CONDA_PKGS_DIRS
 
@@ -270,4 +280,9 @@ seconds=$(echo "$overall_runtime % 60" | bc | cut -d'.' -f1)
 overall_runtime_formatted=$(printf '%02d:%02d:%02d' "$hours" "$minutes" "$seconds")
 echo "Total runtime: $overall_runtime_formatted"
 
-curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished script for model $1, dataset $2, and $chunk_basename. Total runtime: $overall_runtime_formatted\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
+curl -s -X POST -H "Content-Type: application/json" -d "{
+  \"content\": \"**Job Completed**\n**Model:** \`$1\`\n**Dataset:** \`$2\`\n**Chunk:** \`$chunk_basename\`\n**Total Runtime:** \`$overall_runtime_formatted\`\",
+    \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"
+}" \
+    -H "Content-Type: application/json" \
+    "https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux" >/dev/null
