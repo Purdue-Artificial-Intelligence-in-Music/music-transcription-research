@@ -3,6 +3,7 @@
         ["Dataset Name", "Server Location", "Instrument", "Audio Type"],
         ["Maestro", "/anvil/scratch/x-ochaturvedi/datasets/maestro-v3.0.0", "Piano", "wav"],
         ["Slakh 2100", "/anvil/scratch/x-ochaturvedi/datasets/slakh2100", "Multiple", "wav"],
-        ["XMIDI", "/anvil/scratch/x-ochaturvedi/datasets/xmidi_dataset", "Multiple", "wav"]
+        ["XMIDI", "/anvil/scratch/x-ochaturvedi/datasets/xmidi_dataset", "Multiple", "wav"],
+        ["MSMD", "/anvil/scratch/x-ochaturvedi/datasets/msmd_data", "Piano", "wav"]
     ]
 }
