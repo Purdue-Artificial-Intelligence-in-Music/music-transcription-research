@@ -78,10 +78,8 @@ for line in "${lines[@]}"; do
             continue
         }
 
-        # Perform git lfs pull
         git lfs pull
 
-        # Return to the parent directory
         cd .. || {
             echo "Failed to return to parent directory"
             continue
@@ -98,6 +96,48 @@ fi
 conda clean --all --yes -q
 
 rm -rf /anvil/projects/x-cis240580/.conda/envs/cloning-env
+
+echo "--------------------------------------------------"
+echo "Making model conda environments"
+
+for line in "${lines[@]}"; do
+    MODEL_NAME_RAW=$(echo "$line" | jq -r '.[0]')
+    MODEL_NAME=${MODEL_NAME_RAW// /_}
+    ENV_NAME="running-env-${MODEL_NAME}"
+    ENV_PATH="/anvil/projects/x-cis240580/.conda/envs/$ENV_NAME"
+    PKGS_PATH="/anvil/projects/x-cis240580/.conda/pkgs_${ENV_NAME}"
+    MODEL_DIR="$MODEL_NAME_RAW"
+
+    # Set custom package directory
+    export CONDA_PKGS_DIRS="$PKGS_PATH"
+    mkdir -p "$CONDA_PKGS_DIRS"
+
+    # Remove old environment if it exists
+    if [ -d "$ENV_PATH" ]; then
+        conda env remove -y --prefix "$ENV_PATH" >/dev/null
+        rm -rf "$ENV_PATH"
+    fi
+
+    # Check if environment.yml exists
+    if [ ! -f "./$MODEL_DIR/environment.yml" ]; then
+        echo "Missing environment.yml for $MODEL_DIR, skipping..."
+        continue
+    fi
+
+    # Create fresh environment
+    conda env create -q -f "./$MODEL_DIR/environment.yml" --prefix "$ENV_PATH" >/dev/null
+
+    # Check if creation succeeded
+    if [ ! -d "$ENV_PATH" ]; then
+        echo "Failed to create environment for $MODEL_NAME_RAW"
+    fi
+
+    # Clean up package cache to save space
+    conda clean --packages --tarballs --yes >/dev/null
+    rm -rf "$PKGS_PATH"
+done
+
+conda info --envs
 
 echo "--------------------------------------------------"
 # (Optional) Enable for Gilbreth usage

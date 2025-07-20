@@ -29,12 +29,6 @@ chunk_file="$5"
 chunk_basename=$(basename "$chunk_file" .txt)
 export chunk_basename
 
-echo ""
-
-environment_hash=$(echo "${model_name}_${dataset_name}_${chunk_basename}" | md5sum | cut -d ' ' -f1)
-environment_name="env_${environment_hash}"
-export environment_name
-
 source /etc/profile.d/modules.sh
 module --force purge >/dev/null
 module load ffmpeg
@@ -48,35 +42,10 @@ export CUDA_HOME=/usr/local/cuda
 export PATH=$CUDA_HOME/bin:$PATH
 export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
 
-conda clean --packages --tarballs --yes >/dev/null
-
-export CONDA_PKGS_DIRS="/anvil/projects/x-cis240580/.conda/pkgs_$environment_name"
-mkdir -p "$CONDA_PKGS_DIRS"
-
 # Check for internet access
 if ! curl -s --head https://repo.anaconda.com | grep -q "^HTTP.* 200"; then
     echo "No internet access. Cannot create Conda environment. Exiting."
     curl -s -X POST -H "Content-Type: application/json" -d '{"content": "URGENT: NO INTERNET ACCESS FOR CONDA CREATION", "avatar_url": "https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png"}' https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux
-    exit 1
-fi
-
-echo "--------------------------------------------------"
-echo "Deleting existing conda environment"
-rm -rf /anvil/projects/x-cis240580/.conda/envs/running-env-"$environment_name"
-
-echo "--------------------------------------------------"
-echo "Creating conda environment"
-cd /anvil/scratch/x-ochaturvedi/research || {
-    echo "Failed to change directory to /anvil/scratch/x-ochaturvedi/research"
-    exit 1
-}
-if [ ! -f "./$1/environment.yml" ]; then
-    echo "Error: environment.yml file not found for model $1"
-    exit 1
-fi
-conda env create -q -f "./$1/environment.yml" --prefix /anvil/projects/x-cis240580/.conda/envs/running-env-"$environment_name"
-if [ ! -d "/anvil/projects/x-cis240580/.conda/envs/running-env-"$environment_name"" ]; then
-    echo "Environment failed to create. Skipping execution."
     exit 1
 fi
 
@@ -138,7 +107,7 @@ process_file() {
 
     local duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$file")
 
-    conda activate /anvil/projects/x-cis240580/.conda/envs/running-env-"$environment_name"
+    conda activate /anvil/projects/x-cis240580/.conda/envs/running-env-"$model_name"
 
     local start_time=$(date +%s.%N)
 
@@ -254,18 +223,12 @@ fi
 rm -rf "$temp_dir"
 cd ..
 
-conda deactivate
-conda clean --all --yes -q
-rm -rf /anvil/projects/x-cis240580/.conda/envs/running-env-"$environment_name"
-
 curl -s -X POST -H "Content-Type: application/json" -d "{
   \"content\": \"**Model Evaluation Complete**\n**Model:** \`$1\`\n**Dataset:** \`$2\`\n**Chunk:** \`$chunk_basename\`\n**Average F-measure:** \`$avg_fmeasure\`\",
     \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"
 }" \
     -H "Content-Type: application/json" \
     "https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux" >/dev/null
-
-rm -rf $CONDA_PKGS_DIRS
 
 echo "--------------------------------------------------"
 echo "Script execution completed!"
