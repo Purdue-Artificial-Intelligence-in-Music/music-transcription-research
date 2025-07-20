@@ -12,6 +12,7 @@ import json
 import subprocess
 import os
 import math
+from typing import Dict, List
 
 CHUNK_SIZE = 1000
 MODELS_FILE = "models.json"
