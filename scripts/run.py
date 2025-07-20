@@ -166,6 +166,7 @@ def main():
                 print(
                     f"\t- Upload job submitted for {model_name}/{dataset_name} (Job ID: {upload_job_id})"
                 )
+                total_jobs_submitted += 1
             else:
                 print(
                     f"\t- Failed to submit upload job for {model_name}/{dataset_name}"
