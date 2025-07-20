@@ -13,7 +13,7 @@ start_time=$(date +%s.%N)
 echo "--------------------------------------------------"
 echo "Running main.sh"
 
-if ! ping -c 1 repo.anaconda.com &>/dev/null; then
+if ! curl -s --head https://repo.anaconda.com | grep -q "^HTTP.* 200"; then
     echo "No internet access. Cannot create Conda environment. Exiting."
     curl -s -X POST -H "Content-Type: application/json" -d '{"content": "URGENT: NO INTERNET ACCESS FOR CONDA CREATION", "avatar_url": "https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png"}' https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux
     exit 1
