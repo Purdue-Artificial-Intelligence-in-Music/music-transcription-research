@@ -13,6 +13,7 @@ start_time=$(date +%s.%N)
 echo "--------------------------------------------------"
 echo "Grading model: $1"
 model_name=${1// /_}
+export model_name
 
 echo "Processing dataset: $2"
 dataset_name=${2// /_}
