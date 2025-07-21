@@ -52,6 +52,18 @@ else
     echo "Warning: No details_${dataset_name}.txt file found"
 fi
 
+# Move relevant SLURM output files into the output directory
+echo "Looking for SLURM output files for dataset: $dataset_name"
+shopt -s nullglob
+slurm_files=("$MODEL_DIR/research_output/${dataset_name}_chunk"*"_slurm_output.txt")
+
+if (( ${#slurm_files[@]} > 0 )); then
+    echo "Found ${#slurm_files[@]} SLURM output file(s). Moving to output directory."
+    mv "${slurm_files[@]}" "$OUTPUT_DIR/"
+else
+    echo "No SLURM output files found for dataset: $dataset_name"
+fi
+
 # Check if output dir exists
 if [[ ! -d "$OUTPUT_DIR" ]]; then
     echo "Error: Output directory $OUTPUT_DIR does not exist!"
@@ -59,7 +71,7 @@ if [[ ! -d "$OUTPUT_DIR" ]]; then
 fi
 
 # Perform upload
-echo "→ Uploading $OUTPUT_DIR to Google Drive"
+echo "--> Uploading $OUTPUT_DIR to Google Drive"
 python "$RESEARCH_DIR/upload.py" \
     --main-folder="$MAIN_FOLDER_ID" \
     --model-name="$model_name" \
@@ -71,4 +83,7 @@ conda clean --all --yes -q
 
 echo "Upload complete for $model_name / $dataset_name"
 
-curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"Finished uploading results for $model_name / $dataset_name\", \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
+curl -s -X POST -H "Content-Type: application/json" -d "{
+\"content\": \"Finished uploading results for **$model_name / $dataset_name**\\n.wav files: $num_wavs\\nAvg F-measure: $avg_fmeasure\",
+\"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"
+}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
