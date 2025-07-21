@@ -20,7 +20,6 @@ if ! curl -s --head https://repo.anaconda.com | grep -q "^HTTP.* 200"; then
 fi
 
 source /etc/profile.d/modules.sh
-module --force purge
 module load ffmpeg
 module load conda
 

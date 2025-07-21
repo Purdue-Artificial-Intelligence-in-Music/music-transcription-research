@@ -31,7 +31,6 @@ chunk_basename=$(basename "$chunk_file" .txt)
 export chunk_basename
 
 source /etc/profile.d/modules.sh
-module --force purge >/dev/null
 module load ffmpeg
 module load conda
 module load parallel

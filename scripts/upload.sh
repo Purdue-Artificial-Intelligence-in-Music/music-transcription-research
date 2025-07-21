@@ -21,7 +21,6 @@ MODEL_DIR="$RESEARCH_DIR/$model_name"
 OUTPUT_DIR="$MODEL_DIR/research_output_${dataset_name}"
 
 source /etc/profile.d/modules.sh
-module purge
 module load conda
 
 conda activate /anvil/projects/x-cis240580/.conda/envs/upload-env
