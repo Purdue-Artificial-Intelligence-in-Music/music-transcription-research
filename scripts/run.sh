@@ -190,10 +190,8 @@ done
 if [[ $count -gt 0 ]]; then
     avg_fmeasure=$(echo "scale=4; $total / $count" | bc)
     echo "Average F-measure per file: $avg_fmeasure"
-    printf 'Average F-measure per file: %s\n' "$avg_fmeasure" >>"$details_file"
 else
     echo "No valid F-measures collected."
-    echo "No valid F-measures collected." >>"$details_file"
 fi
 
 # Compute average runtime
@@ -214,10 +212,8 @@ if [[ $count -gt 0 ]]; then
     avg_runtime=$(echo "scale=4; $total / $count" | bc)
     echo "--------------------------------------------------"
     echo "Average runtime per file: $avg_runtime seconds"
-    printf 'Average runtime per file: %s seconds\n' "$avg_runtime" >>"$details_file"
 else
     echo "No valid runtimes collected or no files processed."
-    echo "No valid runtimes collected or no files processed." >>"$details_file"
 fi
 
 # Clean up

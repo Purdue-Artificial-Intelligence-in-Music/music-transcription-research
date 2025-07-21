@@ -26,8 +26,25 @@ module load conda
 
 conda activate /anvil/projects/x-cis240580/.conda/envs/upload-env
 
-# Attach details file if present
 DETAILS_FILE="$MODEL_DIR/details_${dataset_name}.txt"
+
+# Analyze and append stats to details file
+if [[ -f "$DETAILS_FILE" ]]; then
+    num_wavs=$(grep -c '\.wav$' "$DETAILS_FILE")
+
+    avg_fmeasure=$(awk '/^F-measure:/ {sum += $2; count++} END {if (count > 0) print sum / count; else print "0.0"}' "$DETAILS_FILE")
+
+    avg_runtime=$(awk '/^Runtime:/ {sum += $2; count++} END {if (count > 0) print sum / count; else print "0.0"}' "$DETAILS_FILE")
+
+    {
+        echo ""
+        echo "Number of files processed: $num_wavs"
+        echo "Average F-measure: $avg_fmeasure"
+        echo "Average Runtime (seconds): $avg_runtime"
+    } >> "$DETAILS_FILE"
+fi
+
+# Attach details file if present
 if [[ -f "$DETAILS_FILE" ]]; then
     echo "Copying details file into output directory"
     cp "$DETAILS_FILE" "$OUTPUT_DIR/"
