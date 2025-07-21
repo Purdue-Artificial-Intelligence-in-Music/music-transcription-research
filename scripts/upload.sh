@@ -8,6 +8,8 @@
 
 # UPLOAD.SH
 
+start_time=$(date +%s.%N)
+
 echo "--------------------------------------------------"
 echo "Uploading results for model: $1"
 model_name="$1"
@@ -80,9 +82,20 @@ python "$RESEARCH_DIR/upload.py" \
 conda deactivate
 conda clean --all --yes -q
 
+echo "--------------------------------------------------"
 echo "Upload complete for $model_name / $dataset_name"
 
+end_time=$(date +%s.%N)
+overall_runtime=$(echo "scale=2; $end_time - $start_time" | bc)
+
+hours=$(echo "$overall_runtime / 3600" | bc)
+minutes=$(echo "($overall_runtime % 3600) / 60" | bc)
+seconds=$(echo "$overall_runtime % 60" | bc | cut -d'.' -f1)
+
+overall_runtime_formatted=$(printf '%02d:%02d:%02d' "$hours" "$minutes" "$seconds")
+echo "Total runtime: $overall_runtime_formatted"
+
 curl -s -X POST -H "Content-Type: application/json" -d "{
-\"content\": \"Finished uploading results for **$model_name / $dataset_name**\\n.wav files: $num_wavs\\nAvg F-measure: $avg_fmeasure\",
+\"content\": \"Finished uploading results for **$model_name / $dataset_name**\\n.wav files: $num_wavs\\nAvg F-measure: $avg_fmeasure\\nTotal runtime: $overall_runtime_formatted\",
 \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"
 }" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
