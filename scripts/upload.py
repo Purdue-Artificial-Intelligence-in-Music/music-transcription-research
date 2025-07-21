@@ -12,6 +12,7 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 import os
 import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 def authenticate_service_account():
@@ -46,7 +47,7 @@ def delete_existing_folder(drive, folder_name, parent_folder_id):
 
 
 def create_folder(drive, model_name, dataset_name, parent_folder_id=None):
-    """Create a folder in Google Drive (or return existing folder details) and return its ID and link."""
+    """Create a folder in Google Drive and return its ID and link."""
     if dataset_name:
         folder_name = f"{model_name} - {dataset_name}"
     else:
@@ -83,25 +84,43 @@ def create_folder(drive, model_name, dataset_name, parent_folder_id=None):
     return folder_id, folder_link
 
 
+def upload_single_file(drive, file_path, filename, target_folder_id):
+    """Upload a single file to a specific folder."""
+    try:
+        file = drive.CreateFile(
+            {
+                "title": filename,
+                "parents": [{"id": target_folder_id}],
+            }
+        )
+        file.SetContentFile(file_path)
+        file.Upload()
+        print(f"Uploaded {filename} to folder ID: {target_folder_id}")
+    except Exception as e:
+        print(f"Failed to upload {filename}: {e}")
+
+
 def upload_files_to_folder(drive, local_directory, folder_id, output_folder_id=None):
-    """Upload all files from a local directory to the specified Google Drive folder.
-    MP3 files will be uploaded to a separate MP3 Input folder if provided.
-    """
+    """Upload all files from a local directory using parallel threads."""
+    files_to_upload = []
+
     for filename in os.listdir(local_directory):
         file_path = os.path.join(local_directory, filename)
         if os.path.isfile(file_path):
             file_ext = os.path.splitext(filename)[1].lower()
-            if file_ext == ".mid" or file_ext == ".midi" or file_ext == ".pdf":
+            if file_ext in [".mid", ".midi", ".pdf"]:
                 target_folder_id = output_folder_id
             else:
                 target_folder_id = folder_id
+            files_to_upload.append((file_path, filename, target_folder_id))
 
-            file = drive.CreateFile(
-                {"title": filename, "parents": [{"id": target_folder_id}]}
-            )
-            file.SetContentFile(file_path)
-            file.Upload()
-            print(f"Uploaded {filename} to folder ID: {target_folder_id}")
+    with ThreadPoolExecutor(max_workers=16) as executor:
+        futures = [
+            executor.submit(upload_single_file, drive, fp, fn, folder_id)
+            for fp, fn, folder_id in files_to_upload
+        ]
+        for _ in as_completed(futures):
+            pass  # Already handled in upload_single_file with print
 
 
 def main():
@@ -114,16 +133,8 @@ def main():
         required=True,
         help="ID of the main parent folder in Google Drive",
     )
-    parser.add_argument(
-        "--model-name",
-        required=True,
-        help="Name of the model",
-    )
-    parser.add_argument(
-        "--dataset-name",
-        required=True,
-        help="Name of the dataset",
-    )
+    parser.add_argument("--model-name", required=True, help="Name of the model")
+    parser.add_argument("--dataset-name", required=True, help="Name of the dataset")
     parser.add_argument(
         "--local-directory",
         required=True,
