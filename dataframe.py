@@ -114,13 +114,13 @@ def parse_results_file(file_path: str) -> list:
     dataset_name = dataset_match.group(1).strip() if dataset_match else "Unknown"
 
     # Extract average f-measure and runtime (optional - file-level statistic)
-    avg_f_measure_match = re.search(r"Average F-measure per file:\s*([\d.]+)", content)
+    avg_f_measure_match = re.search(r"Average F-measure:\s*([\d.]+)", content)
     file_avg_f_measure = (
         float(avg_f_measure_match.group(1)) if avg_f_measure_match else None
     )
 
     avg_runtime_match = re.search(
-        r"Average runtime per file:\s*([\d.]+)\s*seconds", content
+        r"Average Runtime (seconds):\s*([\d.]+)\s*seconds", content
     )
     file_avg_runtime = float(avg_runtime_match.group(1)) if avg_runtime_match else None
 
