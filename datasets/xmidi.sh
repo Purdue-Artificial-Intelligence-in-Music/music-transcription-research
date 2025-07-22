@@ -10,13 +10,13 @@ module load conda
 module load ffmpeg
 module load parallel
 
-# Ensure gdown and parallel are installed
+# Ensure gdown is installed
 if ! command -v gdown &>/dev/null; then
     pip install gdown
 fi
 
 # Download and unzip the XMIDI dataset from Google Drive
-gdown --id 1qDkSH31x7jN8X-2RyzB9wuxGji4QxYyA --output xmidi_dataset.zip
+gdown 1qDkSH31x7jN8X-2RyzB9wuxGji4QxYyA --output xmidi_dataset.zip
 unzip xmidi_dataset.zip -d xmidi_dataset
 
 # Rename all .midi files to .mid
