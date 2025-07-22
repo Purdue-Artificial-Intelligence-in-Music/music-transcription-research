@@ -88,6 +88,9 @@ def main():
         print(f"Processing model: {model_name}")
 
         job_dependencies[model_name] = {}
+        training_datasets = set(
+            training_datasets if isinstance(training_datasets, list) else []
+        )
         completed_datasets = set(
             completed_datasets if isinstance(completed_datasets, list) else []
         )
@@ -95,6 +98,10 @@ def main():
         for dataset_row in dataset_data:
             dataset_name, dataset_path, dataset_instrument, audio_type = dataset_row
             print(f"\t- Dataset: {dataset_name}")
+
+            if dataset_name in training_datasets:
+                print(f"\t\t- Skipping: {dataset_name} used for training {model_name}.")
+                continue
 
             if dataset_name in completed_datasets:
                 print(
@@ -162,11 +169,18 @@ def main():
     model_lookup = {model_row[0]: model_row for model_row in model_data}
     for model_name, dataset_map in job_dependencies.items():
         model_row = model_lookup.get(model_name)
+        training_datasets = set(model_row[4] if isinstance(model_row[4], list) else [])
         completed_datasets = set(model_row[6] if isinstance(model_row[6], list) else [])
         for dataset_name, ids in dataset_map.items():
             if not ids:
                 print(
                     f"\t- Skipping upload for {model_name}/{dataset_name} (no jobs submitted)."
+                )
+                continue
+
+            if dataset_name in training_datasets:
+                print(
+                    f"\t- Skipping upload for {model_name}/{dataset_name} (used for training)."
                 )
                 continue
             if dataset_name in completed_datasets:
