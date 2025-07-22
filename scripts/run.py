@@ -76,14 +76,31 @@ def main():
     job_dependencies: Dict[str, Dict[str, List[str]]] = {}
 
     for model_row in model_data:
-        model_name, _, _, _, model_type = model_row
+        (
+            model_name,
+            _,
+            _,
+            _,
+            model_type,
+            training_datasets,
+            completed_datasets,
+        ) = model_row
         print(f"Processing model: {model_name}")
 
         job_dependencies[model_name] = {}
+        completed_datasets = set(
+            completed_datasets if isinstance(completed_datasets, list) else []
+        )
 
         for dataset_row in dataset_data:
             dataset_name, dataset_path, dataset_instrument, audio_type = dataset_row
             print(f"\t- Dataset: {dataset_name}")
+
+            if dataset_name in completed_datasets:
+                print(
+                    f"\t\t- Skipping: {dataset_name} already completed for {model_name}."
+                )
+                continue
 
             if model_type == "Piano" and dataset_instrument != "Piano":
                 print(f"\t\t- Skipping: model and dataset instrument mismatch.")
@@ -142,11 +159,19 @@ def main():
     # Submit upload jobs with dependency per (model, dataset)
     print("\nSubmitting upload jobs with dependency on completed chunks...")
 
+    model_lookup = {model_row[0]: model_row for model_row in model_data}
     for model_name, dataset_map in job_dependencies.items():
+        model_row = model_lookup.get(model_name)
+        completed_datasets = set(model_row[6] if isinstance(model_row[6], list) else [])
         for dataset_name, ids in dataset_map.items():
             if not ids:
                 print(
                     f"\t- Skipping upload for {model_name}/{dataset_name} (no jobs submitted)."
+                )
+                continue
+            if dataset_name in completed_datasets:
+                print(
+                    f"\t- Skipping upload for {model_name}/{dataset_name} (already completed)."
                 )
                 continue
 
