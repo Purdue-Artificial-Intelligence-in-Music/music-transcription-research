@@ -78,10 +78,7 @@ def main():
     for model_row in model_data:
         (
             model_name,
-            _,
-            _,
-            _,
-            model_type,
+            instrument_type,
             training_datasets,
             completed_datasets,
         ) = model_row
@@ -109,7 +106,7 @@ def main():
                 )
                 continue
 
-            if model_type == "Piano" and dataset_instrument != "Piano":
+            if instrument_type == "Piano" and dataset_instrument != "Piano":
                 print(f"\t\t- Skipping: model and dataset instrument mismatch.")
                 continue
 
@@ -169,8 +166,8 @@ def main():
     model_lookup = {model_row[0]: model_row for model_row in model_data}
     for model_name, dataset_map in job_dependencies.items():
         model_row = model_lookup.get(model_name)
-        training_datasets = set(model_row[4] if isinstance(model_row[4], list) else [])
-        completed_datasets = set(model_row[6] if isinstance(model_row[6], list) else [])
+        training_datasets = set(model_row[2] if isinstance(model_row[2], list) else [])
+        completed_datasets = set(model_row[3] if isinstance(model_row[3], list) else [])
         for dataset_name, ids in dataset_map.items():
             if not ids:
                 print(
