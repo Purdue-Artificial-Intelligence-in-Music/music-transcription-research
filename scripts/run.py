@@ -19,6 +19,7 @@ MODELS_FILE = "models.json"
 DATASETS_FILE = "datasets.json"
 RUN_SCRIPT = "run.sh"
 UPLOAD_SCRIPT = "upload.sh"
+NOTIFICATION_SCRIPT = "notification.sh"
 
 
 def extract_slurm_id(output: str) -> str:
@@ -74,6 +75,7 @@ def main():
 
     total_jobs_submitted = 0
     job_dependencies: Dict[str, Dict[str, List[str]]] = {}
+    all_upload_ids = []
 
     for model_row in model_data:
         (
@@ -175,14 +177,9 @@ def main():
                 )
                 continue
 
-            if dataset_name in training_datasets:
+            if dataset_name in training_datasets or dataset_name in completed_datasets:
                 print(
-                    f"\t- Skipping upload for {model_name}/{dataset_name} (used for training)."
-                )
-                continue
-            if dataset_name in completed_datasets:
-                print(
-                    f"\t- Skipping upload for {model_name}/{dataset_name} (already completed)."
+                    f"\t- Skipping upload for {model_name}/{dataset_name} (already processed or used for training)."
                 )
                 continue
 
@@ -204,10 +201,32 @@ def main():
                     f"\t- Upload job submitted for {model_name}/{dataset_name} (Job ID: {upload_job_id})"
                 )
                 total_jobs_submitted += 1
+                all_upload_ids.append(upload_job_id)
             else:
                 print(
                     f"\t- Failed to submit upload job for {model_name}/{dataset_name}"
                 )
+
+    # Submit final notification job
+    if all_upload_ids:
+        print("\nSubmitting final notification job after all uploads are done...")
+        dependency_str = ":".join(all_upload_ids)
+        notify_cmd = [
+            "sbatch",
+            "-J",
+            "Notify",
+            "--dependency=afterok:" + dependency_str,
+            NOTIFICATION_SCRIPT,
+        ]
+
+        notification_job_id = submit_job(notify_cmd)
+        if notification_job_id:
+            print(f"\nNotification job submitted! Job ID: {notification_job_id}")
+            total_jobs_submitted += 1
+        else:
+            print("\nFailed to submit notification job.")
+    else:
+        print("\nNo upload jobs submitted, so skipping notification job.")
 
     print("\nSLURM Job Submission Complete.")
     print(f"Total jobs submitted: {total_jobs_submitted}")
