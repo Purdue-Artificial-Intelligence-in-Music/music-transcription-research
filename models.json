@@ -1,0 +1,16 @@
+{
+    "values": [
+        ["Model Name", "Instrument", "Training Datasets", "Completed Datasets"],
+        ["MT3", "Multiple", [], []],
+        ["MR-MT3", "Multiple", [], []],
+        ["ReconVAT", "Multiple", [], []],
+        ["Bytedance Piano transcription", "Piano", [], ["MSMD"]],
+        ["Transkun", "Piano", [], ["MSMD"]],
+        ["Omnizart", "Piano", [], []],
+        ["Madmom", "Piano", [], ["MSMD"]],
+        ["Jointist", "Multiple", [], ["MSMD"]],
+        ["CREPE Pitch Tracker", "Multiple", [], []],
+        ["melodia", "", [], []],
+        ["Basic Pitch", "Multiple", [], ["MSMD"]]
+    ]
+}

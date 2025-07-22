@@ -81,5 +81,5 @@ node_modules
 package-lock.json
 
 # Project-specific
-models.json
+keys.json
 service_account.json

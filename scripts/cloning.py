@@ -15,25 +15,38 @@ from git import Repo
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import subprocess
 
+KEYS_FILE = "keys.json"
 MODELS_FILE = "models.json"
 
 
-def clone_repo(model):
-    model_name = model[0].replace("/", "_")
-    github_link = model[1].replace("https://", "")
-    username = model[2]
-    pat = model[3]
+def load_json(path):
+    if not os.path.exists(path):
+        print(f"Error: File '{path}' not found.")
+        return None
 
-    if not model_name or model_name.strip() in [".", "./"]:
-        return (model, False, f"Invalid model name '{model_name}'")
+    try:
+        with open(path, "r") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error reading '{path}': {e}")
+        return None
 
-    repo_path = f"./{model_name}"
+
+def clone_repo(entry):
+    model_name, github_url, username, token = entry
+    safe_name = model_name.replace("/", "_")
+    github_link = github_url.replace("https://", "")
+
+    if not safe_name or safe_name.strip() in [".", "./"]:
+        return (model_name, False, f"Invalid model name '{safe_name}'")
+
+    repo_path = f"./{safe_name}"
     if os.path.exists(repo_path):
         shutil.rmtree(repo_path)
 
     try:
         print(f"Cloning: {github_link} to {repo_path}")
-        Repo.clone_from(f"https://{username}:{pat}@{github_link}", repo_path)
+        Repo.clone_from(f"https://{username}:{token}@{github_link}", repo_path)
 
         subprocess.run(
             ["git", "lfs", "install"],
@@ -43,43 +56,38 @@ def clone_repo(model):
         )
         subprocess.run(["git", "lfs", "pull"], cwd=repo_path, check=True)
 
-        return (model, True, None)
+        return (model_name, True, None)
     except Exception as e:
         shutil.rmtree(repo_path, ignore_errors=True)
-        return (model, False, str(e))
+        return (model_name, False, str(e))
 
 
 def main():
-    if not os.path.exists(MODELS_FILE):
-        print(f"Error: The file '{MODELS_FILE}' was not found.")
+    keys_data = load_json(KEYS_FILE)
+    models_data = load_json(MODELS_FILE)
+
+    if not keys_data or not models_data:
         return
 
-    try:
-        with open(MODELS_FILE, "r") as f:
-            data = json.load(f)
-    except Exception as e:
-        print(f"Error reading '{MODELS_FILE}': {e}")
-        return
+    keys_header, *key_rows = keys_data.get("values", [])
+    models_header, *model_rows = models_data.get("values", [])
 
-    all_rows = data.get("values", [])
-    if len(all_rows) < 2:
-        print(f"Error: Not enough data in '{MODELS_FILE}'.")
-        return
+    name_to_model_row = {row[0]: row for row in model_rows}
+    successful_models = []
 
-    header, spreadsheet = all_rows[0], all_rows[1:]
-    valid_models = []
-
-    with ThreadPoolExecutor(max_workers=None) as executor:
-        futures = [executor.submit(clone_repo, model) for model in spreadsheet]
+    with ThreadPoolExecutor() as executor:
+        futures = [executor.submit(clone_repo, row) for row in key_rows]
         for future in as_completed(futures):
-            model, success, error = future.result()
+            model_name, success, error = future.result()
             if success:
-                valid_models.append(model)
+                if model_name in name_to_model_row:
+                    successful_models.append(name_to_model_row[model_name])
             else:
-                print(f"Failed to clone for {model[0]}: {error}")
+                print(f"Failed to clone for {model_name}: {error}")
 
+    # Save only the successful models back into models.json
     with open(MODELS_FILE, "w") as f:
-        json.dump({"values": [header] + valid_models}, f, indent=2)
+        json.dump({"values": [models_header] + successful_models}, f, indent=2)
 
     print("Cloning process completed!")
 
