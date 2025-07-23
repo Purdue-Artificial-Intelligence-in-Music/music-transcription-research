@@ -1,8 +1,8 @@
 {
     "values": [
         ["Model Name", "Instrument", "Training Datasets", "Completed Datasets"],
-        ["MT3", "Multiple", ["Maestro"], []],
-        ["MR-MT3", "Multiple", [], []],
+        ["MT3", "Multiple", ["Maestro"], ["MSMD"]],
+        ["MR-MT3", "Multiple", [], ["MSMD"]],
         ["ReconVAT", "Multiple", [], []],
         ["Bytedance Piano transcription", "Piano", [], ["MSMD"]],
         ["Transkun", "Piano", [], ["MSMD"]],
