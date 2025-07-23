@@ -9,27 +9,32 @@ __github__ = "github.com/ojas-chaturvedi"
 __license__ = "MIT"
 
 import pretty_midi
-import os
+import numpy as np
 import argparse
 import mir_eval
 
 
-def midi_to_txt(midi_file, txt_file):
+def extract_intervals_and_pitches(midi_file):
     """
-    Converts a MIDI file to a three-column .txt file: start_time, end_time, frequency.
+    Extracts start_time, end_time, and pitch frequency for each note in a MIDI file.
+    Returns NumPy arrays suitable for mir_eval.
     """
     midi_data = pretty_midi.PrettyMIDI(midi_file)
-    notes_data = []
+    intervals = []
+    pitches = []
+
     for instrument in midi_data.instruments:
         for note in instrument.notes:
-            start_time = note.start
-            end_time = note.end
-            pitch_freq = pretty_midi.note_number_to_hz(note.pitch)
-            notes_data.append((start_time, end_time, pitch_freq))
-    notes_data.sort(key=lambda x: x[0])
-    with open(txt_file, "w") as f:
-        for note in notes_data:
-            f.write(f"{note[0]}\t{note[1]}\t{note[2]}\n")
+            intervals.append([note.start, note.end])
+            pitches.append(pretty_midi.note_number_to_hz(note.pitch))
+
+    if not intervals:
+        return np.empty((0, 2)), np.array([])
+
+    # Sort by start time
+    intervals, pitches = zip(*sorted(zip(intervals, pitches), key=lambda x: x[0][0]))
+
+    return np.array(intervals), np.array(pitches)
 
 
 def count_instruments(midi_file):
@@ -52,18 +57,8 @@ def main():
     )
     args = parser.parse_args()
 
-    reference_midi = args.reference
-    transcription_midi = args.transcription
-    reference_txt = "reference.txt"
-    transcription_txt = "transcription.txt"
-
-    # Convert both MIDI files to .txt
-    midi_to_txt(reference_midi, reference_txt)
-    midi_to_txt(transcription_midi, transcription_txt)
-
-    # Load the valued intervals from the .txt files
-    ref_intervals, ref_pitches = mir_eval.io.load_valued_intervals(reference_txt)
-    est_intervals, est_pitches = mir_eval.io.load_valued_intervals(transcription_txt)
+    ref_intervals, ref_pitches = extract_intervals_and_pitches(args.reference)
+    est_intervals, est_pitches = extract_intervals_and_pitches(args.transcription)
 
     # Evaluate the transcription
     scores = mir_eval.transcription.evaluate(
@@ -71,23 +66,14 @@ def main():
     )
 
     # Count the number of instruments in both MIDI files
-    ref_instruments = count_instruments(reference_midi)
-    est_instruments = count_instruments(transcription_midi)
+    ref_instruments = count_instruments(args.reference)
+    est_instruments = count_instruments(args.transcription)
 
     print(f"Reference MIDI Instruments: {ref_instruments}")
     print(f"Transcription MIDI Instruments: {est_instruments}")
 
     for key, value in scores.items():
         print(f"{key}: {value:.6f}")
-
-    # Delete the intermediate .txt files
-    try:
-        os.remove(reference_txt)
-        os.remove(transcription_txt)
-    except FileNotFoundError as e:
-        print(
-            f"ERROR. Reference_midi: {reference_midi}. Transcription_midi: {transcription_midi}."
-        )
 
 
 if __name__ == "__main__":
