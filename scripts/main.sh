@@ -59,6 +59,8 @@ python cloning.py
 
 echo "--------------------------------------------------"
 echo "Paring the json file with all model data"
+echo ""
+echo "Cloned models:"
 count=0
 mapfile -t lines < <(jq -c '.values[1:][]' models.json)
 for line in "${lines[@]}"; do

@@ -209,7 +209,6 @@ def main():
 
     # Submit final notification job
     if all_upload_ids:
-        print("\nSubmitting final notification job after all uploads are done...")
         dependency_str = ":".join(all_upload_ids)
         notify_cmd = [
             "sbatch",
