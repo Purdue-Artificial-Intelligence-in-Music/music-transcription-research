@@ -86,8 +86,9 @@ find nesmdb-exprsco -name '*.exprsco.pkl' | \
   parallel -j32 'f={}; base=$(basename "$f"); base=${base%.exprsco.pkl}; python nesmdb-convertor.py -i "$f" -o nesmdb/"$base".mid'
 
 # Clean up
+conda deactivate
 rm -f nesmdb-vgm.tar.gz nesmdb-exprsco.tar.gz nesmdb-convertor.py
-rm -rf nesmdb-vgm nesmdb-exprsco
+rm -rf nesmdb-vgm nesmdb-exprsco /home/x-ochaturvedi/.conda/envs/nesmdb
 
 # Check consistency
 echo "Checking consistency of .wav and .mid files..."
