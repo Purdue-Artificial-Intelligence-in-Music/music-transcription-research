@@ -9,6 +9,7 @@ __github__ = "github.com/ojas-chaturvedi"
 __license__ = "MIT"
 
 import os
+import json
 import re
 import pandas as pd
 from pydrive2.auth import GoogleAuth
@@ -91,6 +92,35 @@ def download_details_files(folder_id, local_directory):
 
 
 # Dataframe processing functions
+
+
+def load_expected_counts(json_path: str) -> dict:
+    """
+    Load dataset expected counts from datasets.json file.
+
+    Args:
+        json_path: Path to the JSON file
+
+    Returns:
+        Dictionary mapping dataset names to expected counts
+    """
+    with open(json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    header = data["values"][0]
+    name_idx = header.index("Dataset Name")
+    count_idx = header.index("Count")
+
+    expected_counts = {}
+    for row in data["values"][1:]:
+        dataset_name = row[name_idx]
+        count = int(row[count_idx])
+        expected_counts[dataset_name] = count
+
+    print(f"Loaded expected counts for {len(expected_counts)} datasets.")
+    print("Expected counts:", expected_counts)
+
+    return expected_counts
 
 
 def parse_results_file(file_path: str) -> list:
@@ -215,11 +245,8 @@ def process_folder(folder_path: str) -> pd.DataFrame:
         except Exception as e:
             print(f"Error processing {filename}: {str(e)}")
 
-    EXPECTED_COUNTS = {
-        "BiMMuDa": 375,
-        "MSMD": 467,
-        "POP909": 909,
-    }
+    expected_counts_path = "datasets.json"
+    EXPECTED_COUNTS = load_expected_counts(expected_counts_path)
 
     for filename in txt_files:
         dataset_name = next(
@@ -230,7 +257,7 @@ def process_folder(folder_path: str) -> pd.DataFrame:
 
         if expected_count is not None and parsed_count != expected_count:
             print(
-                f"\nERROR: {filename:<40} | Dataset: {dataset_name:<8} | Expected {expected_count}, Found {parsed_count}"
+                f"\nERROR: {filename:<40} | Dataset: {dataset_name:<10} | Expected {expected_count}, Found {parsed_count}"
             )
 
     if not all_midi_data:
