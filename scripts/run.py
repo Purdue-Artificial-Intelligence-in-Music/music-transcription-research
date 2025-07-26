@@ -95,7 +95,7 @@ def main():
         )
 
         for dataset_row in dataset_data:
-            dataset_name, dataset_path, dataset_instrument, audio_type = dataset_row
+            dataset_name, dataset_path, dataset_instrument, audio_type, _ = dataset_row
             print(f"\t- Dataset: {dataset_name}")
 
             if dataset_name in training_datasets:
