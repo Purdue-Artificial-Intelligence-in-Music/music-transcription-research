@@ -101,7 +101,8 @@ rm -rf /anvil/projects/x-cis240580/.conda/envs/cloning-env
 echo "--------------------------------------------------"
 echo "Making model conda environments"
 
-for line in "${lines[@]}"; do
+make_env() {
+    local line="$1"
     MODEL_NAME_RAW=$(echo "$line" | jq -r '.[0]')
     MODEL_NAME=${MODEL_NAME_RAW// /_}
     ENV_NAME="running-env-${MODEL_NAME}"
@@ -121,41 +122,41 @@ for line in "${lines[@]}"; do
 
     # Check if environment.yml exists
     if [ ! -f "./$MODEL_DIR/environment.yml" ]; then
-        echo "Missing environment.yml for $MODEL_DIR, skipping..."
-        continue
+        echo "[SKIP] Missing environment.yml for $MODEL_DIR"
+        return
     fi
 
-    # Create fresh environment
-    conda env create -q -f "./$MODEL_DIR/environment.yml" --prefix "$ENV_PATH" >/dev/null
-
-    # Check if creation succeeded
-    if [ ! -d "$ENV_PATH" ]; then
-        echo "Failed to create environment for $MODEL_NAME_RAW"
-    fi
+    echo "[INFO] Creating conda env for $MODEL_NAME_RAW..."
+    conda env create -q -f "./$MODEL_DIR/environment.yml" --prefix "$ENV_PATH" >/dev/null || {
+        echo "[ERROR] Failed to create environment for $MODEL_NAME_RAW"
+        return
+    }
 
     PYTHON_VERSION=$(grep -E '^ *- *python[=>< ]' "./$MODEL_DIR/environment.yml" | sed -E 's/.*python[^0-9]*([0-9]+\.[0-9]+).*/\1/' | head -n 1)
-
     if [ -z "$PYTHON_VERSION" ]; then
-        echo "Could not determine Python version for $MODEL_NAME_RAW"
-        continue
+        echo "[ERROR] Could not determine Python version for $MODEL_NAME_RAW"
+        return
     fi
 
-    echo "Installing TensorFlow in $ENV_NAME (Python $PYTHON_VERSION)..."
-    "$ENV_PATH/bin/pip" install --quiet "tensorflow"  # Installs latest compatible version
+    echo "[INFO] Installing TensorFlow in $ENV_NAME (Python $PYTHON_VERSION)..."
+    "$ENV_PATH/bin/pip" install --quiet tensorflow
 
     PY_CMD="$ENV_PATH/bin/python"
-    echo "Python version: $($PY_CMD -c 'import sys; print(sys.version.split()[0])')"
-    TF_VERSION=$($PY_CMD -c "import os; os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'; import tensorflow as tf; print(tf.__version__)" 2>/dev/null)
-    if [ -z "$TF_VERSION" ]; then
-        echo "TensorFlow version: (Failed to import TensorFlow)"
-    else
-        echo "TensorFlow version: $TF_VERSION"
-    fi
+    PY_VER=$($PY_CMD -c 'import sys; print(sys.version.split()[0])')
+    TF_VER=$($PY_CMD -c "import os; os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'; import tensorflow as tf; print(tf.__version__)" 2>/dev/null)
 
-    # Clean up package cache to save space
+    echo "[RESULT] $MODEL_NAME_RAW | Python: ${PY_VER:-unknown} | TensorFlow: ${TF_VER:-failed to import}"
+
     conda clean --packages --tarballs --yes >/dev/null
     rm -rf "$PKGS_PATH"
-done
+}
+
+export -f make_env
+export CONDA_PKGS_DIRS
+export PATH
+
+# Use parallel to create conda environments in parallel
+printf "%s\n" "${lines[@]}" | parallel -j 4 make_env
 
 conda info --envs
 
