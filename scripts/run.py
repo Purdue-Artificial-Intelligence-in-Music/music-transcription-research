@@ -14,7 +14,7 @@ import os
 import math
 from typing import Dict, List
 
-CHUNK_SIZE = 1000
+CHUNK_SIZE = 500
 MODELS_FILE = "models.json"
 DATASETS_FILE = "datasets.json"
 RUN_SCRIPT = "run.sh"
