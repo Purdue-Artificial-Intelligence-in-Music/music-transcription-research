@@ -28,8 +28,15 @@ rm -rf /anvil/projects/x-cis240580/.conda/
 echo "--------------------------------------------------"
 echo "Creating shared conda environments for scoring and Google Drive upload"
 
+export CONDA_PKGS_DIRS=/anvil/projects/x-cis240580/.conda/pkgs_scoring
+mkdir -p "$CONDA_PKGS_DIRS"
 conda create -y -q --prefix /anvil/projects/x-cis240580/.conda/envs/scoring-env python=3.10 pip setuptools mir_eval pretty_midi numpy=1.23 pyyaml >/dev/null
+rm -rf "$CONDA_PKGS_DIRS"
+
+export CONDA_PKGS_DIRS=/anvil/projects/x-cis240580/.conda/pkgs_upload
+mkdir -p "$CONDA_PKGS_DIRS"
 conda create -y -q --prefix /anvil/projects/x-cis240580/.conda/envs/upload-env python=3.10 pip pydrive2 >/dev/null
+rm -rf "$CONDA_PKGS_DIRS"
 
 if [ ! -d "/anvil/projects/x-cis240580/.conda/envs/scoring-env" ]; then
     echo "Scoring environment failed to create. Skipping scoring."
@@ -49,8 +56,12 @@ if [ -d "$CONDA_ENV_PATH" ] && [ ! -f "$CONDA_ENV_PATH/bin/activate" ]; then
     rm -rf "$CONDA_ENV_PATH"
 fi
 
-conda create -y -q --name cloning-env python=3.13 pip >/dev/null
-conda activate cloning-env
+export CONDA_PKGS_DIRS=/anvil/projects/x-cis240580/.conda/pkgs_cloning
+mkdir -p "$CONDA_PKGS_DIRS"
+conda create -y -q --prefix /anvil/projects/x-cis240580/.conda/envs/cloning-env python=3.13 git-lfs pip requests gitpython >/dev/null
+rm -rf "$CONDA_PKGS_DIRS"
+
+conda activate /anvil/projects/x-cis240580/.conda/envs/cloning-env
 pip install -q requests gitpython >/dev/null
 conda install -c conda-forge -y -q git-lfs >/dev/null
 git lfs install >/dev/null
