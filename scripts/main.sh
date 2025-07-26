@@ -133,6 +133,25 @@ for line in "${lines[@]}"; do
         echo "Failed to create environment for $MODEL_NAME_RAW"
     fi
 
+    PYTHON_VERSION=$(grep -E '^ *- *python[=>< ]' "./$MODEL_DIR/environment.yml" | sed -E 's/.*python[^0-9]*([0-9]+\.[0-9]+).*/\1/' | head -n 1)
+
+    if [ -z "$PYTHON_VERSION" ]; then
+        echo "Could not determine Python version for $MODEL_NAME_RAW"
+        continue
+    fi
+
+    echo "Installing TensorFlow in $ENV_NAME (Python $PYTHON_VERSION)..."
+    "$ENV_PATH/bin/pip" install --quiet "tensorflow"  # Installs latest compatible version
+
+    PY_CMD="$ENV_PATH/bin/python"
+    echo "Python version: $($PY_CMD -c 'import sys; print(sys.version.split()[0])')"
+    TF_VERSION=$($PY_CMD -c "import os; os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'; import tensorflow as tf; print(tf.__version__)" 2>/dev/null)
+    if [ -z "$TF_VERSION" ]; then
+        echo "TensorFlow version: (Failed to import TensorFlow)"
+    else
+        echo "TensorFlow version: $TF_VERSION"
+    fi
+
     # Clean up package cache to save space
     conda clean --packages --tarballs --yes >/dev/null
     rm -rf "$PKGS_PATH"
