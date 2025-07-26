@@ -31,16 +31,36 @@ chunk_basename=$(basename "$chunk_file" .txt)
 export chunk_basename
 
 source /etc/profile.d/modules.sh
+module use /opt/spack/cpu/Core
+module use /opt/spack/gpu/Core
+# module load cuda/11.4.2
+# module load cudnn/cuda-11.4_8.2
+module load cuda/12.0.1
+module load cudnn/cuda-12.0_8.8
 module load ffmpeg
 module load conda
 module load parallel
-module load gcc/11.2.0
+module load gcc
 
 export PIP_NO_CACHE_DIR=true
 
-export CUDA_HOME=/usr/local/cuda
+export CUDA_HOME="/apps/anvilgpu/external/apps/cuda-toolkit/12.0.1"
+# export CUDA_HOME="/apps/anvilgpu/external/apps/cuda-toolkit/11.4.2"
 export PATH=$CUDA_HOME/bin:$PATH
-export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$CUDA_HOME/extras/CUPTI/lib64:$LD_LIBRARY_PATH
+export XLA_FLAGS=--xla_gpu_cuda_data_dir=$CUDA_HOME
+export TF_FORCE_GPU_ALLOW_GROWTH=true
+
+# Disable XLA plugin warnings
+unset TF_XLA_FLAGS
+unset XLA_FLAGS
+
+# Debug information
+echo "CUDA_HOME: $CUDA_HOME"
+echo "CUDA version:"
+nvcc --version 2>/dev/null || echo "nvcc not found"
+echo "Available GPUs:"
+nvidia-smi -L 2>/dev/null || echo "nvidia-smi not found"
 
 # Check for internet access
 if ! curl -s --head https://repo.anaconda.com | grep -q "^HTTP.* 200"; then
