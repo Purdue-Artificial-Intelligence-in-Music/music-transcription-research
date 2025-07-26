@@ -114,37 +114,37 @@ def parse_results_file(file_path: str) -> list:
     dataset_name = dataset_match.group(1).strip() if dataset_match else "Unknown"
 
     # Extract average f-measure and runtime (optional - file-level statistic)
-    avg_f_measure_match = re.search(r"Average F-measure:\s*([\d.]+)", content)
+    avg_f_measure_match = re.search(r"Average F-measure:\s*(-?[\d.]+)", content)
     file_avg_f_measure = (
         float(avg_f_measure_match.group(1)) if avg_f_measure_match else None
     )
 
     avg_runtime_match = re.search(
-        r"Average Runtime (seconds):\s*([\d.]+)\s*seconds", content
+        r"Average Runtime (seconds):\s*(-?[\d.]+)\s*seconds", content
     )
     file_avg_runtime = float(avg_runtime_match.group(1)) if avg_runtime_match else None
 
     # Find all MIDI file sections using regex
     midi_sections = re.findall(
         r"([^\n]+\.wav)\n"
-        r"Duration:\s*([\d.]+)\s*seconds\n"
-        r"Reference MIDI Instruments:\s*([\d.]+)\n"
-        r"Transcription MIDI Instruments:\s*([\d.]+)\n"
-        r"Precision:\s*([\d.]+)\n"
-        r"Recall:\s*([\d.]+)\n"
-        r"F-measure:\s*([\d.]+)\n"
-        r"Average_Overlap_Ratio:\s*([\d.]+)\n"
-        r"Precision_no_offset:\s*([\d.]+)\n"
-        r"Recall_no_offset:\s*([\d.]+)\n"
-        r"F-measure_no_offset:\s*([\d.]+)\n"
-        r"Average_Overlap_Ratio_no_offset:\s*([\d.]+)\n"
-        r"Onset_Precision:\s*([\d.]+)\n"
-        r"Onset_Recall:\s*([\d.]+)\n"
-        r"Onset_F-measure:\s*([\d.]+)\n"
-        r"Offset_Precision:\s*([\d.]+)\n"
-        r"Offset_Recall:\s*([\d.]+)\n"
-        r"Offset_F-measure:\s*([\d.]+)\n"
-        r"Runtime:\s*([\d.]+)\s*seconds",
+        r"Duration:\s*(-?[\d.]+)\s*seconds\n"
+        r"Reference MIDI Instruments:\s*(-?[\d.]+)\n"
+        r"Transcription MIDI Instruments:\s*(-?[\d.]+)\n"
+        r"Precision:\s*(-?[\d.]+)\n"
+        r"Recall:\s*(-?[\d.]+)\n"
+        r"F-measure:\s*(-?[\d.]+)\n"
+        r"Average_Overlap_Ratio:\s*(-?[\d.]+)\n"
+        r"Precision_no_offset:\s*(-?[\d.]+)\n"
+        r"Recall_no_offset:\s*(-?[\d.]+)\n"
+        r"F-measure_no_offset:\s*(-?[\d.]+)\n"
+        r"Average_Overlap_Ratio_no_offset:\s*(-?[\d.]+)\n"
+        r"Onset_Precision:\s*(-?[\d.]+)\n"
+        r"Onset_Recall:\s*(-?[\d.]+)\n"
+        r"Onset_F-measure:\s*(-?[\d.]+)\n"
+        r"Offset_Precision:\s*(-?[\d.]+)\n"
+        r"Offset_Recall:\s*(-?[\d.]+)\n"
+        r"Offset_F-measure:\s*(-?[\d.]+)\n"
+        r"Runtime:\s*(-?[\d.]+)\s*seconds",
         content,
     )
 
@@ -190,6 +190,7 @@ def process_folder(folder_path: str) -> pd.DataFrame:
         pandas DataFrame with all MIDI file results
     """
     all_midi_data = []
+    file_parsed_counts = {}
 
     if not os.path.exists(folder_path):
         print(f"Error: Folder '{folder_path}' does not exist.")
@@ -209,9 +210,28 @@ def process_folder(folder_path: str) -> pd.DataFrame:
         try:
             midi_results = parse_results_file(file_path)
             all_midi_data.extend(midi_results)
+            file_parsed_counts[filename] = len(midi_results)
             print(f"Processed: {filename} ({len(midi_results)} MIDI files)")
         except Exception as e:
             print(f"Error processing {filename}: {str(e)}")
+
+    EXPECTED_COUNTS = {
+        "BiMMuDa": 375,
+        "MSMD": 467,
+        "POP909": 909,
+    }
+
+    for filename in txt_files:
+        dataset_name = next(
+            (ds for ds in EXPECTED_COUNTS if ds.lower() in filename.lower()), None
+        )
+        expected_count = EXPECTED_COUNTS.get(dataset_name, None)
+        parsed_count = file_parsed_counts.get(filename, 0)
+
+        if expected_count is not None and parsed_count != expected_count:
+            print(
+                f"\nERROR: {filename:<40} | Dataset: {dataset_name:<8} | Expected {expected_count}, Found {parsed_count}"
+            )
 
     if not all_midi_data:
         print("No data was extracted from the files.")
