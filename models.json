@@ -1,16 +1,15 @@
 {
     "values": [
         ["Model Name", "Instrument", "Training Datasets", "Completed Datasets"],
-        ["MT3", "Multiple", ["Maestro"], ["MSMD"]],
-        ["MR-MT3", "Multiple", [], ["MSMD"]],
-        ["ReconVAT", "Multiple", [], []],
-        ["Bytedance Piano transcription", "Piano", [], ["MSMD"]],
-        ["Transkun", "Piano", [], ["MSMD"]],
+        ["MT3", "Multiple", ["Maestro", "MSMD", "POP909"], ["BiMMuDa"]],
+        ["MR-MT3", "Multiple", [], ["BiMMuDa"]],
+        ["ReconVAT", "Multiple", [], ["BiMMuDa"]],
+        ["Bytedance Piano transcription", "Piano", [], ["BiMMuDa", "MSMD", "POP909"]],
+        ["Transkun", "Piano", [], ["BiMMuDa", "MSMD", "POP909"]],
         ["Omnizart", "Piano", [], []],
-        ["Madmom", "Piano", [], ["MSMD"]],
-        ["Jointist", "Multiple", [], ["MSMD"]],
-        ["CREPE Pitch Tracker", "Multiple", [], []],
-        ["melodia", "", [], []],
-        ["Basic Pitch", "Multiple", [], ["MSMD"]]
+        ["Madmom", "Piano", [], ["BiMMuDa", "MSMD", "POP909"]],
+        ["Jointist", "Multiple", ["MSMD"], []],
+        ["CREPE Pitch Tracker", "Multiple", [], ["BiMMuDa", "MSMD"]],
+        ["Basic Pitch", "Multiple", [], ["BiMMuDa", "MSMD", "POP909"]]
     ]
 }
