@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=8
 #SBATCH --time=01:30:00
 #SBATCH -J main
 #SBATCH -o 0_main_output.out
@@ -22,8 +22,53 @@ fi
 source /etc/profile.d/modules.sh
 module load ffmpeg
 module load conda
+module load parallel
 
 rm -rf /anvil/projects/x-cis240580/.conda/
+
+echo "--------------------------------------------------"
+echo "Verifying dataset .wav counts match datasets.json"
+
+DATASET_JSON="/anvil/scratch/x-ochaturvedi/research/datasets.json"
+MISMATCHES=0
+
+mapfile -t datasets < <(jq -r '.values[1:][] | @tsv' "$DATASET_JSON")
+
+for row in "${datasets[@]}"; do
+    IFS=$'\t' read -r name path instrument audio_type expected_count <<< "$row"
+    
+    echo "Regenerating list for: $name"
+    find "$(realpath "$path")" -type f -name "*.wav" | sort >"${path}.txt"
+done
+
+for row in "${datasets[@]}"; do
+    IFS=$'\t' read -r name path instrument audio_type expected_count <<< "$row"
+    
+    list_file="${path}.txt"
+    
+    if [[ ! -f "$list_file" ]]; then
+        echo "[ERROR] Missing list file: $list_file"
+        ((MISMATCHES++))
+        continue
+    fi
+
+    actual_count=$(wc -l < "$list_file" | tr -d ' ')
+    
+    if [[ "$actual_count" -eq "$expected_count" ]]; then
+        echo "[OK] $name | Expected: $expected_count, Found: $actual_count"
+    else
+        echo "[MISMATCH] $name | Expected: $expected_count, Found: $actual_count"
+        ((MISMATCHES++))
+    fi
+done
+
+if [[ $MISMATCHES -gt 0 ]]; then
+    echo "--------------------------------------------------"
+    echo "[WARNING] $MISMATCHES mismatches found in dataset .wav counts."
+else
+    echo "--------------------------------------------------"
+    echo "[SUCCESS] All dataset counts match expected values."
+fi
 
 echo "--------------------------------------------------"
 echo "Creating shared conda environments for scoring and Google Drive upload"
@@ -49,12 +94,6 @@ fi
 
 echo "--------------------------------------------------"
 echo "Running cloning for all model repositories"
-
-CONDA_ENV_PATH="$HOME/.conda/envs/cloning-env"
-if [ -d "$CONDA_ENV_PATH" ] && [ ! -f "$CONDA_ENV_PATH/bin/activate" ]; then
-    echo "Removing invalid conda environment at $CONDA_ENV_PATH"
-    rm -rf "$CONDA_ENV_PATH"
-fi
 
 export CONDA_PKGS_DIRS=/anvil/projects/x-cis240580/.conda/pkgs_cloning
 mkdir -p "$CONDA_PKGS_DIRS"
@@ -102,11 +141,6 @@ for line in "${lines[@]}"; do
 done
 
 conda deactivate
-if conda env list | grep -q "cloning-env"; then
-    conda env remove -y -q --name cloning-env >/dev/null
-fi
-conda clean --all --yes -q
-
 rm -rf /anvil/projects/x-cis240580/.conda/envs/cloning-env
 
 echo "--------------------------------------------------"
@@ -167,7 +201,7 @@ export CONDA_PKGS_DIRS
 export PATH
 
 # Use parallel to create conda environments in parallel
-printf "%s\n" "${lines[@]}" | parallel -j 4 make_env
+printf "%s\n" "${lines[@]}" | parallel -j 8 make_env
 
 conda info --envs
 
