@@ -7,6 +7,7 @@
         ["MSMD", "/anvil/scratch/x-ochaturvedi/datasets/msmd_data", "Piano", "wav", "467"],
         ["BiMMuDa", "/anvil/scratch/x-ochaturvedi/datasets/BiMMuDa", "Piano", "wav", "375"],
         ["POP909", "/anvil/scratch/x-ochaturvedi/datasets/POP909", "Piano", "wav", "909"],
-        ["NESMDB", "/anvil/scratch/x-ochaturvedi/datasets/nesmdb", "Multiple", "wav", "5278"]
+        ["NESMDB", "/anvil/scratch/x-ochaturvedi/datasets/nesmdb", "Multiple", "wav", "5278"],
+        ["AAM", "/anvil/scratch/x-ochaturvedi/datasets/aam_dataset", "Multiple", "wav", "3000"]
     ]
 }
