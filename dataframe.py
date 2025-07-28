@@ -117,9 +117,6 @@ def load_expected_counts(json_path: str) -> dict:
         count = int(row[count_idx])
         expected_counts[dataset_name] = count
 
-    print(f"Loaded expected counts for {len(expected_counts)} datasets.")
-    print("Expected counts:", expected_counts)
-
     return expected_counts
 
 
