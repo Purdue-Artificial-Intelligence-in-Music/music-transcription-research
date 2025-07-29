@@ -20,9 +20,15 @@ if ! curl -s --head https://repo.anaconda.com | grep -q "^HTTP.* 200"; then
 fi
 
 source /etc/profile.d/modules.sh
+module use /opt/spack/cpu/Core
+module use /opt/spack/gpu/Core
+module load cuda/12.6.0
+module load cudnn/9.2.0.82-12
 module load ffmpeg
+module load external
 module load conda
 module load parallel
+module load gcc
 
 rm -rf /scratch/gilbreth/ochaturv/.conda/
 
@@ -63,10 +69,8 @@ for row in "${datasets[@]}"; do
 done
 
 if [[ $MISMATCHES -gt 0 ]]; then
-    echo "--------------------------------------------------"
     echo "[WARNING] $MISMATCHES mismatches found in dataset .wav counts."
 else
-    echo "--------------------------------------------------"
     echo "[SUCCESS] All dataset counts match expected values."
 fi
 
@@ -155,42 +159,58 @@ make_env() {
     PKGS_PATH="/scratch/gilbreth/ochaturv/.conda/pkgs_${ENV_NAME}"
     MODEL_DIR="$MODEL_NAME_RAW"
 
-    # Set custom package directory
     export CONDA_PKGS_DIRS="$PKGS_PATH"
-    mkdir -p "$CONDA_PKGS_DIRS"
+    mkdir -p "$PKGS_PATH"
 
-    # Remove old environment if it exists
     if [ -d "$ENV_PATH" ]; then
         conda env remove -y --prefix "$ENV_PATH" >/dev/null
         rm -rf "$ENV_PATH"
     fi
 
-    # Check if environment.yml exists
     if [ ! -f "./$MODEL_DIR/environment.yml" ]; then
         echo "[SKIP] Missing environment.yml for $MODEL_DIR"
         return
     fi
 
     echo "[INFO] Creating conda env for $MODEL_NAME_RAW..."
-    conda env create -q -f "./$MODEL_DIR/environment.yml" --prefix "$ENV_PATH" >/dev/null || {
+    if ! conda env create -q -f "./$MODEL_DIR/environment.yml" --prefix "$ENV_PATH" >/dev/null; then
         echo "[ERROR] Failed to create environment for $MODEL_NAME_RAW"
-        return
-    }
-
-    PYTHON_VERSION=$(grep -E '^ *- *python[=>< ]' "./$MODEL_DIR/environment.yml" | sed -E 's/.*python[^0-9]*([0-9]+\.[0-9]+).*/\1/' | head -n 1)
-    if [ -z "$PYTHON_VERSION" ]; then
-        echo "[ERROR] Could not determine Python version for $MODEL_NAME_RAW"
         return
     fi
 
-    echo "[INFO] Installing TensorFlow in $ENV_NAME (Python $PYTHON_VERSION)..."
-    "$ENV_PATH/bin/pip" install --quiet tensorflow
+    PYTHON_CMD="$ENV_PATH/bin/python"
+    CONDA_CMD="conda run -p $ENV_PATH"
 
-    PY_CMD="$ENV_PATH/bin/python"
-    PY_VER=$($PY_CMD -c 'import sys; print(sys.version.split()[0])')
-    TF_VER=$($PY_CMD -c "import os; os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'; import tensorflow as tf; print(tf.__version__)" 2>/dev/null)
+    PY_MAJOR=$($PYTHON_CMD -c "import sys; print(sys.version_info[0])")
+    PY_MINOR=$($PYTHON_CMD -c "import sys; print(sys.version_info[1])")
 
-    echo "[RESULT] $MODEL_NAME_RAW | Python: ${PY_VER:-unknown} | TensorFlow: ${TF_VER:-failed to import}"
+    REQUIRES_TF=$(grep -i 'tensorflow' "./$MODEL_DIR/environment.yml" || true)
+    REQUIRES_PT=$(grep -Ei 'torch|pytorch' "./$MODEL_DIR/environment.yml" || true)
+
+    # GPU detection
+    if command -v nvidia-smi &>/dev/null && nvidia-smi -L | grep -q "GPU"; then
+        echo "[INFO] GPU detected on node via nvidia-smi."
+    else
+        echo "[WARN] No GPU detected by nvidia-smi — GPU libraries may not be usable."
+    fi
+
+    echo "[INFO] Installing CUDA libraries into env..."
+    $CONDA_CMD conda install -c nvidia -y cudatoolkit cudnn >/dev/null 2>&1
+
+    PY_VER=$($PYTHON_CMD -c 'import sys; print(sys.version.split()[0])')
+
+    # Reporting if frameworks are present
+    if $PYTHON_CMD -c "import torch" 2>/dev/null; then
+        PT_VER=$($PYTHON_CMD -c "import torch; print(torch.__version__)" 2>/dev/null || echo "unknown")
+        CUDA_AVAIL=$($PYTHON_CMD -c "import torch; print(torch.cuda.is_available())" 2>/dev/null || echo "unknown")
+        echo "[RESULT] $MODEL_NAME_RAW | Python: $PY_VER | PyTorch: $PT_VER | CUDA: $CUDA_AVAIL"
+    elif $PYTHON_CMD -c "import tensorflow as tf" 2>/dev/null; then
+        TF_VER=$($PYTHON_CMD -c "import tensorflow as tf; print(tf.__version__)" 2>/dev/null || echo "unknown")
+        GPU_DEVICES=$($PYTHON_CMD -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))" 2>/dev/null || echo "unknown")
+        echo "[RESULT] $MODEL_NAME_RAW | Python: $PY_VER | TensorFlow: $TF_VER | GPUs: $GPU_DEVICES"
+    else
+        echo "[RESULT] $MODEL_NAME_RAW | Python: $PY_VER | No TF/PT detected | CUDA libraries installed"
+    fi
 
     conda clean --packages --tarballs --yes >/dev/null
     rm -rf "$PKGS_PATH"
