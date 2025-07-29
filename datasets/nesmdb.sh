@@ -31,7 +31,13 @@ echo "Found $num_exprsco .exprsco.pkl files"
 rm -rf /home/x-ochaturvedi/.conda/envs/nesmdb
 conda create -n nesmdb python=2.7 -y -q > /dev/null
 source activate nesmdb
-pip install nesmdb==0.1.8 -q
+git clone https://github.com/chrisdonahue/nesmdb.git
+cd nesmdb
+git fetch origin pull/14/head:pr-14
+git checkout pr-14
+pip install .
+cd ../
+rm -rf nesmdb
 pip install pretty_midi -q
 
 # Create convertor script dynamically
