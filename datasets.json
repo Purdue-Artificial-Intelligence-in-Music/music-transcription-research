@@ -1,13 +1,13 @@
 {
     "values": [
         ["Dataset Name", "Server Location", "Instrument", "Audio Type", "Count"],
-        ["Maestro", "/anvil/scratch/x-ochaturvedi/datasets/maestro-v3.0.0", "Piano", "wav", "1276"],
-        ["Slakh 2100 Redux", "/anvil/scratch/x-ochaturvedi/datasets/slakh2100", "Multiple", "wav", "1710"],
-        ["XMIDI", "/anvil/scratch/x-ochaturvedi/datasets/xmidi_dataset", "Multiple", "wav", "108023"],
-        ["MSMD", "/anvil/scratch/x-ochaturvedi/datasets/msmd_data", "Piano", "wav", "467"],
-        ["BiMMuDa", "/anvil/scratch/x-ochaturvedi/datasets/BiMMuDa", "Piano", "wav", "375"],
-        ["POP909", "/anvil/scratch/x-ochaturvedi/datasets/POP909", "Piano", "wav", "909"],
-        ["NESMDB", "/anvil/scratch/x-ochaturvedi/datasets/nesmdb", "Multiple", "wav", "5278"],
-        ["AAM", "/anvil/scratch/x-ochaturvedi/datasets/aam_dataset", "Multiple", "wav", "3000"]
+        ["Maestro", "/scratch/gilbreth/ochaturv/datasets/maestro-v3.0.0", "Piano", "wav", "1276"],
+        ["Slakh 2100 Redux", "/scratch/gilbreth/ochaturv/datasets/slakh2100", "Multiple", "wav", "1710"],
+        ["XMIDI", "/scratch/gilbreth/ochaturv/datasets/xmidi_dataset", "Multiple", "wav", "108023"],
+        ["MSMD", "/scratch/gilbreth/ochaturv/datasets/msmd_data", "Piano", "wav", "467"],
+        ["BiMMuDa", "/scratch/gilbreth/ochaturv/datasets/BiMMuDa", "Piano", "wav", "375"],
+        ["POP909", "/scratch/gilbreth/ochaturv/datasets/POP909", "Piano", "wav", "909"],
+        ["NESMDB", "/scratch/gilbreth/ochaturv/datasets/nesmdb", "Multiple", "wav", "5278"],
+        ["AAM", "/scratch/gilbreth/ochaturv/datasets/aam_dataset", "Multiple", "wav", "3000"]
     ]
 }
