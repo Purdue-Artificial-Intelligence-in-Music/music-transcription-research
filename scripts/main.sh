@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -p gpu
+#SBATCH -A yunglu-k
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
@@ -24,12 +24,12 @@ module load ffmpeg
 module load conda
 module load parallel
 
-rm -rf /anvil/projects/x-cis240580/.conda/
+rm -rf /scratch/gilbreth/ochaturv/.conda/
 
 echo "--------------------------------------------------"
 echo "Verifying dataset .wav counts match datasets.json"
 
-DATASET_JSON="/anvil/scratch/x-ochaturvedi/research/datasets.json"
+DATASET_JSON="/scratch/gilbreth/ochaturv/research/datasets.json"
 MISMATCHES=0
 
 mapfile -t datasets < <(jq -r '.values[1:][] | @tsv' "$DATASET_JSON")
@@ -73,21 +73,21 @@ fi
 echo "--------------------------------------------------"
 echo "Creating shared conda environments for scoring and Google Drive upload"
 
-export CONDA_PKGS_DIRS=/anvil/projects/x-cis240580/.conda/pkgs_scoring
+export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_scoring
 mkdir -p "$CONDA_PKGS_DIRS"
-conda create -y -q --prefix /anvil/projects/x-cis240580/.conda/envs/scoring-env python=3.10 pip setuptools mir_eval pretty_midi numpy=1.23 pyyaml >/dev/null
+conda create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/scoring-env python=3.10 pip setuptools mir_eval pretty_midi numpy=1.23 pyyaml >/dev/null
 rm -rf "$CONDA_PKGS_DIRS"
 
-export CONDA_PKGS_DIRS=/anvil/projects/x-cis240580/.conda/pkgs_upload
+export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_upload
 mkdir -p "$CONDA_PKGS_DIRS"
-conda create -y -q --prefix /anvil/projects/x-cis240580/.conda/envs/upload-env python=3.10 pip pydrive2 >/dev/null
+conda create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/upload-env python=3.10 pip pydrive2 >/dev/null
 rm -rf "$CONDA_PKGS_DIRS"
 
-if [ ! -d "/anvil/projects/x-cis240580/.conda/envs/scoring-env" ]; then
+if [ ! -d "/scratch/gilbreth/ochaturv/.conda/envs/scoring-env" ]; then
     echo "Scoring environment failed to create. Skipping scoring."
     exit 1
 fi
-if [ ! -d "/anvil/projects/x-cis240580/.conda/envs/upload-env" ]; then
+if [ ! -d "/scratch/gilbreth/ochaturv/.conda/envs/upload-env" ]; then
     echo "Upload environment failed to create. Skipping upload."
     exit 1
 fi
@@ -95,12 +95,12 @@ fi
 echo "--------------------------------------------------"
 echo "Running cloning for all model repositories"
 
-export CONDA_PKGS_DIRS=/anvil/projects/x-cis240580/.conda/pkgs_cloning
+export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_cloning
 mkdir -p "$CONDA_PKGS_DIRS"
-conda create -y -q --prefix /anvil/projects/x-cis240580/.conda/envs/cloning-env python=3.13 git-lfs pip requests gitpython >/dev/null
+conda create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/cloning-env python=3.13 git-lfs pip requests gitpython >/dev/null
 rm -rf "$CONDA_PKGS_DIRS"
 
-conda activate /anvil/projects/x-cis240580/.conda/envs/cloning-env
+conda activate /scratch/gilbreth/ochaturv/.conda/envs/cloning-env
 pip install -q requests gitpython >/dev/null
 conda install -c conda-forge -y -q git-lfs >/dev/null
 git lfs install >/dev/null
@@ -141,7 +141,7 @@ for line in "${lines[@]}"; do
 done
 
 conda deactivate
-rm -rf /anvil/projects/x-cis240580/.conda/envs/cloning-env
+rm -rf /scratch/gilbreth/ochaturv/.conda/envs/cloning-env
 
 echo "--------------------------------------------------"
 echo "Making model conda environments"
@@ -151,8 +151,8 @@ make_env() {
     MODEL_NAME_RAW=$(echo "$line" | jq -r '.[0]')
     MODEL_NAME=${MODEL_NAME_RAW// /_}
     ENV_NAME="running-env-${MODEL_NAME}"
-    ENV_PATH="/anvil/projects/x-cis240580/.conda/envs/$ENV_NAME"
-    PKGS_PATH="/anvil/projects/x-cis240580/.conda/pkgs_${ENV_NAME}"
+    ENV_PATH="/scratch/gilbreth/ochaturv/.conda/envs/$ENV_NAME"
+    PKGS_PATH="/scratch/gilbreth/ochaturv/.conda/pkgs_${ENV_NAME}"
     MODEL_DIR="$MODEL_NAME_RAW"
 
     # Set custom package directory

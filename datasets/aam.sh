@@ -1,11 +1,12 @@
 #!/bin/bash
-#SBATCH -p gpu
+#SBATCH -A yunglu-k
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=32
 #SBATCH --time=01:30:00
 
+module load external
 module load conda
 module load ffmpeg
 module load parallel

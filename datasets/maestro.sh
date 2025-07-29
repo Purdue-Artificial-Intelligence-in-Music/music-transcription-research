@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -p gpu
+#SBATCH -A yunglu-k
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1

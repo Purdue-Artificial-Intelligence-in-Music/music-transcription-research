@@ -12,8 +12,8 @@ from paramiko import SSHClient, AutoAddPolicy
 from scp import SCPClient
 import os
 
-hostname = "anvil.rcac.purdue.edu"
-username = "x-ochaturvedi"
+hostname = "gilbreth.rcac.purdue.edu"  # or "anvil.rcac.purdue.edu"
+username = "ochaturv"  # or "x-ochaturvedi"
 
 
 def execute_cmd(client, cmd):
@@ -43,7 +43,7 @@ def main() -> None:
 
     scp = SCPClient(client.get_transport())
 
-    remote_path = f"/anvil/scratch/{username}/research/"
+    remote_path = f"/scratch/gilbreth/{username}/research/"  # or f"/anvil/scratch/{username}/research/"
 
     execute_cmd(client, f"rm -rf {remote_path}")
     execute_cmd(client, f"mkdir -p {remote_path}")

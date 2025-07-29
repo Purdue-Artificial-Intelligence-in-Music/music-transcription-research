@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -p gpu
+#SBATCH -A yunglu-k
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
@@ -33,21 +33,19 @@ export chunk_basename
 source /etc/profile.d/modules.sh
 module use /opt/spack/cpu/Core
 module use /opt/spack/gpu/Core
-# module load cuda/11.4.2
-# module load cudnn/cuda-11.4_8.2
-module load cuda/12.0.1
-module load cudnn/cuda-12.0_8.8
+module load cuda/12.6.0
+module load cudnn/9.2.0.82-12
 module load ffmpeg
+module load external
 module load conda
 module load parallel
 module load gcc
 
 export PIP_NO_CACHE_DIR=true
 
-export CUDA_HOME="/apps/anvilgpu/external/apps/cuda-toolkit/12.0.1"
-# export CUDA_HOME="/apps/anvilgpu/external/apps/cuda-toolkit/11.4.2"
-export PATH=$CUDA_HOME/bin:$PATH
-export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$CUDA_HOME/extras/CUPTI/lib64:$LD_LIBRARY_PATH
+export CUDA_HOME="/apps/spack/gilbreth-r9/apps/cuda/12.6.0-gcc-11.5.0-a7cv7sp"
+export CUDNN_ROOT=/apps/spack/gilbreth-r9/apps/cudnn/9.2.0.82-12-gcc-11.5.0-npvabsf
+export LD_LIBRARY_PATH=$CUDNN_ROOT/lib:$LD_LIBRARY_PATH
 export XLA_FLAGS=--xla_gpu_cuda_data_dir=$CUDA_HOME
 export TF_FORCE_GPU_ALLOW_GROWTH=true
 
@@ -120,7 +118,7 @@ process_file() {
 
     local duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$file")
 
-    conda activate /anvil/projects/x-cis240580/.conda/envs/running-env-"$model_name"
+    conda activate /scratch/gilbreth/ochaturv/.conda/envs/running-env-"$model_name"
 
     local start_time=$(date +%s.%N)
 
@@ -156,7 +154,7 @@ process_file() {
         return
     fi
 
-    conda activate /anvil/projects/x-cis240580/.conda/envs/scoring-env
+    conda activate /scratch/gilbreth/ochaturv/.conda/envs/scoring-env
 
     local output=$(python3 ../scoring.py --reference "$reference_file" --transcription "$transcription_path")
 
