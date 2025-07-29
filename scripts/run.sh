@@ -158,12 +158,13 @@ process_file() {
 
     local output=$(python3 ../scoring.py --reference "$reference_file" --transcription "$transcription_path")
 
+    local temp_detail_file="$temp_dir/${base_name}.details"
     {
         printf '%s\n' "$(basename "$original_file")"
         printf 'Duration: %s seconds\n' "$duration"
         printf '%s\n' "$output"
         printf 'Runtime: %f seconds\n\n' "$runtime"
-    } >>"$details_file"
+    } > "$temp_detail_file"
 
     # Extract F-measure and store it
     local fmeasure=$(echo "$output" | grep -m1 "F-measure:" | awk '{print $2}')
@@ -184,6 +185,14 @@ gpu_count=$(nvidia-smi -L | wc -l)
 
 # Run jobs in parallel using GNU Parallel
 cat "$chunk_file" | parallel -j "$gpu_count" process_file
+
+# Merge per-file details into shared details.txt without overwriting
+echo "Appending per-file details into $details_file..."
+for file in "$temp_dir"/*.details; do
+    if [[ -f "$file" ]]; then
+        cat "$file" >> "$details_file"
+    fi
+done
 
 # Compute average F-measure
 total=0
