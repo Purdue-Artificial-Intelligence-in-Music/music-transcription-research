@@ -80,6 +80,22 @@ ENV/
 node_modules
 package-lock.json
 
+# SLURM logs and temporary files
+logs/*.out
+logs/*.err
+*.out
+*.err
+*.log
+
+# macOS
+.DS_Store
+._*
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
 # Project-specific
 keys.json
 service_account.json
