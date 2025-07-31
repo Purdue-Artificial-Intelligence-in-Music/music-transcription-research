@@ -5,140 +5,34 @@ import argparse
 from fractions import Fraction
 from music21 import midi, note, chord, converter
 from music21.exceptions21 import StreamException
+from .shared_preprocessor import (
+    preprocess_midi, open_midi, extract_notes, extract_notes_melody, extract_ioi,
+    calculate_entropy_optimized, calculate_pitch_interval_entropy_optimized,
+    segment_analysis, analyze_tonal_certainty, analyze_pitch_class_entropy,
+    analyze_melodic_interval_entropy, analyze_ioi_entropy
+)
 
 
-def open_midi(midi_path):
-    mf = midi.MidiFile()
-    mf.open(midi_path)
-    mf.read()
-    mf.close()
-
-    return midi.translate.midiFileToStream(mf)
-
-
-def extract_notes(midi_stream):
-    result = []
-    for current_note in midi_stream.flatten().notes:
-        if isinstance(current_note, note.Note):
-            result.append(max(0.0, current_note.pitch.pitchClass))
-        elif isinstance(current_note, chord.Chord):
-            for pitch in current_note.pitches:
-                result.append(max(0.0, pitch.pitchClass))
-    return result
-
-
-def extract_notes_melody(midi_stream):
-    notes = midi_stream.flatten().notes
-    off_set = []
-    m_notes = []
-    highest_notes = []
-
-    for i in range(0, len(notes)):
-        if notes[i].offset in off_set:
-            continue
-
-        if isinstance(notes[i], chord.Chord):
-            chord_pitches = notes[i].pitches
-            p = []
-            for x in chord_pitches:
-                p.append(x.ps)
-            m_note = max(p)
-
-        else:
-            m_note = notes[i].pitch.ps
-
-        try:
-            for y in range(1, 5):
-                if notes[i + y].offset == notes[i].offset:
-                    if isinstance(notes[i + y], chord.Chord):
-                        chord_pitches = notes[i + y].pitches
-                        p = []
-                        for x in chord_pitches:
-                            p.append(x.ps)
-                        sec_max = max(p)
-                    else:
-                        sec_max = notes[i + y].pitch.ps
-                    m_note = m_note if (m_note > sec_max) else sec_max
-        except IndexError:
-            pass
-
-        off_set.append(notes[i].offset)
-        m_notes.append(m_note)
-
-    for i in m_notes:
-        highest_notes.append(max(0, int(i)))
-
-    return highest_notes
-
-
-def extract_ioi(midi_stream):
-    ioi_list = []
-    off_set = []
-    notes = midi_stream.flatten().notes
-
-    for i in range(0, len(notes)):
-        if notes[i].offset not in off_set:
-            m_note = notes[i]
-            off_set.append(m_note.offset)
-
-    for i in range(1, len(off_set)):
-        ioi = Fraction(off_set[i] - off_set[i - 1]).limit_denominator(4)
-        ioi_list.append(ioi)
-
-    return ioi_list
+# Note: open_midi, extract_notes, extract_notes_melody, and extract_ioi functions
+# are now imported from shared_preprocessor to avoid code duplication
 
 
 def ioi_entropy(eo):
-    result = []
-    duration_list = []
-
-    for i in eo:
-        if i not in duration_list:
-            duration_list.append(i)
-
-    for i in duration_list:
-        p = eo.count(i) / len(eo)
-        entr = p * (math.log2(p))
-        result.append(entr)
-
-    return result
+    """Calculate IOI entropy using optimized counting."""
+    entropy_contributions = calculate_entropy_optimized(eo)
+    return entropy_contributions
 
 
 def pitch_entropy(en):
-    result = []
-    note_list = []
-
-    for cn in en:
-        if cn not in note_list:
-            note_list.append(cn)
-
-    for cn in note_list:
-        p = en.count(cn) / len(en)
-        entr = p * (math.log2(p))
-        result.append(entr)
-
-    return result
+    """Calculate pitch entropy using optimized counting."""
+    entropy_contributions = calculate_entropy_optimized(en)
+    return entropy_contributions
 
 
 def pitch_interval_entropy(en):
-    interval_list = []
-    interval_seq = []
-    result = []
-
-    for i in range(1, len(en)):
-        interval = en[i] - en[i - 1]
-        # ignore intervals > 12 notes
-        if abs(interval) <= 12:
-            if interval not in interval_list:
-                interval_list.append(interval)
-            interval_seq.append(interval)
-
-    for i in interval_list:
-        p = interval_seq.count(i) / len(interval_seq)
-        entr = p * (math.log2(p))
-        result.append(entr)
-
-    return result
+    """Calculate pitch interval entropy using optimized processing."""
+    entropy_contributions = calculate_pitch_interval_entropy_optimized(en)
+    return entropy_contributions
 
 
 def main(midi_file_path):
@@ -149,77 +43,50 @@ def main(midi_file_path):
         return None
 
     try:
-        # Load and quantize the MIDI file
-        midi_stream = converter.parse(midi_file_path).quantize()
-        measures_count = len(midi_stream.measures(0, None)[0])
+        # Use preprocessor to load MIDI file and extract common data
+        preprocessed_data = preprocess_midi(midi_file_path)
+        if not preprocessed_data:
+            print(f"Error: Could not preprocess file {midi_file_path}")
+            return None
+        
+        midi_stream = preprocessed_data['midi_stream']
+        measures_count = preprocessed_data['file_info']['measures_count']
+        tonal_certainty = preprocessed_data['tonal_certainty']
 
         print(f"Analyzing: {os.path.basename(midi_file_path)}")
         print(f"Number of measures: {measures_count}")
         print("=" * 50)
 
-        # Get the tonal certainty for the whole piece
-        k_piece = midi_stream.analyze("key").tonalCertainty()
+        # Get the tonal certainty for the whole piece (pre-calculated)
+        k_piece = tonal_certainty
 
         # Get the mean tonal certainty for every 16 measures
-        first_measure = 0
-        last_measure = 16
-        k_list_measures = []
-
-        if last_measure > measures_count:
-            mean_k_measures = k_piece
-        else:
-            while last_measure <= measures_count:
-                k_list_measures.append(
-                    midi_stream.measures(first_measure, last_measure)
-                    .analyze("key")
-                    .tonalCertainty()
-                )
-                first_measure = last_measure
-                last_measure += last_measure
-            mean_k_measures = statistics.mean(k_list_measures)
+        k_piece_seg, mean_k_measures = segment_analysis(
+            midi_stream, measures_count, analyze_tonal_certainty, 16
+        )
 
         # Get the pitch class entropy for the whole piece
         # NOTE: This combines ALL notes from ALL tracks into one analysis
-        Hpc_piece = 0 - sum(pitch_entropy(extract_notes(midi_stream)))
+        Hpc_piece = analyze_pitch_class_entropy(midi_stream)
 
         # Get the mean pitch class entropy for every 16 measures
         # NOTE: This also combines all tracks when analyzing each segment
-        first_measure = 0
-        last_measure = 16
-        Hpc_list_measures = []
-
-        if last_measure > measures_count:
-            mean_Hpc_measures = Hpc_piece
-        else:
-            while last_measure <= measures_count:
-                Hpc_list_measures.append(
-                    0
-                    - sum(
-                        pitch_entropy(
-                            extract_notes(
-                                midi_stream.measures(first_measure, last_measure)
-                            )
-                        )
-                    )
-                )
-                first_measure = last_measure
-                last_measure += last_measure
-            mean_Hpc_measures = statistics.mean(Hpc_list_measures)
+        Hpc_piece_seg, mean_Hpc_measures = segment_analysis(
+            midi_stream, measures_count, analyze_pitch_class_entropy, 16
+        )
 
         # Analyze each part/track separately for melodic and rhythmic complexity
         # NOTE: This approach analyzes each MIDI track individually, then takes the maximum
         # This identifies the most complex individual voice rather than averaging all parts
-        midi_parts = midi_stream.parts.stream()
+        midi_parts = preprocessed_data['midi_parts']
 
         Hpi_list_piece = []
         Hioi_list_piece = []
 
         # Calculate entropy for each individual track/part
         for midi_part in midi_parts:
-            Hpi_list_piece.append(
-                0 - sum(pitch_interval_entropy(extract_notes_melody(midi_part)))
-            )
-            Hioi_list_piece.append(0 - sum(ioi_entropy(extract_ioi(midi_part))))
+            Hpi_list_piece.append(analyze_melodic_interval_entropy(midi_part))
+            Hioi_list_piece.append(analyze_ioi_entropy(midi_part))
 
         # Take the maximum complexity across all tracks
         # This represents the most melodically/rhythmically complex individual part
@@ -233,55 +100,16 @@ def main(midi_file_path):
         all_mean_Hioi_measures = []
 
         for midi_part in midi_parts:
-            first_measure = 0
-            last_measure = 16
-
-            Hpi_list_measures = []
-            if last_measure > measures_count:
-                mean_Hpi_measures = max_Hpi_piece
-            else:
-                while last_measure <= measures_count:
-                    Hpi_list_measures.append(
-                        0
-                        - sum(
-                            pitch_interval_entropy(
-                                extract_notes_melody(
-                                    midi_part.measures(first_measure, last_measure)
-                                )
-                            )
-                        )
-                    )
-                    first_measure = last_measure
-                    last_measure += last_measure
-                mean_Hpi_measures = (
-                    statistics.mean(Hpi_list_measures) if Hpi_list_measures else 0
-                )
-
-            first_measure = 0
-            last_measure = 16
-
-            Hioi_list_measures = []
-            if last_measure > measures_count:
-                mean_Hioi_measures = max_Hioi_piece
-            else:
-                while last_measure <= measures_count:
-                    Hioi_list_measures.append(
-                        0
-                        - sum(
-                            ioi_entropy(
-                                extract_ioi(
-                                    midi_part.measures(first_measure, last_measure)
-                                )
-                            )
-                        )
-                    )
-                    first_measure = last_measure
-                    last_measure += last_measure
-                mean_Hioi_measures = (
-                    statistics.mean(Hioi_list_measures) if Hioi_list_measures else 0
-                )
-
+            # Analyze melodic interval entropy for segments
+            Hpi_piece_seg, mean_Hpi_measures = segment_analysis(
+                midi_part, measures_count, analyze_melodic_interval_entropy, 16
+            )
             all_mean_Hpi_measures.append(mean_Hpi_measures)
+
+            # Analyze IOI entropy for segments
+            Hioi_piece_seg, mean_Hioi_measures = segment_analysis(
+                midi_part, measures_count, analyze_ioi_entropy, 16
+            )
             all_mean_Hioi_measures.append(mean_Hioi_measures)
 
         # Again, take the maximum complexity across all tracks for the segmented analysis
@@ -356,6 +184,9 @@ def main(midi_file_path):
     except Exception as e:
         print(f"Error analyzing file: {e}")
         return None
+
+
+
 
 
 # Main execution
