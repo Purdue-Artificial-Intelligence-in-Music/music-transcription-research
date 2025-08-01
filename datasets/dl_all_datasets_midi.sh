@@ -4,7 +4,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
-#SBATCH --time=04:00:00
+#SBATCH --time=12:00:00
 #SBATCH --job-name=dl_all_midi
 #SBATCH --output=logs/dataset_download_midi_%j.out
 #SBATCH --error=logs/dataset_download_midi_%j.err

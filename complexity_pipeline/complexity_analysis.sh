@@ -81,10 +81,7 @@ if [ $? -eq 0 ]; then
     
     # Send notification (optional)
     if command -v curl &> /dev/null; then
-        curl -s -X POST -H "Content-Type: application/json" \
-            -d "{\"content\": \"Complexity analysis completed successfully! Runtime: ${runtime}s\"}" \
-            https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux
-    fi
+       23
 else
     echo "--------------------------------------------------"
     echo "Complexity analysis failed!"
