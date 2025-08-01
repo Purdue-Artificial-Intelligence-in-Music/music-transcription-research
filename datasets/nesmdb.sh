@@ -18,18 +18,18 @@ gdown 1lx03YN-giEPuNdQiiuKTSfZRu2Dt7Uf8 --output nesmdb-vgm.tar.gz
 mkdir -p nesmdb-vgm
 tar -xzf nesmdb-vgm.tar.gz -C nesmdb-vgm
 
-gdown 1i2HdWsxPEjBUtsMclioqC7nmN9aCDwRc --output nesmdb-exprsco.tar.gz
-mkdir -p nesmdb-exprsco
-tar -xzf nesmdb-exprsco.tar.gz -C nesmdb-exprsco
+gdown 1w2uo1Cmio4gz6nGUhZOtzF54kPkoKyo7 --output nesmdb-midi.tar.gz
+mkdir -p nesmdb-midi
+tar -xzf nesmdb-midi.tar.gz -C nesmdb-midi
 
 # Count input files
 num_vgm=$(find nesmdb-vgm -name '*.vgm' | wc -l)
-num_exprsco=$(find nesmdb-exprsco -name '*.exprsco.pkl' | wc -l)
+num_midi=$(find nesmdb-midi -name '*.mid' | wc -l)
 echo "Found $num_vgm .vgm files"
-echo "Found $num_exprsco .exprsco.pkl files"
+echo "Found $num_midi .mid files"
 
 # Conda creation
-rm -rf /home/x-ochaturvedi/.conda/envs/nesmdb
+rm -rf /home/ochaturv/.conda/envs/nesmdb
 conda create -n nesmdb python=2.7 -y -q > /dev/null
 source activate nesmdb
 git clone https://github.com/chrisdonahue/nesmdb.git
@@ -46,7 +46,6 @@ cat <<EOF > nesmdb-convertor.py
 import argparse
 import cPickle as pickle
 from nesmdb.convert import vgm_to_wav
-from nesmdb.score.midi import exprsco_to_midi
 from scipy.io.wavfile import write as write_wav
 
 def convert_file(input_fp, output_fp):
@@ -57,23 +56,14 @@ def convert_file(input_fp, output_fp):
         write_wav(output_fp, 44100, wav)
         print("Converted VGM to WAV: {}".format(output_fp))
 
-    elif input_fp.endswith('.exprsco.pkl') and output_fp.endswith('.mid'):
-        with open(input_fp, 'rb') as f:
-            exprsco = pickle.load(f)
-        midi_bytes = exprsco_to_midi(exprsco)
-        with open(output_fp, 'wb') as f:
-            f.write(midi_bytes)
-        print("Converted exprsco to MIDI: {}".format(output_fp))
-
     else:
         print("Unsupported conversion. Only supports:")
         print("  .vgm --> .wav")
-        print("  .exprsco.pkl --> .mid")
 
 def main():
-    parser = argparse.ArgumentParser(description='Convert NES VGM to WAV or exprsco.pkl to MIDI.')
-    parser.add_argument('-i', '--input', required=True, help='Input file (.vgm or .exprsco.pkl)')
-    parser.add_argument('-o', '--output', required=True, help='Output file (.wav or .mid)')
+    parser = argparse.ArgumentParser(description='Convert NES VGM to WAV.')
+    parser.add_argument('-i', '--input', required=True, help='Input file (.vgm)')
+    parser.add_argument('-o', '--output', required=True, help='Output file (.wav)')
     args = parser.parse_args()
     convert_file(args.input, args.output)
 
@@ -88,13 +78,12 @@ mkdir -p nesmdb
 find nesmdb-vgm -name '*.vgm' | \
   parallel -j32 "python nesmdb-convertor.py -i {} -o nesmdb/{/.}.wav"
 
-# Convert EXPRSCO -> MIDI (strip .pkl to avoid .exprsco.mid)
-find nesmdb-exprsco -name '*.exprsco.pkl' | \
-  parallel -j32 'f={}; base=$(basename "$f"); base=${base%.exprsco.pkl}; python nesmdb-convertor.py -i "$f" -o nesmdb/"$base".mid'
+# Copy all MIDI files to nesmdb
+find nesmdb-midi -name '*.mid' -exec cp {} nesmdb/ \;
 
 # Clean up
 conda deactivate
-rm -f nesmdb-vgm.tar.gz nesmdb-exprsco.tar.gz nesmdb-convertor.py
+rm -f nesmdb-vgm.tar.gz nesmdb-midi.tar.gz nesmdb-convertor.py
 rm -rf nesmdb-vgm nesmdb-midi /home/ochaturv/.conda/envs/nesmdb
 
 # Check consistency
