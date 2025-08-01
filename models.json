@@ -1,15 +1,30 @@
 {
     "values": [
         ["Model Name", "Instrument", "Training Datasets", "Completed Datasets"],
-        ["MT3", "Multiple", ["Maestro", "MSMD", "POP909"], ["BiMMuDa"]],
-        ["MR-MT3", "Multiple", [], ["BiMMuDa"]],
-        ["ReconVAT", "Multiple", [], ["BiMMuDa"]],
-        ["Bytedance Piano transcription", "Piano", [], ["BiMMuDa", "MSMD", "POP909"]],
-        ["Transkun", "Piano", [], ["BiMMuDa", "MSMD", "POP909"]],
-        ["Omnizart", "Piano", [], []],
+        [
+            "MT3",
+            "Multiple",
+            ["Maestro", "Slakh 2100 Redux", "Cerberus", "GuitarSet", "MusicNet", "URMP"],
+            ["BiMMuDa", "MSMD", "POP909", "AAM"]
+        ],
+        ["MR-MT3", "Multiple", ["Slakh 2100 Redux"], ["BiMMuDa"]],
+        ["ReconVAT", "Multiple", ["MAPS", "MusicNet"], ["BiMMuDa", "MSMD", "POP909", "AAM"]],
+        ["Bytedance Piano transcription", "Piano", ["Maestro"], ["BiMMuDa", "MSMD", "POP909"]],
+        ["Transkun", "Piano", ["Maestro", "MAPS", "SMD"], ["BiMMuDa", "MSMD", "POP909"]],
+        ["Omnizart", "Piano", ["Maestro"], ["MSMD", "BiMMuDa", "POP909"]],
         ["Madmom", "Piano", [], ["BiMMuDa", "MSMD", "POP909"]],
-        ["Jointist", "Multiple", ["MSMD"], []],
-        ["CREPE Pitch Tracker", "Multiple", [], ["BiMMuDa", "MSMD"]],
-        ["Basic Pitch", "Multiple", [], ["BiMMuDa", "MSMD", "POP909"]]
+        ["Jointist", "Multiple", ["Slakh 2100 Redux"], []],
+        [
+            "CREPE Pitch Tracker",
+            "Multiple",
+            ["MIR-1K", "Bach10", "RWC-Synth", "MedleyDB", "MDB-STEM-Synth", "NSynth"],
+            ["BiMMuDa", "MSMD", "POP909", "AAM"]
+        ],
+        [
+            "Basic Pitch",
+            "Multiple",
+            ["Molina", "GuitarSet", "Maestro", "Slakh 2100 Redux", "Phenicx", "iKala", "MedleyDB"],
+            ["BiMMuDa", "MSMD", "POP909", "AAM"]
+        ]
     ]
 }
