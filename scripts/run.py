@@ -214,7 +214,7 @@ def main():
             "sbatch",
             "-J",
             "Notify",
-            "--dependency=afterok:" + dependency_str,
+            "--dependency=afterany:" + dependency_str,
             NOTIFICATION_SCRIPT,
         ]
 
