@@ -22,8 +22,8 @@ fi
 source /etc/profile.d/modules.sh
 module use /opt/spack/cpu/Core
 module use /opt/spack/gpu/Core
-module load cuda/12.6.0
-module load cudnn/9.2.0.82-12
+# module load cuda/12.6.0
+# module load cudnn/9.2.0.82-12
 module load ffmpeg
 module load external
 module load conda
@@ -75,16 +75,25 @@ else
 fi
 
 echo "--------------------------------------------------"
+echo "Creating default conda environment with mamba"
+export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_default
+mkdir -p "$CONDA_PKGS_DIRS"
+conda create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/default-env python=3.12 >/dev/null
+conda activate /scratch/gilbreth/ochaturv/.conda/envs/default-env
+conda install -y -q -c conda-forge mamba >/dev/null
+rm -rf "$CONDA_PKGS_DIRS"
+
+echo "--------------------------------------------------"
 echo "Creating shared conda environments for scoring and Google Drive upload"
 
 export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_scoring
 mkdir -p "$CONDA_PKGS_DIRS"
-conda create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/scoring-env python=3.10 pip setuptools mir_eval pretty_midi numpy=1.23 pyyaml >/dev/null
+mamba create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/scoring-env python=3.10 pip setuptools mir_eval pretty_midi numpy=1.23 pyyaml >/dev/null
 rm -rf "$CONDA_PKGS_DIRS"
 
 export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_upload
 mkdir -p "$CONDA_PKGS_DIRS"
-conda create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/upload-env python=3.10 pip pydrive2 >/dev/null
+mamba create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/upload-env python=3.10 pip pydrive2 >/dev/null
 rm -rf "$CONDA_PKGS_DIRS"
 
 if [ ! -d "/scratch/gilbreth/ochaturv/.conda/envs/scoring-env" ]; then
@@ -101,9 +110,10 @@ echo "Running cloning for all model repositories"
 
 export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_cloning
 mkdir -p "$CONDA_PKGS_DIRS"
-conda create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/cloning-env python=3.13 git-lfs pip requests gitpython >/dev/null
+mamba create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/cloning-env python=3.13 git-lfs pip requests gitpython >/dev/null
 rm -rf "$CONDA_PKGS_DIRS"
 
+conda deactivate
 conda activate /scratch/gilbreth/ochaturv/.conda/envs/cloning-env
 pip install -q requests gitpython >/dev/null
 conda install -c conda-forge -y -q git-lfs >/dev/null
@@ -146,6 +156,7 @@ done
 
 conda deactivate
 rm -rf /scratch/gilbreth/ochaturv/.conda/envs/cloning-env
+conda activate /scratch/gilbreth/ochaturv/.conda/envs/default-env
 
 echo "--------------------------------------------------"
 echo "Making model conda environments"
@@ -156,7 +167,8 @@ make_env() {
     MODEL_NAME=${MODEL_NAME_RAW// /_}
     ENV_NAME="running-env-${MODEL_NAME}"
     ENV_PATH="/scratch/gilbreth/ochaturv/.conda/envs/$ENV_NAME"
-    PKGS_PATH="/scratch/gilbreth/ochaturv/.conda/pkgs_${ENV_NAME}"
+    PKGS_PATH="/scratch/gilbreth/ochaturv/.conda/pkgs_${ENV_NAME}_$$"
+    echo "[INFO] PKGS_PATH: $PKGS_PATH"
     MODEL_DIR="$MODEL_NAME_RAW"
 
     export CONDA_PKGS_DIRS="$PKGS_PATH"
@@ -173,13 +185,13 @@ make_env() {
     fi
 
     echo "[INFO] Creating conda env for $MODEL_NAME_RAW..."
-    if ! conda env create -q -f "./$MODEL_DIR/environment.yml" --prefix "$ENV_PATH" >/dev/null; then
+    if ! mamba env create -q -f "./$MODEL_DIR/environment.yml" --prefix "$ENV_PATH" >/dev/null; then
         echo "[ERROR] Failed to create environment for $MODEL_NAME_RAW"
         return
     fi
 
     PYTHON_CMD="$ENV_PATH/bin/python"
-    CONDA_CMD="conda run -p $ENV_PATH"
+    CONDA_CMD="mamba run -p $ENV_PATH"
 
     PY_MAJOR=$($PYTHON_CMD -c "import sys; print(sys.version_info[0])")
     PY_MINOR=$($PYTHON_CMD -c "import sys; print(sys.version_info[1])")
@@ -194,8 +206,8 @@ make_env() {
         echo "[WARN] No GPU detected by nvidia-smi — GPU libraries may not be usable."
     fi
 
-    echo "[INFO] Installing CUDA libraries into env..."
-    $CONDA_CMD conda install -c nvidia -y cudatoolkit cudnn >/dev/null 2>&1
+    # echo "[INFO] Installing CUDA libraries into env..."
+    # $CONDA_CMD conda install -c nvidia -y cudatoolkit cudnn >/dev/null 2>&1
 
     PY_VER=$($PYTHON_CMD -c 'import sys; print(sys.version.split()[0])')
 
@@ -222,6 +234,8 @@ export PATH
 
 # Use parallel to create conda environments in parallel
 printf "%s\n" "${lines[@]}" | parallel -j 8 make_env
+
+conda deactivate
 
 conda info --envs
 
