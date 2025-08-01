@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -A yunglu-k
+#SBATCH -A standby
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
@@ -95,7 +95,7 @@ find nesmdb-exprsco -name '*.exprsco.pkl' | \
 # Clean up
 conda deactivate
 rm -f nesmdb-vgm.tar.gz nesmdb-exprsco.tar.gz nesmdb-convertor.py
-rm -rf nesmdb-vgm nesmdb-exprsco /home/x-ochaturvedi/.conda/envs/nesmdb
+rm -rf nesmdb-vgm nesmdb-midi /home/ochaturv/.conda/envs/nesmdb
 
 # Check consistency
 echo "Checking consistency of .wav and .mid files..."
