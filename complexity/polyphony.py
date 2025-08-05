@@ -44,10 +44,10 @@ def calculate_polyphony_metrics(polyphony_series):
     polyphony_std = statistics.stdev(polyphony_series) if len(polyphony_series) > 1 else 0
     
     return {
-        'max_polyphony': max_polyphony,
-        'avg_polyphony': avg_polyphony,
-        'polyphony_density': polyphony_density,
-        'polyphony_std': polyphony_std
+        'global_max_polyphony': max_polyphony,
+        'global_avg_polyphony': avg_polyphony,
+        'global_polyphony_density': polyphony_density,
+        'global_polyphony_variation': polyphony_std
     }
 
 
@@ -68,8 +68,9 @@ def calculate_polyphony_by_measures(midi_stream, measures_count, preprocessed_da
     """
     if preprocessed_data and 'polyphony_series' in preprocessed_data:
         polyphony_series = preprocessed_data['polyphony_series']
+        time_points = preprocessed_data.get('time_points', [])
     else:
-        polyphony_series = calculate_polyphony_series(midi_stream)
+        time_points, polyphony_series = calculate_polyphony_series(midi_stream)
     
     if not polyphony_series:
         return {
@@ -82,9 +83,16 @@ def calculate_polyphony_by_measures(midi_stream, measures_count, preprocessed_da
             'std_polyphony_density_measures': 0
         }
     
+    # Adaptive segment size: use smaller segments for short pieces  
+    if measures_count < 16:
+        segment_size = max(4, measures_count // 2) if measures_count >= 8 else measures_count
+        print(f"Short piece ({measures_count} measures): using {segment_size}-measure segments")
+    else:
+        segment_size = 16
+    
     # Segment analysis following entropy algorithm pattern
     first_measure = 1
-    last_measure = min(16, measures_count)  # Handle short pieces
+    last_measure = min(segment_size, measures_count)  # Handle short pieces
     max_polyphony_measures = []
     avg_polyphony_measures = []
     polyphony_density_measures = []
@@ -95,26 +103,30 @@ def calculate_polyphony_by_measures(midi_stream, measures_count, preprocessed_da
             segment_stream = midi_stream.measures(first_measure, last_measure)
             
             # Calculate polyphony for this segment
-            segment_polyphony = calculate_polyphony_series(segment_stream)
+            segment_time_points, segment_polyphony = calculate_polyphony_series(segment_stream)
             
             if segment_polyphony:
                 # Calculate metrics for this segment
                 segment_metrics = calculate_polyphony_metrics(segment_polyphony)
                 
-                max_polyphony_measures.append(segment_metrics['max_polyphony'])
-                avg_polyphony_measures.append(segment_metrics['avg_polyphony'])
-                polyphony_density_measures.append(segment_metrics['polyphony_density'])
+                max_polyphony_measures.append(segment_metrics['global_max_polyphony'])
+                avg_polyphony_measures.append(segment_metrics['global_avg_polyphony'])
+                polyphony_density_measures.append(segment_metrics['global_polyphony_density'])
             
             # Move to next segment
             first_measure = last_measure + 1
-            last_measure = min(first_measure + 15, measures_count)  # 16-measure segments
+            last_measure = min(first_measure + segment_size - 1, measures_count)
             
         except Exception as e:
             print(f"Error processing measures {first_measure}-{last_measure}: {e}")
             first_measure = last_measure + 1
-            last_measure = min(first_measure + 15, measures_count)
+            last_measure = min(first_measure + segment_size - 1, measures_count)
     
-    # Calculate overall piece metrics
+    # Calculate overall piece metrics using time-based calculation
+    from complexity.shared_preprocessor import calculate_time_based_polyphony_metrics
+    piece_time_metrics = calculate_time_based_polyphony_metrics(polyphony_series, time_points)
+    
+    # Also calculate event-based for max polyphony (this doesn't change with time weighting)
     piece_metrics = calculate_polyphony_metrics(polyphony_series)
     
     # Calculate segment statistics
@@ -127,14 +139,24 @@ def calculate_polyphony_by_measures(midi_stream, measures_count, preprocessed_da
     mean_density = statistics.mean(polyphony_density_measures) if polyphony_density_measures else 0
     std_density = statistics.stdev(polyphony_density_measures) if len(polyphony_density_measures) > 1 else 0
     
+    # Debug info for short pieces
+    if measures_count < 16:
+        print(f"DEBUG: {len(max_polyphony_measures)} segments created, max_values: {max_polyphony_measures}")
+    
     return {
-        'max_polyphony_piece': piece_metrics['max_polyphony'],
-        'mean_max_polyphony_measures': mean_max,
-        'std_max_polyphony_measures': std_max,
-        'mean_avg_polyphony_measures': mean_avg,
-        'std_avg_polyphony_measures': std_avg,
-        'mean_polyphony_density_measures': mean_density,
-        'std_polyphony_density_measures': std_density
+        # Global piece metrics (time-weighted)
+        'max_poly': piece_metrics['global_max_polyphony'],
+        'avg_poly': piece_time_metrics['avg_polyphony'],
+        'poly_density': piece_time_metrics['polyphonic_ratio'],
+        'poly_std': piece_time_metrics.get('polyphony_std', 0),
+        
+        # Segment-based metrics (variation across sections)
+        'seg_max_poly': mean_max,
+        'seg_max_std': std_max,
+        'seg_avg_poly': mean_avg,
+        'seg_avg_std': std_avg,
+        'seg_density': mean_density,
+        'seg_density_std': std_density
     }
 
 
@@ -162,17 +184,17 @@ def main(midi_file_path):
         midi_stream = open_midi(midi_file_path)
         measures_count = preprocessed_data['file_info']['measures_count']
         
-        # Calculate polyphony metrics
+        # Calculate polyphony metrics using preprocessed data
         polyphony_results = calculate_polyphony_by_measures(
             midi_stream, measures_count, preprocessed_data
         )
         
-        # Print results
+        # Print results with clean naming
         print("POLYPHONY ANALYSIS RESULTS:")
-        print(f"Maximum Polyphony: {polyphony_results['max_polyphony_piece']:.1f}")
-        print(f"Average Polyphony: {polyphony_results['mean_avg_polyphony_measures']:.2f} ± {polyphony_results['std_avg_polyphony_measures']:.2f}")
-        print(f"Polyphony Density: {polyphony_results['mean_polyphony_density_measures']:.3f} ± {polyphony_results['std_polyphony_density_measures']:.3f}")
-        print(f"Max Polyphony (segments): {polyphony_results['mean_max_polyphony_measures']:.1f} ± {polyphony_results['std_max_polyphony_measures']:.1f}")
+        print(f"Max Polyphony: {polyphony_results['max_poly']:.1f}")
+        print(f"Avg Polyphony: {polyphony_results['avg_poly']:.2f} (time-weighted)")
+        print(f"Polyphonic Density: {polyphony_results['poly_density']:.3f}")
+        print(f"Segment Analysis: max={polyphony_results['seg_max_poly']:.1f}±{polyphony_results['seg_max_std']:.1f}, avg={polyphony_results['seg_avg_poly']:.2f}±{polyphony_results['seg_avg_std']:.2f}")
         
         return polyphony_results
         

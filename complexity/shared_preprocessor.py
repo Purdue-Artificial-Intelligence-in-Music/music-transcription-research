@@ -27,7 +27,12 @@ def open_midi(midi_path):
     mf.open(midi_path)
     mf.read()
     mf.close()
-    return midi.translate.midiFileToStream(mf)
+    stream = midi.translate.midiFileToStream(mf)
+    
+    # Store file path as a custom attribute for enhanced drum detection
+    # Use a safe way that won't interfere with music21's metadata system
+    setattr(stream, '_original_file_path', midi_path)
+    return stream
 
 
 def get_instrument_for_note(note_obj, midi_stream):
@@ -123,43 +128,39 @@ def get_instrument_for_note(note_obj, midi_stream):
     return "Unknown"
 
 
+def is_percussion_instrument(instrument):
+    """Simple percussion detection matching jupyter notebook logic exactly."""
+    # Check 1: is_drum property (most reliable)
+    if instrument.is_drum:
+        return True
+
+    # Check 2: Official General MIDI percussion programs (0-127 indexing)
+    percussion_programs = [47, 112, 113, 114, 115, 116, 117, 118, 119]
+    if instrument.program in percussion_programs:
+        return True
+
+    # Check 3: Name-based detection
+    name_lower = instrument.name.lower()
+    if any(drum_word in name_lower for drum_word in ['drum', 'percussion', 'cymbal', 'timpani']):
+        return True
+
+    return False
+
+
 def extract_notes(midi_stream):
-    """
-    Extract pitch classes from all notes in the stream using PrettyMIDI for perfect instrument detection.
+    """Extract pitch classes from tonal instruments only - matching jupyter logic."""
+    if not hasattr(midi_stream, '_original_file_path'):
+        return []
     
-    This function uses PrettyMIDI's is_drum property to perfectly detect tonal vs percussion instruments,
-    then falls back to the original music21 method if PrettyMIDI is not available.
-    """
-    # Try PrettyMIDI approach for perfect instrument detection
-    if hasattr(midi_stream, 'filePath') and midi_stream.filePath:
-        try:
-            import pretty_midi
-            pm = pretty_midi.PrettyMIDI(midi_stream.filePath)
-            result = []
-            for instrument in pm.instruments:
-                if not instrument.is_drum:  # Perfect instrument detection using is_drum property
-                    for note_obj in instrument.notes:
-                        result.append(note_obj.pitch % 12)  # Convert to pitch class (0-11)
-            return result
-        except ImportError:
-            # PrettyMIDI not available, fall back to original method
-            pass
-        except Exception:
-            # Any other error, fall back to original method
-            pass
+    import pretty_midi
+    pm = pretty_midi.PrettyMIDI(midi_stream._original_file_path)
     
-    # Fallback to original music21 method
     result = []
-    for current_note in midi_stream.flatten().notes:
-        try:
-            if isinstance(current_note, note.Note):
-                result.append(max(0.0, current_note.pitch.pitchClass))
-            elif isinstance(current_note, chord.Chord):
-                for pitch in current_note.pitches:
-                    result.append(max(0.0, pitch.pitchClass))
-        except (AttributeError, TypeError):
-            # Skip percussion/unpitched notes that don't have pitchClass
-            continue
+    for instrument in pm.instruments:
+        if not is_percussion_instrument(instrument):
+            for note in instrument.notes:
+                result.append(note.pitch % 12)
+    
     return result
 
 
@@ -240,57 +241,126 @@ def extract_ioi(midi_stream):
 
 def calculate_polyphony_series(midi_stream):
     """
-    Calculate polyphony time series using note counting.
-    
-    This implementation is based on research papers that
-    treat polyphony as a property of music (e.g., Hawthorne et al. 2018,
-    Gardner et al. 2022).
-    
-    Returns a list where each element represents the number of 
-    simultaneous notes at that time point.
+    Calculate polyphony time series - matching jupyter notebook logic exactly.
     """
-    # Get all notes with their start and end times
-    all_notes = []
-    for current_note in midi_stream.flatten().notes:
-        try:
-            if isinstance(current_note, note.Note):
-                all_notes.append({
-                    'start': current_note.offset,
-                    'end': current_note.offset + current_note.duration.quarterLength,
-                    'pitch': current_note.pitch.pitchClass
-                })
-            elif isinstance(current_note, chord.Chord):
-                for pitch in current_note.pitches:
-                    all_notes.append({
-                        'start': current_note.offset,
-                        'end': current_note.offset + current_note.duration.quarterLength,
-                        'pitch': pitch.pitchClass
+    # Check if we have the original file path (for full files)
+    if hasattr(midi_stream, '_original_file_path'):
+        # Use PrettyMIDI approach for full files
+        import pretty_midi
+        pm = pretty_midi.PrettyMIDI(midi_stream._original_file_path)
+        
+        # Extract note events from tonal instruments only
+        all_note_events = []
+        for instrument in pm.instruments:
+            if not is_percussion_instrument(instrument):
+                for note in instrument.notes:
+                    all_note_events.append({
+                        'start': note.start,
+                        'end': note.end,
+                        'pitch': note.pitch % 12
                     })
-        except (AttributeError, TypeError):
-            # Skip percussion/unpitched notes
-            continue
+    else:
+        # Fallback: Use Music21 stream directly (for segments)
+        all_note_events = []
+        notes = midi_stream.flatten().notes
+        
+        for note_obj in notes:
+            # Skip percussion instruments using Music21 approach
+            try:
+                if hasattr(note_obj, 'pitch'):
+                    # Single note
+                    all_note_events.append({
+                        'start': float(note_obj.offset),
+                        'end': float(note_obj.offset + note_obj.duration.quarterLength),
+                        'pitch': note_obj.pitch.midi % 12
+                    })
+                elif hasattr(note_obj, 'pitches'):
+                    # Chord - add each pitch separately
+                    for pitch in note_obj.pitches:
+                        all_note_events.append({
+                            'start': float(note_obj.offset),
+                            'end': float(note_obj.offset + note_obj.duration.quarterLength),
+                            'pitch': pitch.midi % 12
+                        })
+            except (AttributeError, TypeError):
+                continue
     
-    if not all_notes:
-        return []
+    if not all_note_events:
+        return [], []
     
-    # Get all unique time points
+    # Get unique time points (jupyter logic)
     time_points = set()
-    for note_info in all_notes:
-        time_points.add(note_info['start'])
-        time_points.add(note_info['end'])
-    
+    for note_event in all_note_events:
+        time_points.add(note_event['start'])
+        time_points.add(note_event['end'])
     time_points = sorted(list(time_points))
     
-    # Calculate polyphony at each time point
+    # Calculate polyphony at each time point (jupyter logic)
     polyphony_series = []
     for time_point in time_points:
         active_notes = 0
-        for note_info in all_notes:
-            if note_info['start'] <= time_point < note_info['end']:
+        for note_event in all_note_events:
+            if note_event['start'] <= time_point < note_event['end']:
                 active_notes += 1
         polyphony_series.append(active_notes)
     
-    return polyphony_series
+    return time_points, polyphony_series
+
+
+def calculate_time_based_polyphony_metrics(polyphony_series, time_points):
+    """
+    Calculate time-weighted polyphony metrics (like jupyter notebook).
+    
+    Args:
+        polyphony_series: List of simultaneous note counts
+        time_points: List of corresponding time points
+        
+    Returns:
+        Dictionary with time-based metrics
+    """
+    if not polyphony_series or not time_points or len(polyphony_series) != len(time_points):
+        return {
+            'avg_polyphony': 0,
+            'polyphonic_ratio': 0,
+            'monophonic_ratio': 0,
+            'silence_ratio': 0,
+            'total_duration': 0
+        }
+    
+    # Calculate time-weighted metrics
+    total_duration = 0
+    weighted_polyphony_sum = 0
+    polyphonic_duration = 0
+    monophonic_duration = 0
+    silence_duration = 0
+    
+    for i in range(len(time_points) - 1):
+        interval_duration = time_points[i+1] - time_points[i]
+        polyphony_count = polyphony_series[i]
+        
+        total_duration += interval_duration
+        weighted_polyphony_sum += polyphony_count * interval_duration
+        
+        if polyphony_count == 0:
+            silence_duration += interval_duration
+        elif polyphony_count == 1:
+            monophonic_duration += interval_duration
+        else:  # polyphony_count > 1
+            polyphonic_duration += interval_duration
+    
+    # Calculate ratios
+    avg_polyphony = weighted_polyphony_sum / total_duration if total_duration > 0 else 0
+    polyphonic_ratio = polyphonic_duration / total_duration if total_duration > 0 else 0
+    monophonic_ratio = monophonic_duration / total_duration if total_duration > 0 else 0
+    silence_ratio = silence_duration / total_duration if total_duration > 0 else 0
+    
+    return {
+        'avg_polyphony': avg_polyphony,
+        'polyphonic_ratio': polyphonic_ratio,
+        'monophonic_ratio': monophonic_ratio,
+        'silence_ratio': silence_ratio,
+        'total_duration': total_duration
+    }
 
 
 def get_file_info(midi_stream):
@@ -581,8 +651,14 @@ def preprocess_midi(midi_file_path):
         return None
     
     try:
-        # Load and quantize the MIDI file
-        midi_stream = converter.parse(midi_file_path).quantize()
+        # Load and quantize the MIDI file (using enhanced open_midi for drum detection)
+        midi_stream = open_midi(midi_file_path)
+        quantized_stream = midi_stream.quantize()
+        
+        # Preserve file path after quantization for enhanced drum detection
+        if hasattr(midi_stream, '_original_file_path'):
+            quantized_stream._original_file_path = midi_stream._original_file_path
+        midi_stream = quantized_stream
         
         # Extract file information
         file_info = get_file_info(midi_stream)
@@ -591,7 +667,7 @@ def preprocess_midi(midi_file_path):
         notes = extract_notes(midi_stream)
         melody_notes = extract_notes_melody(midi_stream)
         ioi_list = extract_ioi(midi_stream)
-        polyphony_series = calculate_polyphony_series(midi_stream)
+        time_points, polyphony_series = calculate_polyphony_series(midi_stream)
         
         # Get parts for track-based analysis
         midi_parts = midi_stream.parts.stream()
@@ -605,6 +681,7 @@ def preprocess_midi(midi_file_path):
             'melody_notes': melody_notes,
             'ioi_list': ioi_list,
             'polyphony_series': polyphony_series,
+            'time_points': time_points,
             'midi_parts': midi_parts,
             'file_info': file_info,
             'tonal_certainty': tonal_certainty
