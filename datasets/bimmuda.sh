@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -A yunglu-k
+#SBATCH -A standby
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
@@ -33,6 +33,8 @@ done
 find BiMMuDa -type f -name "*.mid" ! -name "*_full.mid" -delete
 find BiMMuDa -type f -name "*.mscz" -delete
 find BiMMuDa -type f -name "*.txt" -delete
+find BiMMuDa -name .DS_Store -type f -delete
+find BiMMuDa -type d -name ".mscbackup" -exec rm -r {} +
 
 # Create a Singularity container for FluidSynth
 FS_CONTAINER="fluidsynth.sif"

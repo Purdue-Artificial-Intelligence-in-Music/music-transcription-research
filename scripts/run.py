@@ -14,7 +14,7 @@ import os
 import math
 from typing import Dict, List
 
-CHUNK_SIZE = 500
+CHUNK_SIZE = 3000
 MODELS_FILE = "models.json"
 DATASETS_FILE = "datasets.json"
 RUN_SCRIPT = "run.sh"
@@ -214,7 +214,7 @@ def main():
             "sbatch",
             "-J",
             "Notify",
-            "--dependency=afterok:" + dependency_str,
+            "--dependency=afterany:" + dependency_str,
             NOTIFICATION_SCRIPT,
         ]
 

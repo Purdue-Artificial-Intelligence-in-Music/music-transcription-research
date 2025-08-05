@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -A yunglu-k
+#SBATCH -A standby
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
@@ -254,7 +254,7 @@ find aam_dataset -type f -name "*.mid" | parallel --jobs 32 convert_midi {}
 
 # Clean up
 rm -f "$FS_DEFINITION" "$FS_CONTAINER" midi_combiner.py
-rm -rf /home/x-ochaturvedi/.conda/envs/aam
+rm -rf /home/ochaturv/.conda/envs/aam
 
 # Generate a sorted list of all input files
 find "$(realpath "aam_dataset")" -type f -name "*.wav" | sort >aam_dataset.txt

@@ -4,7 +4,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=2
-#SBATCH --time=00:30:00
+#SBATCH --time=01:00:00
 
 # UPLOAD.SH
 
@@ -57,7 +57,7 @@ fi
 # Move relevant SLURM output files into the output directory
 echo "Looking for SLURM output files for dataset: $dataset_name"
 shopt -s nullglob
-slurm_files=("$MODEL_DIR/research_output/${dataset_name}_chunk"*"_slurm_output.txt")
+slurm_files=("$MODEL_DIR/research_output/${2}_chunk"*"_slurm_output.txt")
 
 if (( ${#slurm_files[@]} > 0 )); then
     echo "Found ${#slurm_files[@]} SLURM output file(s). Moving to output directory."
