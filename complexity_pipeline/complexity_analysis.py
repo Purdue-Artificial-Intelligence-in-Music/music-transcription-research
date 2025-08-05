@@ -21,51 +21,39 @@ sys.path.append(".")
 
 from complexity.entropy import main as entropy_analysis
 from complexity.polyphony import main as polyphony_analysis
+from complexity.atc_wrapper import calculate_atc_metrics
+
+# Import professional dataset manager
+from dataset_manager import get_dataset_manager
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 
-def load_datasets_config():
-    """Load dataset configuration from midi_datasets.json."""
-    datasets_file = os.path.join(os.path.dirname(__file__), '..', 'midi_datasets.json')
-    with open(datasets_file, 'r') as f:
-        data = json.load(f)
-    
-    # Skip header row
-    datasets = []
-    for row in data['values'][1:]:
-        dataset_name, dataset_path, instrument, audio_type, count = row
-        datasets.append({
-            'name': dataset_name,
-            'path': dataset_path,
-            'instrument': instrument,
-            'audio_type': audio_type,
-            'count': int(count)
-        })
-    
-    return datasets
-
-
-def find_midi_files(dataset_path):
-    """Find all MIDI files in a dataset directory."""
-    midi_files = []
-    if os.path.exists(dataset_path):
-        for root, dirs, files in os.walk(dataset_path):
-            for file in files:
-                if file.lower().endswith('.mid') or file.lower().endswith('.midi'):
-                    midi_files.append(os.path.join(root, file))
-    return midi_files
+def get_dataset_files(dataset_name: str, limit: int = None) -> List[str]:
+    """Get MIDI files from a dataset using the professional dataset manager."""
+    try:
+        manager = get_dataset_manager()
+        file_paths = manager.find_files(dataset_name, limit=limit)
+        return [str(path) for path in file_paths]
+    except Exception as e:
+        logger.error(f"Error getting files for dataset {dataset_name}: {e}")
+        return []
 
 
 def analyze_complexity_for_file(midi_file_path, dataset_name):
-    """Analyze complexity metrics for a single MIDI file."""
+    """Analyze complexity metrics for a single MIDI file (including ATC)."""
     start_time = time.time()
+    filename = os.path.basename(midi_file_path)
     
     try:
+        print(f"Processing: {filename}", file=sys.stderr)
         # Run entropy analysis
         entropy_results = entropy_analysis(midi_file_path)
+        
+        # Run ATC (harmony) analysis
+        atc_results = calculate_atc_metrics(midi_file_path)
         
         # Run polyphony analysis
         polyphony_results = polyphony_analysis(midi_file_path)
@@ -89,6 +77,19 @@ def analyze_complexity_for_file(midi_file_path, dataset_name):
         if polyphony_results:
             results.update(polyphony_results)
         
+        # Add ATC (harmony) metrics
+        if atc_results and not atc_results.get('error'):
+            results['atc_score'] = atc_results.get('atc_score', 0)
+            results['atc_processing_time'] = atc_results.get('processing_time', 0)
+            if 'harmonic_complexity' in atc_results:
+                for key, value in atc_results['harmonic_complexity'].items():
+                    results[f'atc_{key}'] = value
+        else:
+            results['atc_score'] = 0
+            results['atc_processing_time'] = 0
+            if atc_results and atc_results.get('error'):
+                results['atc_error'] = atc_results['error']
+        
         return results
         
     except Exception as e:
@@ -104,6 +105,7 @@ def analyze_complexity_for_file(midi_file_path, dataset_name):
 
 def process_batch_parallel(midi_files: List[str], dataset_name: str, num_workers: int = 16) -> List[Dict]:
     """Process multiple MIDI files in parallel using ProcessPoolExecutor."""
+    print(f"Starting parallel processing of {len(midi_files)} files from {dataset_name} with {num_workers} workers", file=sys.stderr)
     logger.info(f"Starting parallel processing of {len(midi_files)} files from {dataset_name} with {num_workers} workers")
     
     start_time = time.time()
@@ -124,27 +126,38 @@ def process_batch_parallel(midi_files: List[str], dataset_name: str, num_workers
                     results.append(result)
                 completed += 1
                 
-                # Progress update every 10 files or at the end
-                if completed % 10 == 0 or completed == len(midi_files):
+                # Progress update every 5 files or at the end (more frequent updates)
+                if completed % 5 == 0 or completed == len(midi_files):
                     elapsed = time.time() - start_time
                     rate = completed / elapsed if elapsed > 0 else 0
                     remaining = (len(midi_files) - completed) / rate if rate > 0 else 0
-                    logger.info(f"Progress: {completed}/{len(midi_files)} ({completed/len(midi_files)*100:.1f}%) "
-                              f"Rate: {rate:.2f} files/sec, ETA: {remaining/60:.1f} minutes")
+                    progress_msg = f"Progress: {completed}/{len(midi_files)} ({completed/len(midi_files)*100:.1f}%) Rate: {rate:.2f} files/sec, ETA: {remaining/60:.1f} minutes"
+                    print(progress_msg, file=sys.stderr)
+                    logger.info(progress_msg)
+                
+                # Individual file completion (every file)
+                if completed % 1 == 0:
+                    filename = os.path.basename(midi_file)
+                    print(f"Completed: {filename} ({completed}/{len(midi_files)})", file=sys.stderr)
                 
             except Exception as e:
-                logger.error(f"Exception for {midi_file}: {e}")
+                error_msg = f"Exception for {midi_file}: {e}"
+                print(error_msg, file=sys.stderr)
+                logger.error(error_msg)
                 results.append({
                     'midi_filename': os.path.basename(midi_file),
                     'dataset_name': dataset_name,
                     'file_path': midi_file,
                     'error': str(e),
-                    'processing_time': 0
+                    'processing_time': 0,
+                    'atc_score': 0,
+                    'atc_processing_time': 0
                 })
     
     total_time = time.time() - start_time
-    logger.info(f"Completed processing {len(midi_files)} files in {total_time:.2f}s "
-               f"({len(midi_files)/total_time:.2f} files/sec)")
+    completion_msg = f"Completed processing {len(midi_files)} files in {total_time:.2f}s ({len(midi_files)/total_time:.2f} files/sec)"
+    print(completion_msg, file=sys.stderr)
+    logger.info(completion_msg)
     
     return results
 
@@ -161,40 +174,42 @@ def main():
     
     args = parser.parse_args()
     
-    # Load dataset configuration
-    datasets = load_datasets_config()
+    # Use dataset manager instead of config file
+    from dataset_manager import get_dataset_manager
+    manager = get_dataset_manager()
     
     # Create output directory
     os.makedirs(args.output_dir, exist_ok=True)
     
     all_results = []
     
-    for dataset in datasets:
-        dataset_name = dataset['name']
-        dataset_path = dataset['path']
-        
+    # Get available datasets
+    available_datasets = ['slakh2100', 'maestro', 'pop909', 'nesmdb', 'msmd', 'aam', 'bimmuda', 'traditional_flute', 'xmidi']
+    
+    for dataset_name in available_datasets:
         # Skip if specific dataset requested and this isn't it
         if args.dataset and dataset_name != args.dataset:
             continue
         
+        print(f"\n{'='*60}", file=sys.stderr)
+        print(f"Analyzing dataset: {dataset_name}", file=sys.stderr)
+        print(f"{'='*60}", file=sys.stderr)
         logger.info(f"\n{'='*60}")
         logger.info(f"Analyzing dataset: {dataset_name}")
-        logger.info(f"Path: {dataset_path}")
         logger.info(f"{'='*60}")
         
-        # Find MIDI files
-        midi_files = find_midi_files(dataset_path)
+        # Find MIDI files using dataset manager
+        midi_files = get_dataset_files(dataset_name, limit=args.max_files)
         
         if not midi_files:
-            logger.warning(f"No MIDI files found in {dataset_path}")
+            warning_msg = f"No MIDI files found in {dataset_name}"
+            print(warning_msg, file=sys.stderr)
+            logger.warning(warning_msg)
             continue
         
-        logger.info(f"Found {len(midi_files)} MIDI files")
-        
-        # Limit files if requested
-        if args.max_files:
-            midi_files = midi_files[:args.max_files]
-            logger.info(f"Analyzing first {len(midi_files)} files")
+        found_msg = f"Found {len(midi_files)} MIDI files"
+        print(found_msg, file=sys.stderr)
+        logger.info(found_msg)
         
         # Process files in parallel
         dataset_results = process_batch_parallel(midi_files, dataset_name, args.num_workers)
@@ -216,18 +231,24 @@ def main():
         logger.info(f"Saved combined results to {combined_file}")
         
         # Print summary statistics
+        summary_msg = f"\n{'='*60}\nCOMPLEXITY ANALYSIS SUMMARY\n{'='*60}\nTotal files analyzed: {len(all_results)}"
+        print(summary_msg, file=sys.stderr)
         logger.info(f"\n{'='*60}")
         logger.info("COMPLEXITY ANALYSIS SUMMARY")
         logger.info(f"{'='*60}")
         logger.info(f"Total files analyzed: {len(all_results)}")
         
-        if 'max_polyphony' in combined_df.columns:
-            logger.info(f"Average max polyphony: {combined_df['max_polyphony'].mean():.2f}")
-            logger.info(f"Max polyphony range: {combined_df['max_polyphony'].min()} - {combined_df['max_polyphony'].max()}")
+        if 'max_poly' in combined_df.columns:
+            poly_msg = f"Average max polyphony: {combined_df['max_poly'].mean():.2f}\nMax polyphony range: {combined_df['max_poly'].min()} - {combined_df['max_poly'].max()}"
+            print(poly_msg, file=sys.stderr)
+            logger.info(f"Average max polyphony: {combined_df['max_poly'].mean():.2f}")
+            logger.info(f"Max polyphony range: {combined_df['max_poly'].min()} - {combined_df['max_poly'].max()}")
         
-        if 'tonal_certainty_piece' in combined_df.columns:
-            logger.info(f"Average tonal certainty: {combined_df['tonal_certainty_piece'].mean():.4f}")
-            logger.info(f"Tonal certainty range: {combined_df['tonal_certainty_piece'].min():.4f} - {combined_df['tonal_certainty_piece'].max():.4f}")
+        if 'tonal_certainty' in combined_df.columns:
+            tonal_msg = f"Average tonal certainty: {combined_df['tonal_certainty'].mean():.4f}\nTonal certainty range: {combined_df['tonal_certainty'].min():.4f} - {combined_df['tonal_certainty'].max():.4f}"
+            print(tonal_msg, file=sys.stderr)
+            logger.info(f"Average tonal certainty: {combined_df['tonal_certainty'].mean():.4f}")
+            logger.info(f"Tonal certainty range: {combined_df['tonal_certainty'].min():.4f} - {combined_df['tonal_certainty'].max():.4f}")
 
 
 if __name__ == "__main__":
