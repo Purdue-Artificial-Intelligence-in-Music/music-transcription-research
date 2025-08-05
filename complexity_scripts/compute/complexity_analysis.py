@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-Complete Complexity Analysis using ALL datasets
-Uses datasets stored in /scratch/gilbreth/YOUR_USERNAME/AIM/datasets/
-All MIDI files only (no WAV conversion)
+Complete Complexity Analysis
+Analyzes entropy, polyphony, and ATC metrics across all datasets.
 """
 
 import os
@@ -23,7 +22,6 @@ from complexity.entropy import main as entropy_analysis
 from complexity.polyphony import main as polyphony_analysis
 from complexity.atc_wrapper import calculate_atc_metrics
 
-# Import professional dataset manager
 from dataset_manager import get_dataset_manager
 
 # Setup logging
@@ -32,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_dataset_files(dataset_name: str, limit: int = None) -> List[str]:
-    """Get MIDI files from a dataset using the professional dataset manager."""
+    """Get MIDI files from a dataset."""
     try:
         manager = get_dataset_manager()
         file_paths = manager.find_files(dataset_name, limit=limit)
@@ -43,7 +41,7 @@ def get_dataset_files(dataset_name: str, limit: int = None) -> List[str]:
 
 
 def analyze_complexity_for_file(midi_file_path, dataset_name):
-    """Analyze complexity metrics for a single MIDI file (including ATC)."""
+    """Analyze complexity metrics for a single MIDI file."""
     start_time = time.time()
     filename = os.path.basename(midi_file_path)
     
@@ -52,7 +50,7 @@ def analyze_complexity_for_file(midi_file_path, dataset_name):
         # Run entropy analysis
         entropy_results = entropy_analysis(midi_file_path)
         
-        # Run ATC (harmony) analysis
+        # Run ATC analysis
         atc_results = calculate_atc_metrics(midi_file_path)
         
         # Run polyphony analysis
@@ -77,7 +75,7 @@ def analyze_complexity_for_file(midi_file_path, dataset_name):
         if polyphony_results:
             results.update(polyphony_results)
         
-        # Add ATC (harmony) metrics
+        # Add ATC metrics
         if atc_results and not atc_results.get('error'):
             results['atc_score'] = atc_results.get('atc_score', 0)
             results['atc_processing_time'] = atc_results.get('processing_time', 0)
@@ -104,7 +102,7 @@ def analyze_complexity_for_file(midi_file_path, dataset_name):
 
 
 def process_batch_parallel(midi_files: List[str], dataset_name: str, num_workers: int = 16) -> List[Dict]:
-    """Process multiple MIDI files in parallel using ProcessPoolExecutor."""
+    """Process multiple MIDI files in parallel."""
     print(f"Starting parallel processing of {len(midi_files)} files from {dataset_name} with {num_workers} workers", file=sys.stderr)
     logger.info(f"Starting parallel processing of {len(midi_files)} files from {dataset_name} with {num_workers} workers")
     
@@ -126,7 +124,7 @@ def process_batch_parallel(midi_files: List[str], dataset_name: str, num_workers
                     results.append(result)
                 completed += 1
                 
-                # Progress update every 5 files or at the end (more frequent updates)
+                # Progress update every 5 files or at the end
                 if completed % 5 == 0 or completed == len(midi_files):
                     elapsed = time.time() - start_time
                     rate = completed / elapsed if elapsed > 0 else 0
@@ -135,7 +133,7 @@ def process_batch_parallel(midi_files: List[str], dataset_name: str, num_workers
                     print(progress_msg, file=sys.stderr)
                     logger.info(progress_msg)
                 
-                # Individual file completion (every file)
+                # Individual file completion
                 if completed % 1 == 0:
                     filename = os.path.basename(midi_file)
                     print(f"Completed: {filename} ({completed}/{len(midi_files)})", file=sys.stderr)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Improved Polyphony Implementation
-Based on learnings from mathematical analysis
+Polyphony Analysis Module
+Calculates polyphony metrics using event-based approach.
 """
 
 import pretty_midi
@@ -22,7 +22,7 @@ def is_percussion_instrument(instrument):
     return False
 
 def calculate_polyphony_event_based(midi_data):
-    """Calculate polyphony using CORRECTED event-based approach with time-weighted calculations"""
+    """Calculate polyphony using event-based approach with time-weighted metrics."""
     all_notes = []
     for instrument in midi_data.instruments:
         if not is_percussion_instrument(instrument):
@@ -47,7 +47,7 @@ def calculate_polyphony_event_based(midi_data):
                 active_notes += 1
         polyphony_series.append(active_notes)
     
-    # Calculate time-weighted average (this is the key fix!)
+    # Calculate time-weighted average
     time_intervals = []
     for i in range(len(time_points) - 1):
         interval = time_points[i + 1] - time_points[i]
@@ -115,7 +115,7 @@ def calculate_polyphony_metrics(polyphony_series):
 
 def calculate_polyphony_by_measures_improved(midi_stream, measures_count, preprocessed_data=None):
     """
-    Calculate polyphony metrics for 16-measure segments using improved approach.
+    Calculate polyphony metrics for 16-measure segments.
     
     Args:
         midi_stream: Music21 stream object
@@ -125,7 +125,7 @@ def calculate_polyphony_by_measures_improved(midi_stream, measures_count, prepro
     Returns:
         Dictionary with segment-based polyphony metrics
     """
-    # Use event-based polyphony calculation for better accuracy
+            # Use event-based polyphony calculation
     if hasattr(midi_stream, '_original_file_path'):
         midi_data = pretty_midi.PrettyMIDI(midi_stream._original_file_path)
         max_poly, avg_poly, std_poly, density_poly = calculate_polyphony_event_based(midi_data)
@@ -235,7 +235,7 @@ def calculate_polyphony_by_measures_improved(midi_stream, measures_count, prepro
         }
 
 def main(midi_file_path):
-    """Analyze a single MIDI file with improved polyphony calculation"""
+    """Analyze a single MIDI file for polyphony metrics."""
     
     if not os.path.exists(midi_file_path):
         print(f"Error: File {midi_file_path} does not exist")
@@ -245,14 +245,14 @@ def main(midi_file_path):
         # Load MIDI file
         midi_data = pretty_midi.PrettyMIDI(midi_file_path)
         
-        # Calculate polyphony using improved event-based approach
+        # Calculate polyphony using event-based approach
         max_poly, avg_poly, std_poly, density_poly = calculate_polyphony_event_based(midi_data)
         
         # Get file info
         total_duration = midi_data.get_end_time()
         estimated_measures = int(total_duration / 2)
         
-        print(f"🎵 IMPROVED POLYPHONY ANALYSIS")
+        print(f"🎵 POLYPHONY ANALYSIS")
         print(f"📁 File: {os.path.basename(midi_file_path)}")
         print(f"⏱️  Duration: {total_duration:.2f} seconds")
         print(f"📊 Estimated measures: {estimated_measures}")

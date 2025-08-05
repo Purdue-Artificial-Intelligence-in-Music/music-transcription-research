@@ -2,13 +2,6 @@
 Shared Preprocessor for MIDI Analysis
 
 Calculates common information once and provides it to all metrics.
-This eliminates redundant calculations and improves performance.
-Follows the conventions of the entropy algorithm.
-
-INSTRUMENT DETECTION IMPROVEMENT (2024):
-- Enhanced extract_notes() function to use PrettyMIDI's is_drum property for perfect instrument detection
-- Falls back to original music21 method if PrettyMIDI is not available
-- Maintains backward compatibility while providing accurate tonal note extraction
 """
 
 import math
@@ -22,25 +15,21 @@ from music21.exceptions21 import StreamException
 
 
 def open_midi(midi_path):
-    """Open and parse MIDI file using music21 conventions."""
+    """Open and parse MIDI file."""
     mf = midi.MidiFile()
     mf.open(midi_path)
     mf.read()
     mf.close()
     stream = midi.translate.midiFileToStream(mf)
     
-    # Store file path as a custom attribute for enhanced drum detection
-    # Use a safe way that won't interfere with music21's metadata system
+    # Store file path as a custom attribute
     setattr(stream, '_original_file_path', midi_path)
     return stream
 
 
 def get_instrument_for_note(note_obj, midi_stream):
     """
-    Robust instrument detection for a note object.
-    
-    Since channel detection is failing, this function uses a workaround
-    based on note characteristics and timing.
+    Instrument detection for a note object.
     
     Args:
         note_obj: Music21 note object
@@ -129,7 +118,7 @@ def get_instrument_for_note(note_obj, midi_stream):
 
 
 def is_percussion_instrument(instrument):
-    """Simple percussion detection matching jupyter notebook logic exactly."""
+    """Percussion detection for instruments."""
     # Check 1: is_drum property (most reliable)
     if instrument.is_drum:
         return True
@@ -148,7 +137,7 @@ def is_percussion_instrument(instrument):
 
 
 def extract_notes(midi_stream):
-    """Extract pitch classes from tonal instruments only - matching jupyter logic."""
+    """Extract pitch classes from tonal instruments only."""
     if not hasattr(midi_stream, '_original_file_path'):
         return []
     
@@ -241,7 +230,7 @@ def extract_ioi(midi_stream):
 
 def calculate_polyphony_series(midi_stream):
     """
-    Calculate polyphony time series - matching jupyter notebook logic exactly.
+    Calculate polyphony time series.
     """
     # Check if we have the original file path (for full files)
     if hasattr(midi_stream, '_original_file_path'):
@@ -309,7 +298,7 @@ def calculate_polyphony_series(midi_stream):
 
 def calculate_time_based_polyphony_metrics(polyphony_series, time_points):
     """
-    Calculate time-weighted polyphony metrics (like jupyter notebook).
+    Calculate time-weighted polyphony metrics.
     
     Args:
         polyphony_series: List of simultaneous note counts
@@ -364,7 +353,7 @@ def calculate_time_based_polyphony_metrics(polyphony_series, time_points):
 
 
 def get_file_info(midi_stream):
-    """Extract file information following entropy conventions."""
+    """Extract file information."""
     measures_count = len(midi_stream.measures(0, None)[0])
     total_notes = len(midi_stream.flatten().notes)
     
@@ -384,7 +373,7 @@ def get_file_info(midi_stream):
 
 def calculate_entropy_optimized(data_list):
     """
-    Calculate entropy using optimized counting with Counter.
+    Calculate entropy using Counter for efficiency.
     
     Args:
         data_list: List of values to calculate entropy for
@@ -410,7 +399,7 @@ def calculate_entropy_optimized(data_list):
 
 def calculate_pitch_interval_entropy_optimized(pitch_list):
     """
-    Calculate pitch interval entropy with optimized processing.
+    Calculate pitch interval entropy.
     
     Args:
         pitch_list: List of pitch values
@@ -434,7 +423,7 @@ def calculate_pitch_interval_entropy_optimized(pitch_list):
 
 def segment_analysis(midi_stream, measures_count, analysis_func, segment_size=16):
     """
-    Generic segmentation analysis following entropy algorithm pattern.
+    Generic segmentation analysis.
     
     Args:
         midi_stream: Music21 stream object
@@ -538,8 +527,6 @@ UNPITCHED_INSTRUMENTS = {
 def is_percussion_or_unpitched(note_obj, midi_stream=None):
     """
     Check if a note object represents percussion or unpitched content.
-    
-    This function is now more conservative - it only filters out obvious percussion.
     
     Args:
         note_obj: Music21 note object
@@ -672,7 +659,7 @@ def preprocess_midi(midi_file_path):
         # Get parts for track-based analysis
         midi_parts = midi_stream.parts.stream()
         
-        # Pre-calculate tonal certainty (expensive operation)
+        # Pre-calculate tonal certainty
         tonal_certainty = analyze_tonal_certainty(midi_stream)
         
         return {

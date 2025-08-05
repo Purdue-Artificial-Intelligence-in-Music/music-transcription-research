@@ -7,9 +7,8 @@ This folder contains scripts for analyzing musical complexity metrics (entropy, 
 ### 1. `complexity_analysis.py`
 **Core analysis script** - Processes MIDI files to extract all complexity metrics
 - **Usage**: `python complexity_analysis.py --dataset Slakh2100 --num-workers 30`
-- **Output**: CSV files with entropy, polyphony, and ATC (harmony) metrics
+- **Output**: CSV files with entropy, polyphony, and ATC metrics
 - **Environment**: Any Python environment
-- **New**: Includes ATC harmony analysis from teammate's implementation
 
 ### 2. `complexity_analysis.sh`
 **Cluster execution script** - Runs complexity analysis on HPC cluster
@@ -52,10 +51,9 @@ This folder contains scripts for analyzing musical complexity metrics (entropy, 
 - Global max/avg polyphony, segmentation analysis, time-based density calculations
 - Captures harmonic complexity through simultaneous voice counting
 
-### 3. **ATC Metrics** (Harmony Analysis) - **NEW**
+### 3. **ATC Metrics** (Harmony Analysis)
 - Automatic Transcription Complexity scores from harmony analysis
 - Chord progression complexity, tonal complexity measures
-- Integrated from teammate's [ATC implementation](https://github.com/praneethkukunuru/atc-test)
 
 ## ATC Integration Details
 
@@ -63,8 +61,8 @@ The ATC (Automatic Transcription Complexity) metric has been integrated as a Git
 
 ```bash
 # ATC is located at:
-complexity/atc/           # Submodule with teammate's implementation
-complexity/atc_wrapper.py # Integration wrapper for our pipeline
+complexity/atc/           # Submodule with ATC implementation
+complexity/atc_wrapper.py # Integration wrapper for pipeline
 ```
 
 **ATC Usage Examples:**
@@ -83,4 +81,4 @@ all_metrics = integrate_with_existing_metrics('path/to/midi_file.mid')
 - `music21`, `pandas`, `numpy`, `matplotlib`, `seaborn`
 - `pretty_midi`, `argparse`, `pathlib`, `logging`
 - `concurrent.futures.ProcessPoolExecutor`
-- **ATC submodule**: Harmony analysis tools (automatic via Git submodule)
+- **ATC submodule**: Harmony analysis tools

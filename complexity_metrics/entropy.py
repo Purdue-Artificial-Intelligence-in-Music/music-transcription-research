@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Final Corrected Entropy Implementation
-Mathematically correct with all issues fixed
+Entropy Analysis Module
+Calculates tonal certainty, pitch class entropy, melodic interval entropy, and IOI entropy.
 """
 
 import math
@@ -12,7 +12,7 @@ from collections import Counter
 from music21 import converter, note, chord
 
 def extract_pitch_classes_mathematical(midi_stream):
-    """Extract pitch classes using original Music21 approach - MATHEMATICALLY CORRECT"""
+    """Extract pitch classes from MIDI stream using Music21."""
     result = []
     for current_note in midi_stream.flatten().notes:
         try:
@@ -27,7 +27,7 @@ def extract_pitch_classes_mathematical(midi_stream):
     return result
 
 def extract_melody_notes_mathematical(midi_stream):
-    """Extract melody notes using original Music21 approach - MATHEMATICALLY CORRECT"""
+    """Extract melody notes (highest note at each time point)."""
     notes = midi_stream.flatten().notes
     off_set = []
     m_notes = []
@@ -74,7 +74,7 @@ def extract_melody_notes_mathematical(midi_stream):
     return highest_notes
 
 def extract_ioi_mathematical(midi_stream):
-    """Extract inter-onset intervals using original Music21 approach - MATHEMATICALLY CORRECT"""
+    """Extract inter-onset intervals from MIDI stream."""
     ioi_list = []
     off_set = []
     notes = midi_stream.flatten().notes
@@ -100,7 +100,7 @@ def extract_ioi_mathematical(midi_stream):
     return ioi_list
 
 def calculate_entropy_mathematical(data_list):
-    """Calculate entropy using ORIGINAL MECHANISM - MATHEMATICALLY CORRECT"""
+    """Calculate entropy using standard information theory."""
     if not data_list:
         return []
     
@@ -117,7 +117,7 @@ def calculate_entropy_mathematical(data_list):
     return result
 
 def calculate_pitch_interval_entropy_mathematical(pitch_list):
-    """Calculate pitch interval entropy using ORIGINAL MECHANISM - MATHEMATICALLY CORRECT"""
+    """Calculate pitch interval entropy with filtering for intervals <= 12 semitones."""
     if len(pitch_list) < 2:
         return []
     
@@ -132,7 +132,7 @@ def calculate_pitch_interval_entropy_mathematical(pitch_list):
     return calculate_entropy_mathematical(intervals)
 
 def analyze_tonal_certainty_corrected(midi_stream):
-    """Analyze tonal certainty using CORRECTED approach"""
+    """Analyze tonal certainty using Music21 key analysis."""
     try:
         # Filter out percussion and unpitched instruments for tonal analysis
         filtered_stream = midi_stream.flatten()
@@ -158,7 +158,7 @@ def analyze_tonal_certainty_corrected(midi_stream):
         return 0.0
 
 def is_percussion_or_unpitched(note_obj):
-    """Check if note is percussion or unpitched - CORRECTED VERSION"""
+    """Check if note is percussion or unpitched."""
     try:
         # Check for PercussionChord objects - these are definitely percussion
         if hasattr(note_obj, '__class__') and 'Percussion' in note_obj.__class__.__name__:
@@ -178,25 +178,25 @@ def is_percussion_or_unpitched(note_obj):
         return False
 
 def analyze_pitch_class_entropy_mathematical(midi_stream):
-    """Analyze pitch class entropy using ORIGINAL MECHANISM - MATHEMATICALLY CORRECT"""
+    """Analyze pitch class entropy."""
     notes = extract_pitch_classes_mathematical(midi_stream)
     entropy_contributions = calculate_entropy_mathematical(notes)
     return 0 - sum(entropy_contributions)
 
 def analyze_melodic_interval_entropy_mathematical(midi_stream):
-    """Analyze melodic interval entropy using ORIGINAL MECHANISM - MATHEMATICALLY CORRECT"""
+    """Analyze melodic interval entropy."""
     melody_notes = extract_melody_notes_mathematical(midi_stream)
     entropy_contributions = calculate_pitch_interval_entropy_mathematical(melody_notes)
     return 0 - sum(entropy_contributions)
 
 def analyze_ioi_entropy_mathematical(midi_stream):
-    """Analyze inter-onset interval entropy using ORIGINAL MECHANISM - MATHEMATICALLY CORRECT"""
+    """Analyze inter-onset interval entropy."""
     ioi_list = extract_ioi_mathematical(midi_stream)
     entropy_contributions = calculate_entropy_mathematical(ioi_list)
     return 0 - sum(entropy_contributions)
 
 def calculate_polyphony_mathematical(midi_stream):
-    """Calculate polyphony using MATHEMATICALLY CORRECT approach"""
+    """Calculate polyphony using event-based approach."""
     # Get all notes with their start and end times
     all_notes = []
     for current_note in midi_stream.flatten().notes:
@@ -281,7 +281,7 @@ def calculate_polyphony_mathematical(midi_stream):
     return max_polyphony, avg_polyphony, std_polyphony, polyphony_density
 
 def main(midi_file_path):
-    """Analyze a single MIDI file with FINAL CORRECTED calculations"""
+    """Analyze a single MIDI file for entropy metrics."""
     
     if not os.path.exists(midi_file_path):
         print(f"Error: File {midi_file_path} does not exist")
@@ -291,11 +291,11 @@ def main(midi_file_path):
         # Load MIDI file using Music21
         midi_stream = converter.parse(midi_file_path)
         
-        print(f"🎵 FINAL CORRECTED ANALYSIS")
+        print(f"🎵 ENTROPY ANALYSIS")
         print(f"📁 File: {os.path.basename(midi_file_path)}")
         print("="*50)
         
-        # Analyze using MATHEMATICALLY CORRECT mechanisms
+        # Analyze entropy metrics
         k_piece = analyze_tonal_certainty_corrected(midi_stream)
         Hpc_piece = analyze_pitch_class_entropy_mathematical(midi_stream)
         Hpi_piece = analyze_melodic_interval_entropy_mathematical(midi_stream)

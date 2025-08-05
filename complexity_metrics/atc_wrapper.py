@@ -1,12 +1,8 @@
 """
 ATC (Automatic Transcription Complexity) Wrapper
 
-This module provides a clean interface to the ATC harmony analysis tool
-developed by your teammate, which uses the lacimarsik/harmony-analyser
-Java application for sophisticated chord progression analysis.
-
-This wrapper integrates the teammate's approach with our complexity pipeline
-while preserving the original architecture and sophisticated analysis.
+This module provides an interface to the ATC harmony analysis tool
+using the lacimarsik/harmony-analyser Java application for chord progression analysis.
 """
 
 import os
@@ -24,9 +20,6 @@ ATC_DIR = os.path.join(os.path.dirname(__file__), 'atc')
 def calculate_atc_metrics(midi_file_path, use_preprocessor_data=None):
     """
     Calculate ATC (Automatic Transcription Complexity) metrics for a MIDI file.
-    
-    This function uses your teammate's implementation which wraps the 
-    lacimarsik/harmony-analyser Java tool for sophisticated harmony analysis.
     
     Args:
         midi_file_path: Path to MIDI file
@@ -59,7 +52,7 @@ def calculate_atc_metrics(midi_file_path, use_preprocessor_data=None):
                     'error': f'Harmony analyser JAR not found at {jar_path}. The harmony analyzer needs to be built first.'
                 }
             
-            # Use your teammate's get_atc_score.py script
+            # Use get_atc_score.py script
             cmd = [sys.executable, 'get_atc_score.py', midi_file_path]
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             

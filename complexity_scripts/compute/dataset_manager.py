@@ -3,13 +3,7 @@
 Dataset Manager for Music Complexity Analysis
 
 This module provides a unified interface for accessing MIDI datasets
-across different storage locations (depot, scratch, local cache).
-
-Professional approach that combines:
-1. Configuration-driven dataset discovery
-2. Intelligent caching for performance
-3. Flexible path resolution
-4. Robust error handling
+across different storage locations.
 """
 
 import os
@@ -43,13 +37,13 @@ class DatasetInfo:
 
 class DatasetManager:
     """
-    Professional dataset manager for music complexity analysis.
+    Dataset manager for music complexity analysis.
     
     Features:
     - Configuration-driven dataset discovery
-    - Intelligent caching for performance
-    - Multiple storage location support (depot, scratch, cache)
-    - Robust error handling and logging
+    - Caching for performance
+    - Multiple storage location support
+    - Error handling and logging
     - Parallel file discovery
     """
     
