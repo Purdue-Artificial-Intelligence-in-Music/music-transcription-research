@@ -9,7 +9,8 @@
 #SBATCH --error=logs/complexity_analysis_%j.err
 
 # COMPLEXITY ANALYSIS - MAIN JOB SCRIPT
-# Clean and simple version for running full analysis
+
+module purge
 
 start_time=$(date +%s.%N)
 
@@ -63,8 +64,21 @@ if [ $? -eq 0 ]; then
     
     echo "Total Runtime: ${runtime_formatted}"
     echo "=========================================="
+    
+    # Send Discord notification for successful completion
+    curl -s -X POST -H "Content-Type: application/json" -d "{
+\"content\": \"✅ **Complexity Analysis Completed Successfully**\nJob ID: $SLURM_JOB_ID\nDataset: ${1:-'All Datasets'}\nRuntime: ${runtime_formatted}",
+\"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"
+}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
+    
 else
     echo "=========================================="
     echo "Complexity analysis failed!"
     echo "=========================================="
+    
+    # Send Discord notification for failure
+    curl -s -X POST -H "Content-Type: application/json" -d "{
+\"content\": \"❌ **Complexity Analysis Failed**\nJob ID: $SLURM_JOB_ID\nDataset: ${1:-'All Datasets'}",
+\"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"
+}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
 fi 
