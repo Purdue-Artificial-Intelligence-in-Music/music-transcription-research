@@ -269,6 +269,7 @@ def main():
 
     os.makedirs(args.output_dir, exist_ok=True)
     file_workers = args.file_workers or os.cpu_count()
+    print(f"Using {file_workers} parallel workers for file analysis")
 
     dataset_infos = config["values"][1:]  # Skip header
     all_results = []
