@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=32
 #SBATCH --time=01:30:00
 #SBATCH -J main
 #SBATCH -o 0_main_output.out
@@ -22,8 +22,6 @@ fi
 source /etc/profile.d/modules.sh
 module use /opt/spack/cpu/Core
 module use /opt/spack/gpu/Core
-# module load cuda/12.6.0
-# module load cudnn/9.2.0.82-12
 module load ffmpeg
 module load external
 module load conda
@@ -233,7 +231,7 @@ export CONDA_PKGS_DIRS
 export PATH
 
 # Use parallel to create conda environments in parallel
-printf "%s\n" "${lines[@]}" | parallel -j 8 make_env
+printf "%s\n" "${lines[@]}" | parallel -j "$(nproc)" make_env
 
 conda deactivate
 
