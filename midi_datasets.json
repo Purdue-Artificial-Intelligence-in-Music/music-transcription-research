@@ -1,0 +1,67 @@
+{
+    "values": [
+        [
+            "Dataset Name",
+            "Server Location",
+            "Instrument",
+            "Audio Type",
+            "Count"
+        ],
+        [
+            "Slakh2100",
+            "/depot/yunglu/data/transcription/slakh2100",
+            "Multiple",
+            "mid",
+            "1710"
+        ],
+        [
+            "Maestro",
+            "/depot/yunglu/data/transcription/maestro-v3.0.0",
+            "Piano",
+            "mid",
+            "1276"
+        ],
+        [
+            "XMIDI",
+            "/depot/yunglu/data/transcription/xmidi_dataset",
+            "Multiple",
+            "mid",
+            "108023"
+        ],
+        [
+            "MSMD",
+            "/depot/yunglu/data/transcription/msmd_data",
+            "Piano",
+            "mid",
+            "467"
+        ],
+        [
+            "BiMMuDa",
+            "/depot/yunglu/data/transcription/BiMMuDa",
+            "Piano",
+            "mid",
+            "375"
+        ],
+        [
+            "POP909",
+            "/depot/yunglu/data/transcription/POP909",
+            "Piano",
+            "mid",
+            "909"
+        ],
+        [
+            "NESMDB",
+            "/depot/yunglu/data/transcription/nesmdb",
+            "Multiple",
+            "mid",
+            "5278"
+        ],
+        [
+            "AAM",
+            "/depot/yunglu/data/transcription/aam_dataset",
+            "Multiple",
+            "mid",
+            "3000"
+        ]
+    ]
+}
