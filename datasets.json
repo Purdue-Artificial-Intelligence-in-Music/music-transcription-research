@@ -1,13 +1,13 @@
 {
     "values": [
         ["Dataset Name", "Server Location", "Instrument", "Audio Type", "Count"],
-        ["Maestro", "/scratch/gilbreth/ochaturv/datasets/maestro-v3.0.0", "Piano", "wav", "1276"],
-        ["Slakh 2100 Redux", "/scratch/gilbreth/ochaturv/datasets/slakh2100", "Multiple", "wav", "1710"],
-        ["XMIDI", "/scratch/gilbreth/ochaturv/datasets/xmidi_dataset", "Multiple", "wav", "108023"],
-        ["MSMD", "/scratch/gilbreth/ochaturv/datasets/msmd_data", "Piano", "wav", "467"],
-        ["BiMMuDa", "/scratch/gilbreth/ochaturv/datasets/BiMMuDa", "Piano", "wav", "375"],
-        ["POP909", "/scratch/gilbreth/ochaturv/datasets/POP909", "Piano", "wav", "909"],
-        ["NESMDB", "/scratch/gilbreth/ochaturv/datasets/nesmdb", "Multiple", "wav", "5278"],
-        ["AAM", "/scratch/gilbreth/ochaturv/datasets/aam_dataset", "Multiple", "wav", "3000"]
+        ["Maestro", "/depot/yunglu/data/transcription/maestro-v3.0.0", "Piano", "wav", "1276"],
+        ["Slakh 2100 Redux", "/depot/yunglu/data/transcription/slakh2100", "Multiple", "wav", "1710"],
+        ["XMIDI", "/depot/yunglu/data/transcription/xmidi_dataset", "Multiple", "wav", "108023"],
+        ["MSMD", "/depot/yunglu/data/transcription/msmd_data", "Piano", "wav", "467"],
+        ["BiMMuDa", "/depot/yunglu/data/transcription/BiMMuDa", "Piano", "wav", "375"],
+        ["POP909", "/depot/yunglu/data/transcription/POP909", "Piano", "wav", "909"],
+        ["NESMDB", "/depot/yunglu/data/transcription/nesmdb", "Multiple", "wav", "5278"],
+        ["AAM", "/depot/yunglu/data/transcription/aam_dataset", "Multiple", "wav", "3000"]
     ]
 }
