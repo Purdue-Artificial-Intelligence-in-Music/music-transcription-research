@@ -99,3 +99,7 @@ __pycache__/
 # Project-specific
 keys.json
 service_account.json
+
+# Complexity analysis results
+complexity_results/
+complexity_scripts/compute/complexity_results/

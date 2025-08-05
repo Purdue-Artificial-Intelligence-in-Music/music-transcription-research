@@ -48,7 +48,7 @@ class DatasetManager:
     """
     
     def __init__(self, 
-                 config_file: str = "midi_datasets.json",
+                 config_file: str = "/home/shang33/AIM/music-transcription-research/midi_datasets.json",
                  cache_dir: Optional[str] = None,
                  enable_cache: bool = True):
         """
@@ -175,9 +175,29 @@ class DatasetManager:
                        dataset_path: str, 
                        extensions: List[str],
                        limit: Optional[int] = None) -> List[Path]:
+        """Discover files with fallback to original paths."""
+        # Try depot path first
+        depot_path = f"/depot/yunglu/data/transcription/{dataset_path}"
+        if os.path.exists(depot_path):
+            return self._find_files_in_directory(depot_path, extensions, limit)
+        
+        # Fallback to original scratch path
+        scratch_path = f"/scratch/gilbreth/shang33/AIM/datasets/{dataset_path}"
+        if os.path.exists(scratch_path):
+            logger.info(f"Using fallback path: {scratch_path}")
+            return self._find_files_in_directory(scratch_path, extensions, limit)
+        
+        # If neither exists, try the original path
+        if os.path.exists(dataset_path):
+            return self._find_files_in_directory(dataset_path, extensions, limit)
+        
+        logger.error(f"No valid path found for dataset: {dataset_path}")
+        return []
+    
+    def _find_files_in_directory(self, directory: str, extensions: List[str], limit: Optional[int] = None) -> List[Path]:
         """Discover files in dataset directory."""
         files = []
-        dataset_path = Path(dataset_path)
+        dataset_path = Path(directory)
         
         if not dataset_path.exists():
             logger.warning(f"Dataset path does not exist: {dataset_path}")
@@ -306,7 +326,7 @@ class DatasetManager:
 
 
 # Convenience functions for backward compatibility
-def get_dataset_manager(config_file: str = "midi_datasets.json", 
+def get_dataset_manager(config_file: str = "/home/shang33/AIM/music-transcription-research/midi_datasets.json", 
                        cache_dir: Optional[str] = None) -> DatasetManager:
     """Get a dataset manager instance."""
     # Look for config file relative to this script

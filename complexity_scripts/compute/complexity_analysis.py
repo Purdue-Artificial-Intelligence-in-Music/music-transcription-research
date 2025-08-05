@@ -15,14 +15,14 @@ import logging
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import List, Dict
 
-# Add the complexity module to the path
-sys.path.append(".")
+# Add the complexity_metrics module to the path
+sys.path.append("../../../music-transcription-research")
 
-from complexity.entropy import main as entropy_analysis
-from complexity.polyphony import main as polyphony_analysis
-from complexity.atc_wrapper import calculate_atc_metrics
+from complexity_metrics.entropy import main as entropy_analysis
+from complexity_metrics.polyphony import main as polyphony_analysis
+from complexity_metrics.atc_wrapper import calculate_atc_metrics
 
-from dataset_manager import get_dataset_manager
+from complexity_scripts.compute.dataset_manager import get_dataset_manager
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -101,7 +101,7 @@ def analyze_complexity_for_file(midi_file_path, dataset_name):
         }
 
 
-def process_batch_parallel(midi_files: List[str], dataset_name: str, num_workers: int = 16) -> List[Dict]:
+def process_batch_parallel(midi_files: List[str], dataset_name: str, num_workers: int = 32) -> List[Dict]:
     """Process multiple MIDI files in parallel."""
     print(f"Starting parallel processing of {len(midi_files)} files from {dataset_name} with {num_workers} workers", file=sys.stderr)
     logger.info(f"Starting parallel processing of {len(midi_files)} files from {dataset_name} with {num_workers} workers")
@@ -167,13 +167,13 @@ def main():
                        help='Output directory for results')
     parser.add_argument('--max-files', type=int, default=None, 
                        help='Maximum number of files to analyze per dataset')
-    parser.add_argument('--num-workers', type=int, default=16,
-                       help='Number of parallel workers (default: 16)')
+    parser.add_argument('--num-workers', type=int, default=32,
+                       help='Number of parallel workers (default: 32)')
     
     args = parser.parse_args()
     
     # Use dataset manager instead of config file
-    from dataset_manager import get_dataset_manager
+    from complexity_scripts.compute.dataset_manager import get_dataset_manager
     manager = get_dataset_manager()
     
     # Create output directory
