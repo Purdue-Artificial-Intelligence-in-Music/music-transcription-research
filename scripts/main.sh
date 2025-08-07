@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -A yunglu-k
+#SBATCH -A standby
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
@@ -166,33 +166,49 @@ make_env() {
     ENV_NAME="running-env-${MODEL_NAME}"
     ENV_PATH="/scratch/gilbreth/ochaturv/.conda/envs/$ENV_NAME"
     PKGS_PATH="/scratch/gilbreth/ochaturv/.conda/pkgs_${ENV_NAME}_$$"
-    echo "[INFO] PKGS_PATH: $PKGS_PATH"
     MODEL_DIR="$MODEL_NAME_RAW"
 
-    export CONDA_PKGS_DIRS="$PKGS_PATH"
-    mkdir -p "$PKGS_PATH"
+    echo "[INFO] PKGS_PATH: $PKGS_PATH"
+    echo "[INFO] Creating conda env for $MODEL_NAME_RAW..."
 
+    # Isolate PKGS path
+    CONDA_PKGS_DIRS="$PKGS_PATH"
+    export CONDA_PKGS_DIRS
+    mkdir -p "$CONDA_PKGS_DIRS"
+
+    # Remove existing environment if it exists
     if [ -d "$ENV_PATH" ]; then
         conda env remove -y --prefix "$ENV_PATH" >/dev/null
         rm -rf "$ENV_PATH"
     fi
 
+    # Check if environment.yml exists
     if [ ! -f "./$MODEL_DIR/environment.yml" ]; then
         echo "[SKIP] Missing environment.yml for $MODEL_DIR"
+        rm -rf "$PKGS_PATH"
         return
     fi
 
-    echo "[INFO] Creating conda env for $MODEL_NAME_RAW..."
-    if ! mamba env create -q -f "./$MODEL_DIR/environment.yml" --prefix "$ENV_PATH" >/dev/null; then
-        echo "[ERROR] Failed to create environment for $MODEL_NAME_RAW"
-        return
-    fi
+    # Retry logic for mamba create
+    MAX_ATTEMPTS=3
+    for ((i=1; i<=MAX_ATTEMPTS; i++)); do
+        if mamba env create -q -f "./$MODEL_DIR/environment.yml" --prefix "$ENV_PATH" >/dev/null 2>"$ENV_PATH-create.log"; then
+            break
+        elif [[ $i -lt $MAX_ATTEMPTS ]]; then
+            echo "[WARN] Env creation failed for $MODEL_NAME_RAW — retrying ($i/$MAX_ATTEMPTS)..."
+            sleep $((RANDOM % 10 + 5))
+        else
+            echo "[ERROR] Failed to create environment for $MODEL_NAME_RAW after $MAX_ATTEMPTS attempts"
+            cat "$ENV_PATH-create.log"
+            rm -rf "$PKGS_PATH"
+            return
+        fi
+    done
 
     PYTHON_CMD="$ENV_PATH/bin/python"
     CONDA_CMD="mamba run -p $ENV_PATH"
 
-    PY_MAJOR=$($PYTHON_CMD -c "import sys; print(sys.version_info[0])")
-    PY_MINOR=$($PYTHON_CMD -c "import sys; print(sys.version_info[1])")
+    PY_VER=$($PYTHON_CMD -c 'import sys; print(sys.version.split()[0])')
 
     REQUIRES_TF=$(grep -i 'tensorflow' "./$MODEL_DIR/environment.yml" || true)
     REQUIRES_PT=$(grep -Ei 'torch|pytorch' "./$MODEL_DIR/environment.yml" || true)
@@ -204,12 +220,7 @@ make_env() {
         echo "[WARN] No GPU detected by nvidia-smi — GPU libraries may not be usable."
     fi
 
-    # echo "[INFO] Installing CUDA libraries into env..."
-    # $CONDA_CMD conda install -c nvidia -y cudatoolkit cudnn >/dev/null 2>&1
-
-    PY_VER=$($PYTHON_CMD -c 'import sys; print(sys.version.split()[0])')
-
-    # Reporting if frameworks are present
+    # Framework detection and reporting
     if $PYTHON_CMD -c "import torch" 2>/dev/null; then
         PT_VER=$($PYTHON_CMD -c "import torch; print(torch.__version__)" 2>/dev/null || echo "unknown")
         CUDA_AVAIL=$($PYTHON_CMD -c "import torch; print(torch.cuda.is_available())" 2>/dev/null || echo "unknown")
@@ -227,14 +238,12 @@ make_env() {
 }
 
 export -f make_env
-export CONDA_PKGS_DIRS
 export PATH
 
 # Use parallel to create conda environments in parallel
 printf "%s\n" "${lines[@]}" | parallel -j "$(nproc)" make_env
 
 conda deactivate
-
 conda info --envs
 
 echo "--------------------------------------------------"
