@@ -14,6 +14,9 @@ import re
 import pandas as pd
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from googleapiclient.http import build_http
+from time import time
 
 
 # Google Drive functions
@@ -35,19 +38,20 @@ def authenticate_service_account():
         ],
     }
     gauth.ServiceAuth()
+    gauth.http = build_http()
     return GoogleDrive(gauth)
 
 
 def download_details_files(folder_id, local_directory):
-    """Download all .txt files containing 'details' from a Google Drive folder and subfolders."""
+    """Download all .txt files containing 'details' from a Google Drive folder and subfolders using concurrency."""
     drive = authenticate_service_account()
 
     if not os.path.exists(local_directory):
         os.makedirs(local_directory)
 
-    downloaded_count = 0
     downloaded_files = []
     folders_to_search = [(folder_id, None)]  # (folder_id, folder_name)
+    download_tasks = []
 
     while folders_to_search:
         current_folder_id, parent_folder_name = folders_to_search.pop(0)
@@ -64,31 +68,42 @@ def download_details_files(folder_id, local_directory):
 
             # Download .txt files containing 'details'
             elif file_name.lower().endswith(".txt") and "details" in file_name.lower():
-                try:
-                    drive_file = drive.CreateFile({"id": file["id"]})
+                download_tasks.append((file, parent_folder_name))
 
-                    # Create new filename based on folder name
-                    if parent_folder_name:
-                        # Replace spaces and hyphens with underscores, remove extra spaces
-                        clean_folder_name = (
-                            parent_folder_name.replace(" - ", "_")
-                            .replace(" ", "_")
-                            .replace("-", "_")
-                        )
-                        new_filename = f"{clean_folder_name}.txt"
-                    else:
-                        # Fallback to original filename if no folder name
-                        new_filename = file_name.replace("/", "_").replace("\\", "_")
+    print(f"Found {len(download_tasks)} files to download...")
 
-                    local_file_path = os.path.join(local_directory, new_filename)
-                    drive_file.GetContentFile(local_file_path)
-                    downloaded_count += 1
-                    downloaded_files.append(new_filename)
-                    print(f"Downloaded: {new_filename}")
-                except Exception as e:
-                    print(f"Error downloading {file_name}: {str(e)}")
+    def download_file(file_info):
+        file, parent_folder_name = file_info
+        try:
+            drive_file = drive.CreateFile({"id": file["id"]})
+            if parent_folder_name:
+                clean_folder_name = (
+                    parent_folder_name.replace(" - ", "_")
+                    .replace(" ", "_")
+                    .replace("-", "_")
+                )
+                new_filename = f"{clean_folder_name}.txt"
+            else:
+                new_filename = file["title"].replace("/", "_").replace("\\", "_")
 
-    return downloaded_count
+            local_file_path = os.path.join(local_directory, new_filename)
+            drive_file.GetContentFile(local_file_path)
+            print(f"Downloaded: {new_filename}")
+            return new_filename
+        except Exception as e:
+            print(f"Error downloading {file['title']}: {str(e)}")
+            return None
+
+    with ThreadPoolExecutor() as executor:
+        futures = {
+            executor.submit(download_file, task): task for task in download_tasks
+        }
+        for future in as_completed(futures):
+            result = future.result()
+            if result:
+                downloaded_files.append(result)
+
+    return len(downloaded_files)
 
 
 # Dataframe processing functions
@@ -206,9 +221,13 @@ def parse_results_file(file_path: str) -> list:
     return midi_data_list
 
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+
 def process_folder(folder_path: str) -> pd.DataFrame:
     """
     Process all text files in the local folder and create a pandas DataFrame.
+    Uses concurrency to process files in parallel.
 
     Args:
         folder_path: Path to the folder containing text files
@@ -232,15 +251,26 @@ def process_folder(folder_path: str) -> pd.DataFrame:
 
     print(f"Found {len(txt_files)} text files to process...")
 
-    for filename in txt_files:
+    def parse_file_concurrently(filename):
         file_path = os.path.join(folder_path, filename)
         try:
             midi_results = parse_results_file(file_path)
+            return (filename, midi_results)
+        except Exception as e:
+            print(f"Error processing {filename}: {str(e)}")
+            return (filename, [])
+
+    with ThreadPoolExecutor() as executor:
+        future_to_file = {
+            executor.submit(parse_file_concurrently, filename): filename
+            for filename in txt_files
+        }
+
+        for future in as_completed(future_to_file):
+            filename, midi_results = future.result()
             all_midi_data.extend(midi_results)
             file_parsed_counts[filename] = len(midi_results)
             print(f"Processed: {filename} ({len(midi_results)} MIDI files)")
-        except Exception as e:
-            print(f"Error processing {filename}: {str(e)}")
 
     expected_counts_path = "datasets.json"
     EXPECTED_COUNTS = load_expected_counts(expected_counts_path)
@@ -310,6 +340,7 @@ def print_dataframe_info(df: pd.DataFrame):
 
 
 if __name__ == "__main__":
+    start_time = time()
     print("Downloading details files from cloud...")
     print("=" * 60)
 
@@ -341,3 +372,6 @@ if __name__ == "__main__":
     for file in os.listdir(local_directory):
         if file.endswith(".txt"):
             os.remove(os.path.join(local_directory, file))
+
+    end_time = time()
+    print(f"\nTotal processing time: {end_time - start_time:.2f}")
