@@ -12,9 +12,8 @@ import json
 import subprocess
 import os
 import math
-from typing import Dict, List
 
-CHUNK_SIZE = 3000
+CHUNK_SIZE = 1500
 MODELS_FILE = "models.json"
 DATASETS_FILE = "datasets.json"
 RUN_SCRIPT = "run.sh"
@@ -74,29 +73,42 @@ def main():
     print(f"Found {len(model_data)} models and {len(dataset_data)} datasets.")
 
     total_jobs_submitted = 0
-    job_dependencies: Dict[str, Dict[str, List[str]]] = {}
     all_upload_ids = []
 
-    for model_row in model_data:
-        (
-            model_name,
-            instrument_type,
-            training_datasets,
-            completed_datasets,
-        ) = model_row
-        print(f"Processing model: {model_name}")
+    # Sort models by reverse alphabetical order
+    model_data.sort(key=lambda x: x[0], reverse=True)
 
-        job_dependencies[model_name] = {}
-        training_datasets = set(
-            training_datasets if isinstance(training_datasets, list) else []
-        )
-        completed_datasets = set(
-            completed_datasets if isinstance(completed_datasets, list) else []
-        )
+    for dataset_row in dataset_data:
+        dataset_name, dataset_path, dataset_instrument, audio_type, _ = dataset_row
+        print(f"\nProcessing dataset: {dataset_name}")
 
-        for dataset_row in dataset_data:
-            dataset_name, dataset_path, dataset_instrument, audio_type, _ = dataset_row
-            print(f"\t- Dataset: {dataset_name}")
+        list_file_path = f"{dataset_path}.txt"
+        if not os.path.isfile(list_file_path):
+            print(f"\t- Missing file list: {list_file_path}, skipping dataset.")
+            continue
+
+        with open(list_file_path, "r") as f:
+            all_files = [line.strip() for line in f if line.strip()]
+
+        total_files = len(all_files)
+        num_chunks = math.ceil(total_files / CHUNK_SIZE)
+        print(f"\t- Total files: {total_files}, Chunks: {num_chunks}")
+
+        chunk_dir = f"chunks/{dataset_name}"
+        os.makedirs(chunk_dir, exist_ok=True)
+
+        for model_row in model_data:
+            model_name, instrument_type, training_datasets, completed_datasets = (
+                model_row
+            )
+            print(f"\tProcessing model: {model_name}")
+
+            training_datasets = set(
+                training_datasets if isinstance(training_datasets, list) else []
+            )
+            completed_datasets = set(
+                completed_datasets if isinstance(completed_datasets, list) else []
+            )
 
             if dataset_name in training_datasets:
                 print(f"\t\t- Skipping: {dataset_name} used for training {model_name}.")
@@ -112,21 +124,7 @@ def main():
                 print(f"\t\t- Skipping: model and dataset instrument mismatch.")
                 continue
 
-            list_file_path = f"{dataset_path}.txt"
-            if not os.path.isfile(list_file_path):
-                print(f"\t\t- Missing file list: {list_file_path}, skipping.")
-                continue
-
-            with open(list_file_path, "r") as f:
-                all_files = [line.strip() for line in f if line.strip()]
-
-            total_files = len(all_files)
-            num_chunks = math.ceil(total_files / CHUNK_SIZE)
-            print(f"\t\t- Total files: {total_files}, Chunks: {num_chunks}")
-
-            chunk_dir = f"chunks/{dataset_name}"
-            os.makedirs(chunk_dir, exist_ok=True)
-            job_dependencies[model_name][dataset_name] = []
+            chunk_job_ids = []
 
             for i in range(num_chunks):
                 chunk_files = all_files[i * CHUNK_SIZE : (i + 1) * CHUNK_SIZE]
@@ -154,7 +152,7 @@ def main():
 
                 job_id = submit_job(sbatch_cmd)
                 if job_id:
-                    job_dependencies[model_name][dataset_name].append(job_id)
+                    chunk_job_ids.append(job_id)
                     total_jobs_submitted += 1
                     print(
                         f"\t\t- Submitted chunk {i + 1}/{num_chunks} as job ID: {job_id}"
@@ -162,50 +160,26 @@ def main():
                 else:
                     print(f"\t\t- Failed to submit chunk {i + 1}/{num_chunks}")
 
-    # Submit upload jobs with dependency per (model, dataset)
-    print("\nSubmitting upload jobs with dependency on completed chunks...")
+            if chunk_job_ids:
+                dependency_str = ":".join(chunk_job_ids)
+                upload_job_name = f"Upload-{model_name}-{dataset_name}"
+                upload_cmd = [
+                    "sbatch",
+                    "-J",
+                    upload_job_name,
+                    "--dependency=afterany:" + dependency_str,
+                    UPLOAD_SCRIPT,
+                    model_name,
+                    dataset_name,
+                ]
 
-    model_lookup = {model_row[0]: model_row for model_row in model_data}
-    for model_name, dataset_map in job_dependencies.items():
-        model_row = model_lookup.get(model_name)
-        training_datasets = set(model_row[2] if isinstance(model_row[2], list) else [])
-        completed_datasets = set(model_row[3] if isinstance(model_row[3], list) else [])
-        for dataset_name, ids in dataset_map.items():
-            if not ids:
-                print(
-                    f"\t- Skipping upload for {model_name}/{dataset_name} (no jobs submitted)."
-                )
-                continue
-
-            if dataset_name in training_datasets or dataset_name in completed_datasets:
-                print(
-                    f"\t- Skipping upload for {model_name}/{dataset_name} (already processed or used for training)."
-                )
-                continue
-
-            dependency_str = ":".join(ids)
-            upload_job_name = f"Upload-{model_name}-{dataset_name}"
-            upload_cmd = [
-                "sbatch",
-                "-J",
-                upload_job_name,
-                "--dependency=afterok:" + dependency_str,
-                UPLOAD_SCRIPT,
-                model_name,
-                dataset_name,
-            ]
-
-            upload_job_id = submit_job(upload_cmd)
-            if upload_job_id:
-                print(
-                    f"\t- Upload job submitted for {model_name}/{dataset_name} (Job ID: {upload_job_id})"
-                )
-                total_jobs_submitted += 1
-                all_upload_ids.append(upload_job_id)
-            else:
-                print(
-                    f"\t- Failed to submit upload job for {model_name}/{dataset_name}"
-                )
+                upload_job_id = submit_job(upload_cmd)
+                if upload_job_id:
+                    print(f"\t\t- Upload job submitted (Job ID: {upload_job_id})")
+                    total_jobs_submitted += 1
+                    all_upload_ids.append(upload_job_id)
+                else:
+                    print(f"\t\t- Failed to submit upload job.")
 
     # Submit final notification job
     if all_upload_ids:
