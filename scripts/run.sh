@@ -4,6 +4,7 @@
 #SBATCH --ntasks-per-node=2
 #SBATCH --gres=gpu:2
 #SBATCH --cpus-per-task=8
+#SBATCH --mem=80G
 #SBATCH --time=2-00:00:00
 
 # RUN.SH
