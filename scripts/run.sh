@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH -A yunglu-k
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --gres=gpu:1
+#SBATCH --ntasks-per-node=2
+#SBATCH --gres=gpu:2
 #SBATCH --cpus-per-task=8
 #SBATCH --time=2-00:00:00
 
@@ -84,6 +84,11 @@ process_file() {
 
     echo "Processing file: $1"
     local original_file="$1"
+
+    local slot="$2"
+    export CUDA_VISIBLE_DEVICES=$((slot - 1))
+    echo "Using GPU: $CUDA_VISIBLE_DEVICES for file: $original_file"
+
     local file="$original_file" # Default file to process
     local base_name=$(basename "$original_file" .$audio_type)
 
@@ -169,7 +174,7 @@ export -f process_file
 gpu_count=$(nvidia-smi -L | wc -l)
 
 # Run jobs in parallel using GNU Parallel
-cat "$chunk_file" | parallel -j "$gpu_count" process_file
+cat "$chunk_file" | parallel -j "$gpu_count" process_file {} {%}
 
 # Merge per-file details into shared details.txt without overwriting
 echo "Appending per-file details into $details_file"
