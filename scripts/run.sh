@@ -8,6 +8,13 @@
 
 # RUN.SH
 
+# Check for internet access for Conda environment creation
+if ! curl --silent --head --fail https://repo.anaconda.com > /dev/null; then
+    echo "No internet access. Cannot create Conda environment. Exiting."
+    curl -s -X POST -H "Content-Type: application/json" -d '{"content": "URGENT: NO INTERNET ACCESS FOR CONDA CREATION", "avatar_url": "https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png"}' https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux
+    exit 1
+fi
+
 start_time=$(date +%s.%N)
 
 echo "--------------------------------------------------"
@@ -41,17 +48,9 @@ module load gcc
 
 export PIP_NO_CACHE_DIR=true
 
-echo "CUDA version:"
-nvcc --version 2>/dev/null || echo "nvcc not found"
+echo "--------------------------------------------------"
 echo "Available GPUs:"
 nvidia-smi -L 2>/dev/null || echo "nvidia-smi not found"
-
-# Check for internet access
-if ! curl -s --head https://repo.anaconda.com | grep -q "^HTTP.* 200"; then
-    echo "No internet access. Cannot create Conda environment. Exiting."
-    curl -s -X POST -H "Content-Type: application/json" -d '{"content": "URGENT: NO INTERNET ACCESS FOR CONDA CREATION", "avatar_url": "https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png"}' https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux
-    exit 1
-fi
 
 echo "--------------------------------------------------"
 echo "Running the model: $1"
@@ -173,7 +172,7 @@ gpu_count=$(nvidia-smi -L | wc -l)
 cat "$chunk_file" | parallel -j "$gpu_count" process_file
 
 # Merge per-file details into shared details.txt without overwriting
-echo "Appending per-file details into $details_file..."
+echo "Appending per-file details into $details_file"
 for file in "$temp_dir"/*.details; do
     if [[ -f "$file" ]]; then
         cat "$file" >> "$details_file"
