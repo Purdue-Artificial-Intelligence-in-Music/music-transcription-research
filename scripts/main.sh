@@ -29,10 +29,13 @@ module load conda
 module load parallel
 module load gcc
 
+task_time=$(date +%s.%N)
 rm -rf /scratch/gilbreth/ochaturv/.conda/
+echo "Cleaned conda directory in $(echo "$(date +%s.%N) - $task_time" | bc) seconds"
 
 echo "--------------------------------------------------"
 echo "Verifying dataset .wav counts match datasets.json"
+task_time=$(date +%s.%N)
 
 DATASET_JSON="/scratch/gilbreth/ochaturv/research/datasets.json"
 MISMATCHES=0
@@ -72,18 +75,23 @@ if [[ $MISMATCHES -gt 0 ]]; then
 else
     echo "[SUCCESS] All dataset counts match expected values."
 fi
+echo "Dataset verification completed in $(echo "$(date +%s.%N) - $task_time" | bc) seconds"
 
 echo "--------------------------------------------------"
 echo "Creating default conda environment with mamba"
+task_time=$(date +%s.%N)
+
 export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_default
 mkdir -p "$CONDA_PKGS_DIRS"
 conda create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/default-env python=3.12 >/dev/null
 conda activate /scratch/gilbreth/ochaturv/.conda/envs/default-env
 conda install -y -q -c conda-forge mamba >/dev/null
 rm -rf "$CONDA_PKGS_DIRS"
+echo "Default conda environment created in $(echo "$(date +%s.%N) - $task_time" | bc) seconds"
 
 echo "--------------------------------------------------"
 echo "Creating shared conda environments for scoring and Google Drive upload"
+task_time=$(date +%s.%N)
 
 export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_scoring
 mkdir -p "$CONDA_PKGS_DIRS"
@@ -103,9 +111,11 @@ if [ ! -d "/scratch/gilbreth/ochaturv/.conda/envs/upload-env" ]; then
     echo "Upload environment failed to create. Skipping upload."
     exit 1
 fi
+echo "Shared conda environments created in $(echo "$(date +%s.%N) - $task_time" | bc) seconds"
 
 echo "--------------------------------------------------"
 echo "Running cloning for all model repositories"
+task_time=$(date +%s.%N)
 
 export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_cloning
 mkdir -p "$CONDA_PKGS_DIRS"
@@ -119,9 +129,12 @@ conda install -c conda-forge -y -q git-lfs >/dev/null
 git lfs install >/dev/null
 
 python cloning.py
+echo "Cloning completed in $(echo "$(date +%s.%N) - $task_time" | bc) seconds"
 
 echo "--------------------------------------------------"
-echo "Paring the json file with all model data"
+echo "Parsing the json file with all model data"
+echo ""
+task_time=$(date +%s.%N)
 echo ""
 echo "Cloned models:"
 count=0
@@ -152,6 +165,9 @@ for line in "${lines[@]}"; do
         echo "Directory $MODEL_DIR does not exist."
     fi
 done
+echo ""
+
+echo "Model parsing completed in $(echo "$(date +%s.%N) - $task_time" | bc) seconds"
 
 conda deactivate
 rm -rf /scratch/gilbreth/ochaturv/.conda/envs/cloning-env
@@ -245,9 +261,12 @@ export PATH
 printf "%s\n" "${lines[@]}" | parallel -j "$(nproc)" make_env
 
 conda deactivate
+echo "Model environments created in $(echo "$(date +%s.%N) - $task_time" | bc) seconds"
+
 conda info --envs
 
 echo "--------------------------------------------------"
+task_time=$(date +%s.%N)
 # (Optional) Enable for Gilbreth usage
 
 # MAX_ALLOWED=$((50000 - count + 1))
@@ -279,6 +298,8 @@ if [ -f "jobs_submitted.txt" ]; then
     job_count=$(cat jobs_submitted.txt)
 fi
 rm -f jobs_submitted.txt
+
+echo "Job generation completed in $(echo "$(date +%s.%N) - $task_time" | bc) seconds"
 
 echo "--------------------------------------------------"
 echo "Script execution completed!"
