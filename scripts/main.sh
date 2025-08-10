@@ -28,6 +28,12 @@ module load external
 module load conda
 module load parallel
 module load gcc
+source "$(conda info --base)/etc/profile.d/conda.sh"
+
+taskset -pc $$  # shows the CPU set your process is pinned to
+
+export JOBS="${SLURM_CPUS_PER_TASK:-${SLURM_CPUS_ON_NODE:-$(getconf _NPROCESSORS_ONLN)}}"
+export PARALLEL="--will-cite"
 
 task_time=$(date +%s.%N)
 rm -rf /scratch/gilbreth/ochaturv/.conda/
@@ -39,38 +45,39 @@ task_time=$(date +%s.%N)
 
 DATASET_JSON="/scratch/gilbreth/ochaturv/research/datasets.json"
 MISMATCHES=0
+echo "Using $JOBS jobs"
 
 mapfile -t datasets < <(jq -r '.values[1:][] | @tsv' "$DATASET_JSON")
 
-for row in "${datasets[@]}"; do
-    IFS=$'\t' read -r name path instrument audio_type expected_count <<< "$row"
-    
-    echo "Regenerating list for: $name"
-    find "$(realpath "$path")" -type f -name "*.wav" | sort >"${path}.txt"
-done
+# Regenerate lists in parallel
+printf '%s\n' "${datasets[@]}" | parallel -j "$JOBS" --colsep '\t' '
+    name={1}; path={2};
+    echo "Regenerating list for: {1}";
+    find "$(realpath "$path")" -type f -name "*.wav" | sort > "${path}.txt"
+'
 
-for row in "${datasets[@]}"; do
-    IFS=$'\t' read -r name path instrument audio_type expected_count <<< "$row"
-    
-    list_file="${path}.txt"
-    
+# Check counts in parallel
+MISMATCHES=$(
+printf '%s\n' "${datasets[@]}" | parallel -j "$JOBS" --colsep '\t' '
+    name={1}; path={2}; expected={5};
+    list_file="${path}.txt";
     if [[ ! -f "$list_file" ]]; then
-        echo "[ERROR] Missing list file: $list_file"
-        ((MISMATCHES++))
-        continue
-    fi
-
-    actual_count=$(wc -l < "$list_file" | tr -d ' ')
-    
-    if [[ "$actual_count" -eq "$expected_count" ]]; then
-        echo "[OK] $name | Expected: $expected_count, Found: $actual_count"
+        echo "[ERROR] Missing list file: $list_file" >&2
+        echo ERR
     else
-        echo "[MISMATCH] $name | Expected: $expected_count, Found: $actual_count"
-        ((MISMATCHES++))
+        actual=$(wc -l < "$list_file" | tr -d " ");
+        if [[ "$actual" -eq "$expected" ]]; then
+            echo "[OK] {1} | Expected: $expected, Found: $actual"
+            echo OK
+        else
+            echo "[MISMATCH] {1} | Expected: $expected, Found: $actual"
+            echo ERR
+        fi
     fi
-done
+' | grep -c ERR
+)
 
-if [[ $MISMATCHES -gt 0 ]]; then
+if [[ "$MISMATCHES" -gt 0 ]]; then
     echo "[WARNING] $MISMATCHES mismatches found in dataset .wav counts."
 else
     echo "[SUCCESS] All dataset counts match expected values."
@@ -119,7 +126,7 @@ task_time=$(date +%s.%N)
 
 export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_cloning
 mkdir -p "$CONDA_PKGS_DIRS"
-mamba create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/cloning-env python=3.13 git-lfs pip requests gitpython >/dev/null
+mamba create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/cloning-env python=3.12 git-lfs pip requests gitpython >/dev/null
 rm -rf "$CONDA_PKGS_DIRS"
 
 conda deactivate
@@ -135,50 +142,47 @@ echo "--------------------------------------------------"
 echo "Parsing the json file with all model data"
 echo ""
 task_time=$(date +%s.%N)
+
+mapfile -t MODEL_NAMES < <(jq -r '.values[1:][] | select(length>0) | .[0]' models.json | tr -d '\r' | sed "s/^'//;s/'$//")
+
+BASE_DIR="$(pwd)"
+export BASE_DIR
+
+echo "Extracted model names from JSON:"
+printf "'%s'\n" "${MODEL_NAMES[@]}"
 echo ""
-echo "Cloned models:"
-count=0
-mapfile -t lines < <(jq -c '.values[1:][]' models.json)
-for line in "${lines[@]}"; do
-    MODEL_NAME=$(echo "$line" | jq -r '.[0]')
-    echo "$MODEL_NAME"
-    count=$((count + 1))
-done
 
-for line in "${lines[@]}"; do
-    MODEL_NAME=$(echo "$line" | jq -r '.[0]')
-    MODEL_DIR="$MODEL_NAME"
-
-    if [ -d "$MODEL_DIR" ]; then
-        cd "$MODEL_DIR" || {
-            echo "Failed to enter directory $MODEL_DIR"
-            continue
-        }
-
-        git lfs pull
-
-        cd .. || {
-            echo "Failed to return to parent directory"
-            continue
-        }
+# Run git lfs pull in parallel for each directory
+printf '%s\0' "${MODEL_NAMES[@]}" \
+| parallel -0 -j "$JOBS" '
+    cd "$BASE_DIR" || exit 1
+    dir={}
+    if [[ -d "$dir" ]]; then
+        echo "[START] git lfs pull in: $dir"
+        if git -C "$dir" lfs pull; then
+            echo "[DONE ] $dir"
+        else
+            echo "[ERROR] git lfs pull failed in: $dir" >&2
+        fi
     else
-        echo "Directory $MODEL_DIR does not exist."
+        echo "[MISSING] Directory \"$dir\" does not exist." >&2
+        echo "[DEBUG] Looking for: $(printf %q "$dir")" >&2
     fi
-done
+'
 echo ""
 
 echo "Model parsing completed in $(echo "$(date +%s.%N) - $task_time" | bc) seconds"
 
 conda deactivate
 rm -rf /scratch/gilbreth/ochaturv/.conda/envs/cloning-env
-conda activate /scratch/gilbreth/ochaturv/.conda/envs/default-env
+# conda activate /scratch/gilbreth/ochaturv/.conda/envs/default-env
 
 echo "--------------------------------------------------"
 echo "Making model conda environments"
+task_time=$(date +%s.%N)
 
 make_env() {
-    local line="$1"
-    MODEL_NAME_RAW=$(echo "$line" | jq -r '.[0]')
+    local MODEL_NAME_RAW="$1"
     MODEL_NAME=${MODEL_NAME_RAW// /_}
     ENV_NAME="running-env-${MODEL_NAME}"
     ENV_PATH="/scratch/gilbreth/ochaturv/.conda/envs/$ENV_NAME"
@@ -223,7 +227,6 @@ make_env() {
     done
 
     PYTHON_CMD="$ENV_PATH/bin/python"
-    CONDA_CMD="mamba run -p $ENV_PATH"
 
     PY_VER=$($PYTHON_CMD -c 'import sys; print(sys.version.split()[0])')
 
@@ -258,11 +261,11 @@ export -f make_env
 export PATH
 
 # Use parallel to create conda environments in parallel
-printf "%s\n" "${lines[@]}" | parallel -j "$(nproc)" make_env
+printf '%s\n' "${MODEL_NAMES[@]}" | parallel -j "$JOBS" make_env
 
-conda deactivate
 echo "Model environments created in $(echo "$(date +%s.%N) - $task_time" | bc) seconds"
 
+# conda deactivate
 conda info --envs
 
 echo "--------------------------------------------------"
