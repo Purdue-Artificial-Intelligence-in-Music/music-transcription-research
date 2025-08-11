@@ -1,10 +1,12 @@
 #!/bin/bash
-#SBATCH -A standby
+#SBATCH -A yunglu-k
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=32
-#SBATCH --time=01:30:00
+#SBATCH --time=2-00:00:00
+
+rm -rf xmidi_dataset xmidi_dataset.txt xmidi_dataset.zip
 
 module load external
 module load conda
@@ -90,7 +92,7 @@ export SF_PATH
 find ./xmidi_dataset -type f -name "*.mid" | parallel -j 32 convert_midi {}
 
 # Clean up
-rm "$FS_DEFINITION" "$FS_CONTAINER"
+rm "$FS_DEFINITION" "$FS_CONTAINER" xmidi_dataset.zip
 
 # Generate a sorted list of all input files
 find "$(realpath ./xmidi_dataset)" -type f -name "*.wav" | sort >xmidi_dataset.txt
