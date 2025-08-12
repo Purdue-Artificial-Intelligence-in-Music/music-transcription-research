@@ -1,13 +1,11 @@
 #!/bin/bash
-#SBATCH -A yunglu-k
+#SBATCH -A standby
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=2
 #SBATCH --gres=gpu:2
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=80G
-#SBATCH --time=2-00:00:00
-
-# RUN.SH
+#SBATCH --mem=128G
+#SBATCH --time=04:00:00
 
 # Check for internet access for Conda environment creation
 if ! curl --silent --head --fail https://repo.anaconda.com > /dev/null; then
@@ -46,12 +44,14 @@ module load external
 module load conda
 module load parallel
 module load gcc
+source "$(conda info --base)/etc/profile.d/conda.sh"
 
 export PIP_NO_CACHE_DIR=true
 
 echo "--------------------------------------------------"
 echo "Available GPUs:"
 nvidia-smi -L 2>/dev/null || echo "nvidia-smi not found"
+gpu_count=$(nvidia-smi -L | wc -l) # Determine number of parallel jobs
 
 echo "--------------------------------------------------"
 echo "Running the model: $1"
