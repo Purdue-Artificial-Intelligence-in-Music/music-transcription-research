@@ -54,11 +54,97 @@ nvidia-smi -L 2>/dev/null || echo "nvidia-smi not found"
 gpu_count=$(nvidia-smi -L | wc -l) # Determine number of parallel jobs
 
 echo "--------------------------------------------------"
-echo "Running the model: $1"
-MODEL_DIR="$1"
+echo "Transcribing dataset files with $1"
+export MODEL_DIR="$1"
 mkdir -p "./$1/research_output_$dataset_name"
 cd "$1"
 shopt -s nullglob
+
+# Temporary folder to store per-file data
+temp_dir="./temp_${dataset_name}_${chunk_basename}"
+rm -rf "$temp_dir"
+mkdir "$temp_dir"
+export temp_dir
+
+# Activate the Conda environment
+conda activate /scratch/gilbreth/ochaturv/.conda/envs/running-env-"$model_name"
+
+# Function to process one audio file
+transcribe_file() {
+    echo "-------------------------"
+    echo "Processing file: $1"
+    local original_file="$1"
+
+    local slot="$2"
+    # echo "Using GPU: $CUDA_VISIBLE_DEVICES"
+    echo "Using GPU: $((slot - 1))"
+
+    local file="$original_file" # Default file to process
+    local base_name=$(basename "$original_file" .$audio_type)
+
+    local transcription_path="./research_output_${dataset_name}/${base_name}.mid"
+    local runtime_file="$temp_dir/${base_name}.runtime"
+
+    local temp_wav_created=0
+    if [[ "$audio_type" != "wav" ]]; then
+        local temp_wav="$temp_dir/${base_name}.wav"
+        echo "Converting $original_file to temporary WAV file..."
+        ffmpeg -loglevel error -y -i "$original_file" -ac 1 -ar 44100 "$temp_wav"
+        file="$temp_wav"
+        temp_wav_created=1
+    fi
+
+    # local duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$file")
+
+    local start_time=$(date +%s.%N)
+
+    CUDA_VISIBLE_DEVICES=$((slot - 1)) python3 main.py -i "$file" -o "$transcription_path"
+
+    local end_time=$(date +%s.%N)
+
+    # Delete temporary WAV file if created
+    if [[ "$temp_wav_created" -eq 1 ]]; then
+        rm -f "$file"
+    fi
+
+    # Runtime calculation
+    local runtime=$(echo "$end_time - $start_time" | bc)
+    echo "$runtime" >"$runtime_file"
+    echo "Processed ${base_name}.$audio_type in $runtime seconds"
+}
+export -f transcribe_file
+export PATH CONDA_PREFIX LD_LIBRARY_PATH
+
+# Run jobs in parallel using GNU Parallel
+cat "$chunk_file" | head -n 4 | parallel -j "$gpu_count" transcribe_file {} {%}
+
+# Deactivate the running-env Conda environment
+conda deactivate
+
+# Compute average runtime
+total=0
+count=0
+for file in "$temp_dir"/*.runtime; do
+    if [[ -f "$file" ]]; then
+        value=$(cat "$file")
+        # Remove any whitespace
+        value=$(echo "$value" | tr -d '[:space:]')
+        if [[ "$value" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+            total=$(echo "$total + $value" | bc)
+            ((count++))
+        fi
+    fi
+done
+if [[ $count -gt 0 ]]; then
+    avg_runtime=$(echo "scale=4; $total / $count" | bc)
+    echo "--------------------------------------------------"
+    echo "Average runtime per file: $avg_runtime seconds"
+else
+    echo "No valid runtimes collected or no files processed."
+fi
+
+echo "--------------------------------------------------"
+echo "Scoring all transcriptions from $1"
 
 details_file="./details_${dataset_name}.txt"
 export details_file
@@ -73,109 +159,93 @@ if [ ! -s "$details_file" ]; then
     } >"$details_file"
 fi
 
-# Temporary file to store per-file runtimes
-temp_dir="./temp_${dataset_name}_${chunk_basename}"
-rm -rf "$temp_dir"
-mkdir "$temp_dir"
-export temp_dir
+# Activate the Conda environment
+conda activate /scratch/gilbreth/ochaturv/.conda/envs/scoring-env
 
-# Function to process one audio file
-process_file() {
-    source "$(conda info --base)/etc/profile.d/conda.sh"
-
-    echo "Processing file: $1"
+# Function to score one transcribed file
+score_transcription() {
+    echo "-------------------------"
+    echo "Scoring file: $1"
     local original_file="$1"
-
     local slot="$2"
-    export CUDA_VISIBLE_DEVICES=$((slot - 1))
-    echo "Using GPU: $CUDA_VISIBLE_DEVICES for file: $original_file"
 
-    local file="$original_file" # Default file to process
-    local base_name=$(basename "$original_file" .$audio_type)
+    # Base name without extension, using the same $audio_type as before
+    local base_name
+    base_name=$(basename "$original_file" .$audio_type)
 
-    local reference_file=$(realpath "${original_file%.$audio_type}.mid")
-    local transcription_path=".$MODEL_DIR/research_output_${dataset_name}/${base_name}.mid"
-    local runtime_file="$temp_dir/${base_name}.runtime"
-    local fmeasure_file="$temp_dir/${base_name}.fmeasure"
-
-    local temp_wav_created=0
-    if [[ "$audio_type" != "wav" ]]; then
-        local temp_wav="$temp_dir/${base_name}.wav"
-        echo "Converting $original_file to temporary WAV file..."
-        ffmpeg -loglevel error -y -i "$original_file" "$temp_wav"
-        file="$temp_wav"
-        temp_wav_created=1
-    fi
-
-    local duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$file")
-
-    conda activate /scratch/gilbreth/ochaturv/.conda/envs/running-env-"$model_name"
-
-    local start_time=$(date +%s.%N)
-
-    python3 main.py -i "$file" -o "$transcription_path"
-
-    local end_time=$(date +%s.%N)
-
-    conda deactivate
-
-    # Delete temporary WAV file if created
-    if [[ "$temp_wav_created" -eq 1 ]]; then
-        rm -f "$file"
-    fi
-
-    # Runtime calculation
-    local runtime=$(echo "$end_time - $start_time" | bc)
-    echo "$runtime" >"$runtime_file"
-    echo "Processed ${base_name}.$audio_type in $runtime seconds"
-
-    # Scoring
+    # Paths used during transcription/scoring
+    local reference_file
+    reference_file=$(realpath "${original_file%.$audio_type}.mid")
     if [[ ! -f "$reference_file" ]]; then
         reference_file=$(realpath "${original_file%.$audio_type}.midi")
     fi
+
+    local transcription_path="./research_output_${dataset_name}/${base_name}.mid"
+    local temp_detail_file="$temp_dir/${base_name}.details"
+    local fmeasure_file="$temp_dir/${base_name}.fmeasure"
+    local runtime_file="$temp_dir/${base_name}.runtime"
+
+    # Duration (use the original audio file)
+    local duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$original_file")
+
+    # Validate inputs
     if [[ ! -f "$reference_file" ]]; then
         echo "Reference MIDI not found for $original_file, skipping scoring."
-        echo "MISSING_REF" >"$fmeasure_file"
+        echo "MISSING_REF" > "$fmeasure_file"
+        {
+            printf '%s\n' "$(basename "$original_file")"
+            printf 'Duration: %s seconds\n' "${duration:-UNKNOWN}"
+            printf 'Reference: %s\n' "MISSING"
+            printf 'Transcription: %s\n\n' "$transcription_path"
+        } > "$temp_detail_file"
         return
     fi
-
     if [[ ! -f "$transcription_path" ]]; then
         echo "Transcription MIDI not found at $transcription_path, skipping scoring."
-        echo "MISSING_TRANS" >"$fmeasure_file"
+        echo "MISSING_TRANS" > "$fmeasure_file"
+        {
+            printf '%s\n' "$(basename "$original_file")"
+            printf 'Duration: %s seconds\n' "${duration:-UNKNOWN}"
+            printf 'Reference: %s\n' "$reference_file"
+            printf 'Transcription: %s\n\n' "MISSING"
+        } > "$temp_detail_file"
         return
     fi
 
-    conda activate /scratch/gilbreth/ochaturv/.conda/envs/scoring-env
+    # Score the transcription
+    local output=$(python ../scoring.py --reference "$reference_file" --transcription "$transcription_path")
 
-    local output=$(python3 ../scoring.py --reference "$reference_file" --transcription "$transcription_path")
+    # Read runtime captured earlier by the transcribe step (if present)
+    local runtime="UNKNOWN"
+    if [[ -f "$runtime_file" ]]; then
+        runtime=$(tr -d '[:space:]' < "$runtime_file")
+    fi
 
-    local temp_detail_file="$temp_dir/${base_name}.details"
+    # Write per-file details
     {
         printf '%s\n' "$(basename "$original_file")"
-        printf 'Duration: %s seconds\n' "$duration"
+        printf 'Duration: %s seconds\n' "${duration:-UNKNOWN}"
         printf '%s\n' "$output"
-        printf 'Runtime: %f seconds\n\n' "$runtime"
+        printf 'Runtime: %s seconds\n\n' "$runtime"
     } > "$temp_detail_file"
 
     # Extract F-measure and store it
     local fmeasure=$(echo "$output" | grep -m1 "F-measure:" | awk '{print $2}')
 
     if [[ "$fmeasure" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
-        echo "$fmeasure" >"$fmeasure_file"
+        echo "$fmeasure" > "$fmeasure_file"
     else
-        echo "INVALID" >"$fmeasure_file"
-        echo "Warning: Invalid F-measure detected: '$fmeasure' for $original_file"
+        echo "INVALID" > "$fmeasure_file"
+        echo "Warning: Invalid F-measure detected for $original_file -> '$fmeasure'"
     fi
-
-    conda deactivate
 }
-export -f process_file
+export -f score_transcription
+export PATH CONDA_PREFIX LD_LIBRARY_PATH
 
-# Determine number of parallel jobs
-gpu_count=$(nvidia-smi -L | wc -l)
+cat "$chunk_file" | head -n 5 | parallel -j "$gpu_count" score_transcription {} {%}
 
-# Run jobs in parallel using GNU Parallel
-cat "$chunk_file" | parallel -j "$gpu_count" process_file {} {%}
+# Deactivate the scoring-env Conda environment
+conda deactivate
 
 # Merge per-file details into shared details.txt without overwriting
 echo "Appending per-file details into $details_file"
@@ -202,28 +272,6 @@ if [[ $count -gt 0 ]]; then
     echo "Average F-measure per file: $avg_fmeasure"
 else
     echo "No valid F-measures collected."
-fi
-
-# Compute average runtime
-total=0
-count=0
-for file in "$temp_dir"/*.runtime; do
-    if [[ -f "$file" ]]; then
-        value=$(cat "$file")
-        # Remove any whitespace
-        value=$(echo "$value" | tr -d '[:space:]')
-        if [[ "$value" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
-            total=$(echo "$total + $value" | bc)
-            ((count++))
-        fi
-    fi
-done
-if [[ $count -gt 0 ]]; then
-    avg_runtime=$(echo "scale=4; $total / $count" | bc)
-    echo "--------------------------------------------------"
-    echo "Average runtime per file: $avg_runtime seconds"
-else
-    echo "No valid runtimes collected or no files processed."
 fi
 
 # Clean up
