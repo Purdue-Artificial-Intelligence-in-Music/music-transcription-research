@@ -11,6 +11,7 @@ __license__ = "MIT"
 from paramiko import SSHClient, AutoAddPolicy
 from scp import SCPClient
 import os
+from tqdm import tqdm
 
 hostname = "gilbreth.rcac.purdue.edu"  # or "anvil.rcac.purdue.edu"
 username = "ochaturv"  # or "x-ochaturvedi"
@@ -45,22 +46,25 @@ def main() -> None:
 
     remote_path = f"/scratch/gilbreth/{username}/research/"  # or f"/anvil/scratch/{username}/research/"
 
+    # execute_cmd(client, f"rm -rf /scratch/gilbreth/{username}/.conda/")
     execute_cmd(client, f"rm -rf {remote_path}")
     execute_cmd(client, f"mkdir -p {remote_path}")
+    print("")
 
-    # Upload every script in the current directory
+    # Gather all files to upload
+    files_to_upload = []
+
+    # Gather files from the current directory
     for script in os.listdir():
         if (
             script.endswith(".sh")
             or script.endswith(".py")
             or script.endswith(".json")
             or script.endswith(".yaml")
-            and script != "main.py"
-        ):
-            print(f"\nUploading {script} to {remote_path}")
-            scp.put(script, remote_path=remote_path)
+        ) and script != "main.py":
+            files_to_upload.append(script)
 
-    # Upload every script in the scripts directory
+    # Gather files from the scripts directory
     for script in os.listdir("scripts"):
         if (
             script.endswith(".sh")
@@ -68,8 +72,11 @@ def main() -> None:
             or script.endswith(".json")
             or script.endswith(".yaml")
         ):
-            print(f"\nUploading {script} to {remote_path}")
-            scp.put(f"scripts/{script}", remote_path=remote_path)
+            files_to_upload.append(f"scripts/{script}")
+
+    # Use tqdm to show progress
+    for script in tqdm(files_to_upload, desc="Uploading files", unit="file"):
+        scp.put(script, remote_path=remote_path)
 
     # Execute the job script
     execute_cmd(client, f"cd {remote_path} && sbatch main.sh")
