@@ -3,8 +3,8 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=32
-#SBATCH --time=01:30:00
+#SBATCH --cpus-per-task=8
+#SBATCH --time=04:00:00
 #SBATCH -J main
 #SBATCH -o 0_main_output.out
 
@@ -29,8 +29,6 @@ module load conda
 module load parallel
 module load gcc
 source "$(conda info --base)/etc/profile.d/conda.sh"
-
-taskset -pc $$  # shows the CPU set your process is pinned to
 
 export JOBS="${SLURM_CPUS_PER_TASK:-${SLURM_CPUS_ON_NODE:-$(getconf _NPROCESSORS_ONLN)}}"
 export PARALLEL="--will-cite"
