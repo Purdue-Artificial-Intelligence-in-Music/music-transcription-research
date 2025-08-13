@@ -8,12 +8,7 @@
             ["BiMMuDa", "MSMD", "POP909", "AAM"]
         ],
         ["MR-MT3", "Multiple", ["Slakh 2100 Redux"], ["BiMMuDa"]],
-        [
-            "ReconVAT",
-            "Multiple",
-            ["MAPS", "MusicNet"],
-            ["BiMMuDa", "MSMD", "POP909", "AAM", "Slakh 2100 Redux", "Maestro"]
-        ],
+        ["ReconVAT", "Multiple", ["MAPS", "MusicNet"], ["POP909", "MSMD", "AAM", "BiMMuDa"]],
         ["Bytedance Piano transcription", "Piano", ["Maestro"], ["BiMMuDa", "MSMD", "POP909"]],
         ["Transkun", "Piano", ["Maestro", "MAPS", "SMD"], ["BiMMuDa", "MSMD", "POP909"]],
         ["Omnizart", "Piano", ["Maestro"], ["MSMD", "BiMMuDa", "POP909"]],
@@ -23,7 +18,7 @@
             "CREPE Pitch Tracker",
             "Multiple",
             ["MIR-1K", "Bach10", "RWC-Synth", "MedleyDB", "MDB-STEM-Synth", "NSynth"],
-            ["BiMMuDa", "MSMD", "POP909", "AAM", "Slakh 2100 Redux"]
+            ["BiMMuDa", "MSMD", "POP909", "AAM", "Slakh 2100 Redux", "Maestro"]
         ],
         [
             "Basic Pitch",
