@@ -355,6 +355,11 @@ if __name__ == "__main__":
 
     # Process all files and create DataFrame
     df = process_folder(local_directory)
+    df.sort_values(
+        by=["model_name", "dataset_name", "midi_filename"],
+        inplace=True,
+        ignore_index=True,
+    )
 
     if not df.empty:
         print_dataframe_info(df)
