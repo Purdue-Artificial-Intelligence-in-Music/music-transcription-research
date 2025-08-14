@@ -5,7 +5,7 @@
             "MT3",
             "Multiple",
             ["Maestro", "Slakh 2100 Redux", "Cerberus", "GuitarSet", "MusicNet", "URMP"],
-            ["BiMMuDa", "MSMD", "POP909", "AAM"]
+            ["BiMMuDa", "MSMD", "POP909", "AAM", "NESMDB"]
         ],
         ["MR-MT3", "Multiple", ["Slakh 2100 Redux"], ["BiMMuDa"]],
         ["ReconVAT", "Multiple", ["MAPS", "MusicNet"], ["POP909", "MSMD", "AAM", "BiMMuDa"]],
@@ -24,7 +24,7 @@
             "Basic Pitch",
             "Multiple",
             ["Molina", "GuitarSet", "Maestro", "Slakh 2100 Redux", "Phenicx", "iKala", "MedleyDB"],
-            ["BiMMuDa", "MSMD", "POP909", "AAM"]
+            ["BiMMuDa", "MSMD", "POP909", "AAM", "NESMDB"]
         ]
     ]
 }
