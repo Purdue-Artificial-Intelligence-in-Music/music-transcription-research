@@ -43,7 +43,6 @@ task_time=$(date +%s.%N)
 
 DATASET_JSON="/scratch/gilbreth/ochaturv/research/datasets.json"
 MISMATCHES=0
-echo "Using $JOBS jobs"
 
 mapfile -t datasets < <(jq -r '.values[1:][] | @tsv' "$DATASET_JSON")
 
@@ -101,6 +100,7 @@ task_time=$(date +%s.%N)
 export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_scoring
 mkdir -p "$CONDA_PKGS_DIRS"
 mamba create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/scoring-env python=3.10 pip setuptools mir_eval pretty_midi numpy=1.23 pyyaml >/dev/null
+sed -i '22s/MAX_TICK = 1e7/MAX_TICK = 1e8/' /scratch/gilbreth/ochaturv/.conda/envs/scoring-env/lib/python3.10/site-packages/pretty_midi/pretty_midi.py
 rm -rf "$CONDA_PKGS_DIRS"
 
 export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_upload
