@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH -A standby
+#SBATCH -A yunglu-k
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=2
+#SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:2
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=128G
-#SBATCH --time=04:00:00
+#SBATCH --time=2-00:00:00
 
 # Check for internet access for Conda environment creation
 if ! curl --silent --head --fail https://repo.anaconda.com > /dev/null; then
@@ -51,7 +51,8 @@ export PIP_NO_CACHE_DIR=true
 echo "--------------------------------------------------"
 echo "Available GPUs:"
 nvidia-smi -L 2>/dev/null || echo "nvidia-smi not found"
-gpu_count=$(nvidia-smi -L | wc -l) # Determine number of parallel jobs
+gpu_count=$(nvidia-smi -L | wc -l) # Determine number of GPUs
+cpu_count=$SLURM_CPUS_ON_NODE # Determine number of CPU cores
 
 echo "--------------------------------------------------"
 echo "Transcribing dataset files with $1"
@@ -116,7 +117,7 @@ export -f transcribe_file
 export PATH CONDA_PREFIX LD_LIBRARY_PATH
 
 # Run jobs in parallel using GNU Parallel
-cat "$chunk_file" | head -n 4 | parallel -j "$gpu_count" transcribe_file {} {%}
+cat "$chunk_file" | parallel -j "$gpu_count" transcribe_file {} {%}
 
 # Deactivate the running-env Conda environment
 conda deactivate
@@ -242,10 +243,12 @@ score_transcription() {
 export -f score_transcription
 export PATH CONDA_PREFIX LD_LIBRARY_PATH
 
-cat "$chunk_file" | head -n 5 | parallel -j "$gpu_count" score_transcription {} {%}
+cat "$chunk_file" | parallel -j "$cpu_count" score_transcription {} {%}
 
 # Deactivate the scoring-env Conda environment
 conda deactivate
+
+echo "--------------------------------------------------"
 
 # Merge per-file details into shared details.txt without overwriting
 echo "Appending per-file details into $details_file"
