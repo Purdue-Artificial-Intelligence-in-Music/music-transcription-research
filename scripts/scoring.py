@@ -8,16 +8,17 @@ __author__ = "Ojas Chaturvedi"
 __github__ = "github.com/ojas-chaturvedi"
 __license__ = "MIT"
 
+# Ignore simple warnings
+import warnings
+
+warnings.filterwarnings("ignore", message=".*pkg_resources is deprecated.*")
+warnings.filterwarnings("ignore", message=".*not a valid type 0 or type 1 MIDI file.*")
+
 import pretty_midi
 import numpy as np
 import argparse
 import mir_eval
 import sys
-import warnings
-
-# Ignore simple warnings
-warnings.filterwarnings("ignore", message=".*pkg_resources is deprecated.*")
-warnings.filterwarnings("ignore", message=".*not a valid type 0 or type 1 MIDI file.*")
 
 # Set a higher recursion limit for deep MIDI files
 sys.setrecursionlimit(10000)
