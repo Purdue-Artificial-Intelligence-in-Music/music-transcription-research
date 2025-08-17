@@ -1,0 +1,666 @@
+Loading music results data...
+Loaded 48933 records
+Models: ['Basic_Pitch' 'Bytedance_Piano_transcription' 'CREPE_Pitch_Tracker'
+ 'Jointist' 'MR-MT3' 'MT3' 'Madmom' 'Omnizart' 'ReconVAT' 'Transkun']
+Data shape: (48933, 21)
+Model colors: {'Basic_Pitch': (0.4, 0.7607843137254902, 0.6470588235294118), 'Bytedance_Piano_transcription': (0.9882352941176471, 0.5529411764705883, 0.3843137254901961), 'CREPE_Pitch_Tracker': (0.5529411764705883, 0.6274509803921569, 0.796078431372549), 'Jointist': (0.9058823529411765, 0.5411764705882353, 0.7647058823529411), 'MR-MT3': (0.6509803921568628, 0.8470588235294118, 0.32941176470588235), 'MT3': (1.0, 0.8509803921568627, 0.1843137254901961), 'Madmom': (0.8980392156862745, 0.7686274509803922, 0.5803921568627451), 'Omnizart': (0.7019607843137254, 0.7019607843137254, 0.7019607843137254), 'ReconVAT': (0.4, 0.7607843137254902, 0.6470588235294118), 'Transkun': (0.9882352941176471, 0.5529411764705883, 0.3843137254901961)}
+
+================================================================================
+COMPREHENSIVE MODEL ANALYSIS
+================================================================================
+Analysis Date: 2025-08-15 00:35:49
+Total Dataset: 48933 files across 10 models
+Models Analyzed: ['Basic_Pitch', 'Bytedance_Piano_transcription', 'CREPE_Pitch_Tracker', 'Jointist', 'MR-MT3', 'MT3', 'Madmom', 'Omnizart', 'ReconVAT', 'Transkun']
+Datasets: ['AAM', 'BiMMuDa', 'MSMD', 'Maestro', 'NESMDB', 'POP909', 'Slakh 2100 Redux']
+
+------------------------------------------------------------
+DETAILED MODEL PERFORMANCE SUMMARY
+------------------------------------------------------------
+
+BASIC_PITCH:
+  Files processed: 10029
+  Mean F-measure: 0.2557 ± 0.1679
+  Mean Precision: 0.3159 ± 0.1800
+  Mean Recall: 0.2423 ± 0.1846
+  Mean Runtime: 23.06 ± 36.20 seconds
+  Median Runtime: 8.76 seconds
+  Mean Duration: 99.4 ± 86.9 seconds
+  Onset Precision: 0.7753 ± 0.1499
+  Onset Recall: 0.5758 ± 0.2648
+  Onset F-measure: 0.6138 ± 0.2020
+  Offset Precision: 0.7145 ± 0.1652
+  Offset Recall: 0.5132 ± 0.2149
+  Offset F-measure: 0.5532 ± 0.1624
+  Average Overlap Ratio: 0.8579 ± 0.1282
+  No-Offset Precision: 0.6177 ± 0.1881
+  No-Offset Recall: 0.4713 ± 0.2711
+  No-Offset F-measure: 0.4967 ± 0.2209
+  Performance Range (F-measure): 0.0000 to 1.0000
+  Efficiency (F-measure/runtime): 0.023346
+
+BYTEDANCE_PIANO_TRANSCRIPTION:
+  Files processed: 1751
+  Mean F-measure: 0.5695 ± 0.3083
+  Mean Precision: 0.5887 ± 0.3056
+  Mean Recall: 0.5585 ± 0.3127
+  Mean Runtime: 47.57 ± 16.31 seconds
+  Median Runtime: 45.59 seconds
+  Mean Duration: 201.0 ± 87.0 seconds
+  Onset Precision: 0.9882 ± 0.0203
+  Onset Recall: 0.9319 ± 0.1219
+  Onset F-measure: 0.9541 ± 0.0934
+  Offset Precision: 0.7403 ± 0.1910
+  Offset Recall: 0.6982 ± 0.2121
+  Offset F-measure: 0.7140 ± 0.2007
+  Average Overlap Ratio: 0.9378 ± 0.0308
+  No-Offset Precision: 0.9829 ± 0.0260
+  No-Offset Recall: 0.9273 ± 0.1243
+  No-Offset F-measure: 0.9493 ± 0.0963
+  Performance Range (F-measure): 0.0027 to 1.0000
+  Efficiency (F-measure/runtime): 0.014539
+
+CREPE_PITCH_TRACKER:
+  Files processed: 7737
+  Mean F-measure: 0.0083 ± 0.0173
+  Mean Precision: 0.0067 ± 0.0132
+  Mean Recall: 0.0177 ± 0.0415
+  Mean Runtime: 33.99 ± 53.07 seconds
+  Median Runtime: 14.67 seconds
+  Mean Duration: 253.6 ± 239.4 seconds
+  Onset Precision: 0.1710 ± 0.1071
+  Onset Recall: 0.4255 ± 0.2275
+  Onset F-measure: 0.1975 ± 0.0761
+  Offset Precision: 0.2213 ± 0.1536
+  Offset Recall: 0.4927 ± 0.2051
+  Offset F-measure: 0.2454 ± 0.0957
+  Average Overlap Ratio: 0.1909 ± 0.2070
+  No-Offset Precision: 0.0260 ± 0.0190
+  No-Offset Recall: 0.1105 ± 0.1944
+  No-Offset F-measure: 0.0324 ± 0.0218
+  Performance Range (F-measure): 0.0000 to 0.1892
+  Efficiency (F-measure/runtime): 0.000372
+
+JOINTIST:
+  Files processed: 6027
+  Mean F-measure: 0.2473 ± 0.1374
+  Mean Precision: 0.2272 ± 0.1421
+  Mean Recall: 0.2880 ± 0.1460
+  Mean Runtime: 13.74 ± 10.33 seconds
+  Median Runtime: 12.22 seconds
+  Mean Duration: 253.8 ± 264.0 seconds
+  Onset Precision: 0.7322 ± 0.1891
+  Onset Recall: 0.9229 ± 0.0850
+  Onset F-measure: 0.7962 ± 0.1238
+  Offset Precision: 0.4501 ± 0.1324
+  Offset Recall: 0.5748 ± 0.1200
+  Offset F-measure: 0.4914 ± 0.1037
+  Average Overlap Ratio: 0.8702 ± 0.0785
+  No-Offset Precision: 0.6375 ± 0.2092
+  No-Offset Recall: 0.7979 ± 0.1382
+  No-Offset F-measure: 0.6914 ± 0.1665
+  Performance Range (F-measure): 0.0000 to 0.8726
+  Efficiency (F-measure/runtime): 0.021816
+
+MR-MT3:
+  Files processed: 375
+  Mean F-measure: 0.0032 ± 0.0050
+  Mean Precision: 0.0028 ± 0.0044
+  Mean Recall: 0.0038 ± 0.0060
+  Mean Runtime: 177.63 ± 29.93 seconds
+  Median Runtime: 171.57 seconds
+  Mean Duration: 200.7 ± 53.6 seconds
+  Onset Precision: 0.0273 ± 0.0291
+  Onset Recall: 0.0388 ± 0.0441
+  Onset F-measure: 0.0318 ± 0.0344
+  Offset Precision: 0.4573 ± 0.0928
+  Offset Recall: 0.6089 ± 0.0979
+  Offset F-measure: 0.5191 ± 0.0877
+  Average Overlap Ratio: 0.4037 ± 0.3884
+  No-Offset Precision: 0.0074 ± 0.0104
+  No-Offset Recall: 0.0104 ± 0.0145
+  No-Offset F-measure: 0.0086 ± 0.0120
+  Performance Range (F-measure): 0.0000 to 0.0380
+  Efficiency (F-measure/runtime): 0.000018
+
+MT3:
+  Files processed: 10029
+  Mean F-measure: 0.2944 ± 0.2361
+  Mean Precision: 0.3019 ± 0.2407
+  Mean Recall: 0.3026 ± 0.2412
+  Mean Runtime: 39.72 ± 46.55 seconds
+  Median Runtime: 27.29 seconds
+  Mean Duration: 99.4 ± 86.9 seconds
+  Onset Precision: 0.8020 ± 0.1756
+  Onset Recall: 0.8024 ± 0.2032
+  Onset F-measure: 0.7758 ± 0.1619
+  Offset Precision: 0.7047 ± 0.1767
+  Offset Recall: 0.7031 ± 0.1920
+  Offset F-measure: 0.6794 ± 0.1532
+  Average Overlap Ratio: 0.8649 ± 0.1730
+  No-Offset Precision: 0.5129 ± 0.2835
+  No-Offset Recall: 0.5206 ± 0.2898
+  No-Offset F-measure: 0.5035 ± 0.2804
+  Performance Range (F-measure): 0.0000 to 1.0000
+  Efficiency (F-measure/runtime): 0.010119
+
+MADMOM:
+  Files processed: 3027
+  Mean F-measure: 0.4801 ± 0.3118
+  Mean Precision: 0.5369 ± 0.3063
+  Mean Recall: 0.4442 ± 0.3166
+  Mean Runtime: 151.98 ± 181.23 seconds
+  Median Runtime: 89.65 seconds
+  Mean Duration: 352.9 ± 344.6 seconds
+  Onset Precision: 0.9912 ± 0.0156
+  Onset Recall: 0.7578 ± 0.1758
+  Onset F-measure: 0.8464 ± 0.1213
+  Offset Precision: 0.7320 ± 0.1803
+  Offset Recall: 0.5770 ± 0.2445
+  Offset F-measure: 0.6359 ± 0.2182
+  Average Overlap Ratio: 0.8528 ± 0.0649
+  No-Offset Precision: 0.9830 ± 0.0227
+  No-Offset Recall: 0.7516 ± 0.1757
+  No-Offset F-measure: 0.8393 ± 0.1215
+  Performance Range (F-measure): 0.0311 to 1.0000
+  Efficiency (F-measure/runtime): 0.011784
+
+OMNIZART:
+  Files processed: 1751
+  Mean F-measure: 0.2645 ± 0.1251
+  Mean Precision: 0.2764 ± 0.1281
+  Mean Recall: 0.2588 ± 0.1291
+  Mean Runtime: 31.13 ± 14.43 seconds
+  Median Runtime: 31.26 seconds
+  Mean Duration: 201.0 ± 87.0 seconds
+  Onset Precision: 0.7642 ± 0.1633
+  Onset Recall: 0.7039 ± 0.1479
+  Onset F-measure: 0.7257 ± 0.1409
+  Offset Precision: 0.6014 ± 0.1280
+  Offset Recall: 0.5495 ± 0.0987
+  Offset F-measure: 0.5691 ± 0.1049
+  Average Overlap Ratio: 0.8471 ± 0.0366
+  No-Offset Precision: 0.7483 ± 0.1696
+  No-Offset Recall: 0.6893 ± 0.1542
+  No-Offset F-measure: 0.7107 ± 0.1484
+  Performance Range (F-measure): 0.0245 to 0.8462
+  Efficiency (F-measure/runtime): 0.010141
+
+RECONVAT:
+  Files processed: 6456
+  Mean F-measure: 0.0940 ± 0.0875
+  Mean Precision: 0.1239 ± 0.0841
+  Mean Recall: 0.0862 ± 0.1030
+  Mean Runtime: 7.81 ± 17.84 seconds
+  Median Runtime: 5.13 seconds
+  Mean Duration: 192.5 ± 81.8 seconds
+  Onset Precision: 0.6348 ± 0.1273
+  Onset Recall: 0.3932 ± 0.2202
+  Onset F-measure: 0.4547 ± 0.1711
+  Offset Precision: 0.6246 ± 0.1342
+  Offset Recall: 0.3613 ± 0.1506
+  Offset F-measure: 0.4292 ± 0.1077
+  Average Overlap Ratio: 0.8053 ± 0.0799
+  No-Offset Precision: 0.4741 ± 0.1698
+  No-Offset Recall: 0.3152 ± 0.2342
+  No-Offset F-measure: 0.3546 ± 0.1994
+  Performance Range (F-measure): 0.0000 to 0.6769
+  Efficiency (F-measure/runtime): 0.016653
+
+TRANSKUN:
+  Files processed: 1751
+  Mean F-measure: 0.6356 ± 0.1807
+  Mean Precision: 0.6410 ± 0.1784
+  Mean Recall: 0.6309 ± 0.1831
+  Mean Runtime: 47.04 ± 16.48 seconds
+  Median Runtime: 44.56 seconds
+  Mean Duration: 201.0 ± 87.0 seconds
+  Onset Precision: 0.9947 ± 0.0159
+  Onset Recall: 0.9758 ± 0.0398
+  Onset F-measure: 0.9847 ± 0.0300
+  Offset Precision: 0.7438 ± 0.1203
+  Offset Recall: 0.7297 ± 0.1242
+  Offset F-measure: 0.7362 ± 0.1221
+  Average Overlap Ratio: 0.9276 ± 0.0336
+  No-Offset Precision: 0.9939 ± 0.0199
+  No-Offset Recall: 0.9751 ± 0.0404
+  No-Offset F-measure: 0.9839 ± 0.0308
+  Performance Range (F-measure): 0.0089 to 1.0000
+  Efficiency (F-measure/runtime): 0.015081
+
+------------------------------------------------------------
+OVERALL CORRELATIONS (All Models Combined)
+------------------------------------------------------------
+Duration vs F-measure: -0.1116
+Duration vs Precision: -0.1351
+Duration vs Recall: -0.1068
+Duration vs Runtime: 0.4185
+Precision vs Recall: 0.9069
+F-measure vs Overlap Ratio: 0.4906
+F-measure vs No-Offset F-measure: 0.7689
+Onset vs Offset Precision: 0.7843
+Onset vs Offset Recall: 0.7822
+Onset vs Offset F-measure: 0.7954
+Runtime vs F-measure: 0.0795
+Runtime vs Precision: 0.0893
+Runtime vs Recall: 0.0634
+Overlap Ratio vs Precision: 0.4954
+Overlap Ratio vs Recall: 0.4844
+
+------------------------------------------------------------
+MODEL-SPECIFIC CORRELATIONS
+------------------------------------------------------------
+
+BASIC_PITCH Correlations:
+  Duration vs F-measure: -0.1406
+  Precision vs Recall: 0.6612
+  F-measure vs Overlap: 0.2645
+  Onset vs Offset F-measure: 0.8071
+  Runtime vs F-measure: 0.1202
+  Runtime vs Duration: 0.1469
+
+BYTEDANCE_PIANO_TRANSCRIPTION Correlations:
+  Duration vs F-measure: -0.4278
+  Precision vs Recall: 0.9640
+  F-measure vs Overlap: 0.6640
+  Onset vs Offset F-measure: 0.4176
+  Runtime vs F-measure: -0.4947
+  Runtime vs Duration: 0.6103
+
+CREPE_PITCH_TRACKER Correlations:
+  Duration vs F-measure: 0.3169
+  Precision vs Recall: 0.7229
+  F-measure vs Overlap: 0.4374
+  Onset vs Offset F-measure: 0.7714
+  Runtime vs F-measure: 0.0074
+  Runtime vs Duration: 0.0889
+
+JOINTIST Correlations:
+  Duration vs F-measure: -0.2181
+  Precision vs Recall: 0.8199
+  F-measure vs Overlap: 0.1559
+  Onset vs Offset F-measure: 0.5331
+  Runtime vs F-measure: -0.1817
+  Runtime vs Duration: 0.5488
+
+MR-MT3 Correlations:
+  Duration vs F-measure: -0.0039
+  Precision vs Recall: 0.9816
+  F-measure vs Overlap: 0.5553
+  Onset vs Offset F-measure: -0.0895
+  Runtime vs F-measure: 0.0076
+  Runtime vs Duration: 0.3015
+
+MT3 Correlations:
+  Duration vs F-measure: 0.2188
+  Precision vs Recall: 0.9150
+  F-measure vs Overlap: 0.2792
+  Onset vs Offset F-measure: 0.7099
+  Runtime vs F-measure: 0.1672
+  Runtime vs Duration: 0.0642
+
+MADMOM Correlations:
+  Duration vs F-measure: -0.4270
+  Precision vs Recall: 0.9587
+  F-measure vs Overlap: 0.6426
+  Onset vs Offset F-measure: 0.7757
+  Runtime vs F-measure: -0.4116
+  Runtime vs Duration: 0.9179
+
+OMNIZART Correlations:
+  Duration vs F-measure: -0.5379
+  Precision vs Recall: 0.9033
+  F-measure vs Overlap: 0.0054
+  Onset vs Offset F-measure: 0.1253
+  Runtime vs F-measure: -0.2926
+  Runtime vs Duration: 0.5175
+
+RECONVAT Correlations:
+  Duration vs F-measure: -0.1560
+  Precision vs Recall: 0.7915
+  F-measure vs Overlap: 0.0776
+  Onset vs Offset F-measure: 0.6588
+  Runtime vs F-measure: 0.0057
+  Runtime vs Duration: 0.0847
+
+TRANSKUN Correlations:
+  Duration vs F-measure: -0.4474
+  Precision vs Recall: 0.9929
+  F-measure vs Overlap: 0.3708
+  Onset vs Offset F-measure: 0.2269
+  Runtime vs F-measure: -0.2834
+  Runtime vs Duration: 0.4059
+
+------------------------------------------------------------
+DATASET PERFORMANCE BREAKDOWN
+------------------------------------------------------------
+
+AAM:
+  Total files: 15000
+  Mean F-measure: 0.1411 ± 0.1133
+  Mean Duration: 153.8 ± 17.8 seconds
+  Mean Runtime: 14.16 ± 13.53 seconds
+    Basic_Pitch: 3000 files, F-measure: 0.1785
+    CREPE_Pitch_Tracker: 3000 files, F-measure: 0.0000
+    Jointist: 3000 files, F-measure: 0.2241
+    MT3: 3000 files, F-measure: 0.2357
+    ReconVAT: 3000 files, F-measure: 0.0674
+
+BiMMuDa:
+  Total files: 3750
+  Mean F-measure: 0.5196 ± 0.3765
+  Mean Duration: 200.7 ± 53.6 seconds
+  Mean Runtime: 77.13 ± 69.61 seconds
+    Basic_Pitch: 375 files, F-measure: 0.4359
+    Bytedance_Piano_transcription: 375 files, F-measure: 0.9676
+    CREPE_Pitch_Tracker: 375 files, F-measure: 0.0020
+    Jointist: 375 files, F-measure: 0.5619
+    MR-MT3: 375 files, F-measure: 0.0032
+    MT3: 375 files, F-measure: 0.9770
+    Madmom: 375 files, F-measure: 0.9949
+    Omnizart: 375 files, F-measure: 0.2439
+    ReconVAT: 375 files, F-measure: 0.3088
+    Transkun: 375 files, F-measure: 0.7013
+
+MSMD:
+  Total files: 4203
+  Mean F-measure: 0.5303 ± 0.3061
+  Mean Duration: 106.7 ± 95.3 seconds
+  Mean Runtime: 40.62 ± 47.23 seconds
+    Basic_Pitch: 467 files, F-measure: 0.4563
+    Bytedance_Piano_transcription: 467 files, F-measure: 0.7443
+    CREPE_Pitch_Tracker: 467 files, F-measure: 0.0068
+    Jointist: 467 files, F-measure: 0.4461
+    MT3: 467 files, F-measure: 0.8656
+    Madmom: 467 files, F-measure: 0.8425
+    Omnizart: 467 files, F-measure: 0.4019
+    ReconVAT: 467 files, F-measure: 0.2342
+    Transkun: 467 files, F-measure: 0.7753
+
+Maestro:
+  Total files: 3828
+  Mean F-measure: 0.1640 ± 0.1555
+  Mean Duration: 561.4 ± 442.9 seconds
+  Mean Runtime: 107.17 ± 176.61 seconds
+    CREPE_Pitch_Tracker: 1276 files, F-measure: 0.0357
+    Jointist: 1276 files, F-measure: 0.1928
+    Madmom: 1276 files, F-measure: 0.2636
+
+NESMDB:
+  Total files: 10556
+  Mean F-measure: 0.2472 ± 0.1782
+  Mean Duration: 34.7 ± 48.7 seconds
+  Mean Runtime: 30.79 ± 50.13 seconds
+    Basic_Pitch: 5278 files, F-measure: 0.2760
+    MT3: 5278 files, F-measure: 0.2184
+
+POP909:
+  Total files: 8181
+  Mean F-measure: 0.2541 ± 0.1846
+  Mean Duration: 249.6 ± 42.3 seconds
+  Mean Runtime: 38.97 ± 27.94 seconds
+    Basic_Pitch: 909 files, F-measure: 0.2149
+    Bytedance_Piano_transcription: 909 files, F-measure: 0.3155
+    CREPE_Pitch_Tracker: 909 files, F-measure: 0.0028
+    Jointist: 909 files, F-measure: 0.1683
+    MT3: 909 files, F-measure: 0.3542
+    Madmom: 909 files, F-measure: 0.3856
+    Omnizart: 909 files, F-measure: 0.2025
+    ReconVAT: 909 files, F-measure: 0.1061
+    Transkun: 909 files, F-measure: 0.5368
+
+Slakh 2100 Redux:
+  Total files: 3415
+  Mean F-measure: 0.0278 ± 0.0261
+  Mean Duration: 252.4 ± 110.4 seconds
+  Mean Runtime: 13.52 ± 20.66 seconds
+    CREPE_Pitch_Tracker: 1710 files, F-measure: 0.0070
+    ReconVAT: 1705 files, F-measure: 0.0487
+
+------------------------------------------------------------
+PERFORMANCE RANKINGS
+------------------------------------------------------------
+
+F MEASURE Rankings:
+  1. Transkun: 0.6356
+  2. Bytedance_Piano_transcription: 0.5695
+  3. Madmom: 0.4801
+  4. MT3: 0.2944
+  5. Omnizart: 0.2645
+  6. Basic_Pitch: 0.2557
+  7. Jointist: 0.2473
+  8. ReconVAT: 0.0940
+  9. CREPE_Pitch_Tracker: 0.0083
+  10. MR-MT3: 0.0032
+
+PRECISION Rankings:
+  1. Transkun: 0.6410
+  2. Bytedance_Piano_transcription: 0.5887
+  3. Madmom: 0.5369
+  4. Basic_Pitch: 0.3159
+  5. MT3: 0.3019
+  6. Omnizart: 0.2764
+  7. Jointist: 0.2272
+  8. ReconVAT: 0.1239
+  9. CREPE_Pitch_Tracker: 0.0067
+  10. MR-MT3: 0.0028
+
+RECALL Rankings:
+  1. Transkun: 0.6309
+  2. Bytedance_Piano_transcription: 0.5585
+  3. Madmom: 0.4442
+  4. MT3: 0.3026
+  5. Jointist: 0.2880
+  6. Omnizart: 0.2588
+  7. Basic_Pitch: 0.2423
+  8. ReconVAT: 0.0862
+  9. CREPE_Pitch_Tracker: 0.0177
+  10. MR-MT3: 0.0038
+
+ONSET F MEASURE Rankings:
+  1. Transkun: 0.9847
+  2. Bytedance_Piano_transcription: 0.9541
+  3. Madmom: 0.8464
+  4. Jointist: 0.7962
+  5. MT3: 0.7758
+  6. Omnizart: 0.7257
+  7. Basic_Pitch: 0.6138
+  8. ReconVAT: 0.4547
+  9. CREPE_Pitch_Tracker: 0.1975
+  10. MR-MT3: 0.0318
+
+OFFSET F MEASURE Rankings:
+  1. Transkun: 0.7362
+  2. Bytedance_Piano_transcription: 0.7140
+  3. MT3: 0.6794
+  4. Madmom: 0.6359
+  5. Omnizart: 0.5691
+  6. Basic_Pitch: 0.5532
+  7. MR-MT3: 0.5191
+  8. Jointist: 0.4914
+  9. ReconVAT: 0.4292
+  10. CREPE_Pitch_Tracker: 0.2454
+
+AVERAGE OVERLAP RATIO Rankings:
+  1. Bytedance_Piano_transcription: 0.9378
+  2. Transkun: 0.9276
+  3. Jointist: 0.8702
+  4. MT3: 0.8649
+  5. Basic_Pitch: 0.8579
+  6. Madmom: 0.8528
+  7. Omnizart: 0.8471
+  8. ReconVAT: 0.8053
+  9. MR-MT3: 0.4037
+  10. CREPE_Pitch_Tracker: 0.1909
+
+------------------------------------------------------------
+EFFICIENCY ANALYSIS
+------------------------------------------------------------
+Runtime Efficiency Rankings (F-measure per second):
+  1. Basic_Pitch: 0.023346 F-measure/sec (1.4008 F-measure/min)
+  2. Jointist: 0.021816 F-measure/sec (1.3090 F-measure/min)
+  3. ReconVAT: 0.016653 F-measure/sec (0.9992 F-measure/min)
+  4. Transkun: 0.015081 F-measure/sec (0.9049 F-measure/min)
+  5. Bytedance_Piano_transcription: 0.014539 F-measure/sec (0.8723 F-measure/min)
+  6. Madmom: 0.011784 F-measure/sec (0.7070 F-measure/min)
+  7. Omnizart: 0.010141 F-measure/sec (0.6085 F-measure/min)
+  8. MT3: 0.010119 F-measure/sec (0.6071 F-measure/min)
+  9. CREPE_Pitch_Tracker: 0.000372 F-measure/sec (0.0223 F-measure/min)
+  10. MR-MT3: 0.000018 F-measure/sec (0.0011 F-measure/min)
+
+------------------------------------------------------------
+STATISTICAL SIGNIFICANCE TESTS
+------------------------------------------------------------
+ANOVA F-statistic for F-measure differences: 4363.9442
+ANOVA p-value: 0.000000
+Significant difference between models: Yes
+
+Pairwise t-tests between models (F-measure):
+  Basic_Pitch vs Bytedance_Piano_transcription: t=-62.0584, p=0.000000
+  Basic_Pitch vs CREPE_Pitch_Tracker: t=129.0964, p=0.000000
+  Basic_Pitch vs Jointist: t=3.2956, p=0.000984
+  Basic_Pitch vs MR-MT3: t=29.1234, p=0.000000
+  Basic_Pitch vs MT3: t=-13.3699, p=0.000000
+  Basic_Pitch vs Madmom: t=-51.4823, p=0.000000
+  Basic_Pitch vs Omnizart: t=-2.1059, p=0.035237
+  Basic_Pitch vs ReconVAT: t=71.3956, p=0.000000
+  Basic_Pitch vs Transkun: t=-86.3633, p=0.000000
+  Bytedance_Piano_transcription vs CREPE_Pitch_Tracker: t=159.0463, p=0.000000
+  Bytedance_Piano_transcription vs Jointist: t=62.5462, p=0.000000
+  Bytedance_Piano_transcription vs MR-MT3: t=35.5631, p=0.000000
+  Bytedance_Piano_transcription vs MT3: t=42.8015, p=0.000000
+  Bytedance_Piano_transcription vs Madmom: t=9.5876, p=0.000000
+  Bytedance_Piano_transcription vs Omnizart: t=38.3568, p=0.000000
+  Bytedance_Piano_transcription vs ReconVAT: t=108.8381, p=0.000000
+  Bytedance_Piano_transcription vs Transkun: t=-7.7392, p=0.000000
+  CREPE_Pitch_Tracker vs Jointist: t=-151.4686, p=0.000000
+  CREPE_Pitch_Tracker vs MR-MT3: t=5.7045, p=0.000000
+  CREPE_Pitch_Tracker vs MT3: t=-106.3440, p=0.000000
+  CREPE_Pitch_Tracker vs Madmom: t=-132.5947, p=0.000000
+  CREPE_Pitch_Tracker vs Omnizart: t=-173.1249, p=0.000000
+  CREPE_Pitch_Tracker vs ReconVAT: t=-84.2658, p=0.000000
+  CREPE_Pitch_Tracker vs Transkun: t=-299.4781, p=0.000000
+  Jointist vs MR-MT3: t=34.3973, p=0.000000
+  Jointist vs MT3: t=-14.1217, p=0.000000
+  Jointist vs Madmom: t=-49.2411, p=0.000000
+  Jointist vs Omnizart: t=-4.7274, p=0.000002
+  Jointist vs ReconVAT: t=74.8403, p=0.000000
+  Jointist vs Transkun: t=-96.5028, p=0.000000
+  MR-MT3 vs MT3: t=-23.8773, p=0.000000
+  MR-MT3 vs Madmom: t=-29.6158, p=0.000000
+  MR-MT3 vs Omnizart: t=-40.4559, p=0.000000
+  MR-MT3 vs ReconVAT: t=-20.1052, p=0.000000
+  MR-MT3 vs Transkun: t=-67.7659, p=0.000000
+  MT3 vs Madmom: t=-35.0314, p=0.000000
+  MT3 vs Omnizart: t=5.1615, p=0.000000
+  MT3 vs ReconVAT: t=65.3513, p=0.000000
+  MT3 vs Transkun: t=-57.5947, p=0.000000
+  Madmom vs Omnizart: t=27.6718, p=0.000000
+  Madmom vs ReconVAT: t=92.0766, p=0.000000
+  Madmom vs Transkun: t=-19.0934, p=0.000000
+  Omnizart vs ReconVAT: t=65.4427, p=0.000000
+  Omnizart vs Transkun: t=-70.6649, p=0.000000
+  ReconVAT vs Transkun: t=-176.4313, p=0.000000
+
+------------------------------------------------------------
+COMPLETE CORRELATION MATRIX
+------------------------------------------------------------
+
+Correlation Matrix (only values > 0.3 or < -0.3):
+  duration_seconds vs runtime: 0.4185
+  precision vs recall: 0.9069
+  precision vs f_measure: 0.9629
+  precision vs average_overlap_ratio: 0.4954
+  precision vs precision_no_offset: 0.7467
+  precision vs recall_no_offset: 0.6147
+  precision vs f_measure_no_offset: 0.7154
+  precision vs average_overlap_ratio_no_offset: 0.7911
+  precision vs onset_precision: 0.6632
+  precision vs onset_recall: 0.4377
+  precision vs onset_f_measure: 0.6363
+  precision vs offset_precision: 0.6494
+  precision vs offset_recall: 0.4378
+  precision vs offset_f_measure: 0.7101
+  recall vs f_measure: 0.9808
+  recall vs average_overlap_ratio: 0.4844
+  recall vs precision_no_offset: 0.6437
+  recall vs recall_no_offset: 0.7565
+  recall vs f_measure_no_offset: 0.7572
+  recall vs average_overlap_ratio_no_offset: 0.7532
+  recall vs onset_precision: 0.5225
+  recall vs onset_recall: 0.6567
+  recall vs onset_f_measure: 0.7035
+  recall vs offset_precision: 0.4534
+  recall vs offset_recall: 0.6549
+  recall vs offset_f_measure: 0.7493
+  f_measure vs average_overlap_ratio: 0.4906
+  f_measure vs precision_no_offset: 0.7050
+  f_measure vs recall_no_offset: 0.7164
+  f_measure vs f_measure_no_offset: 0.7689
+  f_measure vs average_overlap_ratio_no_offset: 0.7761
+  f_measure vs onset_precision: 0.5998
+  f_measure vs onset_recall: 0.5848
+  f_measure vs onset_f_measure: 0.7093
+  f_measure vs offset_precision: 0.5469
+  f_measure vs offset_recall: 0.5849
+  f_measure vs offset_f_measure: 0.7687
+  average_overlap_ratio vs precision_no_offset: 0.6726
+  average_overlap_ratio vs recall_no_offset: 0.5840
+  average_overlap_ratio vs f_measure_no_offset: 0.6599
+  average_overlap_ratio vs average_overlap_ratio_no_offset: 0.7950
+  average_overlap_ratio vs onset_precision: 0.7406
+  average_overlap_ratio vs onset_recall: 0.4726
+  average_overlap_ratio vs onset_f_measure: 0.7151
+  average_overlap_ratio vs offset_precision: 0.5927
+  average_overlap_ratio vs offset_f_measure: 0.6172
+  precision_no_offset vs recall_no_offset: 0.7683
+  precision_no_offset vs f_measure_no_offset: 0.9199
+  precision_no_offset vs average_overlap_ratio_no_offset: 0.6955
+  precision_no_offset vs onset_precision: 0.8808
+  precision_no_offset vs onset_recall: 0.4878
+  precision_no_offset vs onset_f_measure: 0.7902
+  precision_no_offset vs offset_precision: 0.5823
+  precision_no_offset vs offset_f_measure: 0.5615
+  recall_no_offset vs f_measure_no_offset: 0.9322
+  recall_no_offset vs average_overlap_ratio_no_offset: 0.5937
+  recall_no_offset vs onset_precision: 0.5758
+  recall_no_offset vs onset_recall: 0.8677
+  recall_no_offset vs onset_f_measure: 0.8385
+  recall_no_offset vs offset_recall: 0.5741
+  recall_no_offset vs offset_f_measure: 0.5711
+  f_measure_no_offset vs average_overlap_ratio_no_offset: 0.6813
+  f_measure_no_offset vs onset_precision: 0.7668
+  f_measure_no_offset vs onset_recall: 0.7370
+  f_measure_no_offset vs onset_f_measure: 0.9083
+  f_measure_no_offset vs offset_precision: 0.4096
+  f_measure_no_offset vs offset_recall: 0.4184
+  f_measure_no_offset vs offset_f_measure: 0.6578
+  average_overlap_ratio_no_offset vs onset_precision: 0.7200
+  average_overlap_ratio_no_offset vs onset_recall: 0.4702
+  average_overlap_ratio_no_offset vs onset_f_measure: 0.7014
+  average_overlap_ratio_no_offset vs offset_precision: 0.6640
+  average_overlap_ratio_no_offset vs offset_recall: 0.3795
+  average_overlap_ratio_no_offset vs offset_f_measure: 0.7233
+  onset_precision vs onset_recall: 0.4006
+  onset_precision vs onset_f_measure: 0.8114
+  onset_precision vs offset_precision: 0.7843
+  onset_precision vs offset_f_measure: 0.6536
+  onset_recall vs onset_f_measure: 0.8090
+  onset_recall vs offset_recall: 0.7822
+  onset_recall vs offset_f_measure: 0.5698
+  onset_f_measure vs offset_precision: 0.4793
+  onset_f_measure vs offset_recall: 0.5176
+  onset_f_measure vs offset_f_measure: 0.7954
+  offset_precision vs offset_f_measure: 0.7166
+  offset_recall vs offset_f_measure: 0.6697
+
+------------------------------------------------------------
+FIGURES SAVED
+------------------------------------------------------------
+1. figures/01_core_performance_analysis.png - Main performance comparisons
+2. figures/02_onset_offset_analysis.png - Onset/offset detailed analysis
+3. figures/03_advanced_performance_patterns.png - Advanced pattern analysis
+4. figures/04_statistical_summary.png - Statistical summary and rankings
+
+================================================================================
+ANALYSIS COMPLETE!
+================================================================================
