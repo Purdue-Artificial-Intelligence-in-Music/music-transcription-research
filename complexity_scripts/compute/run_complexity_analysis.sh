@@ -1,12 +1,15 @@
 #!/bin/bash
-#SBATCH -A yunglu-k
+#SBATCH -A yunglu
+#SBATCH -p a100-80gb
 #SBATCH --nodes=1
-#SBATCH --cpus-per-task=60
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=64
 #SBATCH --gres=gpu:1
+#SBATCH --mem=32G
 #SBATCH --time=12:00:00
 #SBATCH --job-name=complexity_analysis
-#SBATCH --output=logs/complexity_analysis_%j.out
-#SBATCH --error=logs/complexity_analysis_%j.err
+#SBATCH --output=complexity_analysis_%j.out
+#SBATCH --error=complexity_analysis_%j.err
 
 # COMPLEXITY ANALYSIS - MAIN JOB SCRIPT
 
@@ -21,7 +24,7 @@ echo "Node: $SLURM_NODELIST"
 echo "=========================================="
 
 # Set working directory
-cd /home/$USER/AIM/music-transcription-research/complexity_pipeline
+cd /home/$USER/AIM/music-transcription-research/complexity_scripts/compute
 
 # Create logs directory
 mkdir -p logs
@@ -65,20 +68,32 @@ if [ $? -eq 0 ]; then
     echo "Total Runtime: ${runtime_formatted}"
     echo "=========================================="
     
-    # Send Discord notification for successful completion
-    curl -s -X POST -H "Content-Type: application/json" -d "{
-\"content\": \"✅ **Complexity Analysis Completed Successfully**\nJob ID: $SLURM_JOB_ID\nDataset: ${1:-'All Datasets'}\nRuntime: ${runtime_formatted}",
-\"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"
-}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
     
 else
     echo "=========================================="
     echo "Complexity analysis failed!"
     echo "=========================================="
     
-    # Send Discord notification for failure
-    curl -s -X POST -H "Content-Type: application/json" -d "{
-\"content\": \"❌ **Complexity Analysis Failed**\nJob ID: $SLURM_JOB_ID\nDataset: ${1:-'All Datasets'}",
-\"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"
-}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
 fi 
+
+# Organize log files at the end
+echo "=========================================="
+echo "Organizing log files..."
+echo "=========================================="
+
+# Create logs directory in the main project location
+mkdir -p ../../logs/
+
+# Move log files to organized location
+if [ -f "complexity_analysis_$SLURM_JOB_ID.out" ]; then
+    mv "complexity_analysis_$SLURM_JOB_ID.out" "../../logs/"
+    echo "Moved output log to ../../logs/complexity_analysis_$SLURM_JOB_ID.out"
+fi
+
+if [ -f "complexity_analysis_$SLURM_JOB_ID.err" ]; then
+    mv "complexity_analysis_$SLURM_JOB_ID.err" "../../logs/"
+    echo "Moved error log to ../../logs/complexity_analysis_$SLURM_JOB_ID.err"
+fi
+
+echo "Log organization complete!"
+echo "==========================================" 

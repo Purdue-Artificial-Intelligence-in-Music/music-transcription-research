@@ -70,10 +70,49 @@ def analyze_complexity_for_file(midi_file_path, dataset_name):
         # Add entropy metrics
         if entropy_results:
             results.update(entropy_results)
+        else:
+            # Add default values when entropy analysis fails
+            entropy_metrics = [
+                'tonal_certainty_piece', 'mean_tonal_certainty_measures',
+                'pitch_class_entropy_piece', 'mean_pitch_class_entropy_measures',
+                'max_melodic_interval_entropy_piece', 'max_mean_melodic_interval_entropy_measures',
+                'max_ioi_entropy_piece', 'max_mean_ioi_entropy_measures'
+            ]
+            for metric in entropy_metrics:
+                results[metric] = None
         
         # Add polyphony metrics
         if polyphony_results:
-            results.update(polyphony_results)
+            # Add global polyphony metrics
+            global_metrics = ['max_polyphony', 'avg_polyphony', 'std_polyphony', 'polyphony_density']
+            for metric in global_metrics:
+                if metric in polyphony_results:
+                    results[metric] = polyphony_results[metric]
+            
+            # Add useful segmentation metrics (6 metrics, excluding 4 duplicated global ones)
+            if 'segmentation_results' in polyphony_results:
+                seg_results = polyphony_results['segmentation_results']
+                useful_seg_metrics = [
+                    'mean_max_polyphony_measures',
+                    'std_max_polyphony_measures', 
+                    'mean_avg_polyphony_measures',
+                    'std_avg_polyphony_measures',
+                    'mean_polyphony_density_measures',
+                    'std_polyphony_density_measures'
+                ]
+                for metric in useful_seg_metrics:
+                    if metric in seg_results:
+                        results[metric] = seg_results[metric]
+        else:
+            # Add default values when polyphony analysis fails
+            polyphony_metrics = [
+                'max_polyphony', 'avg_polyphony', 'std_polyphony', 'polyphony_density',
+                'mean_max_polyphony_measures', 'std_max_polyphony_measures',
+                'mean_avg_polyphony_measures', 'std_avg_polyphony_measures',
+                'mean_polyphony_density_measures', 'std_polyphony_density_measures'
+            ]
+            for metric in polyphony_metrics:
+                results[metric] = None
         
         # Add ATC metrics
         if atc_results and not atc_results.get('error'):

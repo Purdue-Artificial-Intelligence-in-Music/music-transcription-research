@@ -1,0 +1,13 @@
+metric,overall_r,sig_datasets,total_datasets,sig_models,total_models
+seg_max_poly,-0.4582533936316146,3,4,8,9
+max_polyphony,-0.4582533936316146,3,4,8,9
+std_polyphony,-0.4483045427580873,2,4,8,9
+seg_poly_std,-0.4483045427580873,2,4,8,9
+seg_avg_poly,-0.42521647390598044,4,4,7,9
+avg_polyphony,-0.42521647390598044,4,4,7,9
+polyphony_density,-0.27527482788851976,1,4,8,9
+seg_poly_density,-0.27527482788851976,1,4,8,9
+melodic_interval_entropy_piece,-0.048152747594034845,3,4,8,9
+pitch_class_entropy_piece,-0.04493242904877899,2,4,6,9
+ioi_entropy_piece,-0.02904098962966851,2,4,8,9
+tonal_certainty_piece,0.020794103981306145,1,4,6,9
