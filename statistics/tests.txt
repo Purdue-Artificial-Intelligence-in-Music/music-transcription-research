@@ -1,5 +1,5 @@
 Loading music results data...
-Loaded 48933 records
+Loaded 156956 records
 Models: ['Basic_Pitch' 'Bytedance_Piano_transcription' 'CREPE_Pitch_Tracker'
  'Jointist' 'MR-MT3' 'MT3' 'Madmom' 'Omnizart' 'ReconVAT' 'Transkun']
 
@@ -8,37 +8,37 @@ Models: ['Basic_Pitch' 'Bytedance_Piano_transcription' 'CREPE_Pitch_Tracker'
 ============================================================
 
 F_MEASURE:
-  F-statistic: 4363.9442
+  F-statistic: 4839.7629
   p-value: 0.000000
   Significant: Yes
   -> There ARE significant differences between models for f_measure
 
 PRECISION:
-  F-statistic: 4643.4065
+  F-statistic: 4740.5775
   p-value: 0.000000
   Significant: Yes
   -> There ARE significant differences between models for precision
 
 RECALL:
-  F-statistic: 3782.1115
+  F-statistic: 4564.6314
   p-value: 0.000000
   Significant: Yes
   -> There ARE significant differences between models for recall
 
 ONSET_F_MEASURE:
-  F-statistic: 13509.0427
+  F-statistic: 48210.4634
   p-value: 0.000000
   Significant: Yes
   -> There ARE significant differences between models for onset_f_measure
 
 OFFSET_F_MEASURE:
-  F-statistic: 6138.6552
+  F-statistic: 11898.3148
   p-value: 0.000000
   Significant: Yes
   -> There ARE significant differences between models for offset_f_measure
 
 RUNTIME:
-  F-statistic: 1989.3584
+  F-statistic: 5859.1066
   p-value: 0.000000
   Significant: Yes
   -> There ARE significant differences between models for runtime
@@ -96,11 +96,11 @@ F_MEASURE Pairwise Comparisons:
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   Basic_Pitch vs MT3:
-    t-statistic: -13.3699
+    t-statistic: -24.9870
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: -0.0387
-    Cohen's d: -0.1888 (small)
+    Mean difference: -0.0475
+    Cohen's d: -0.2599 (small)
     Statistical significance: Yes
     Practical significance: No
     ** CATEGORY: STATISTICAL ONLY **
@@ -176,11 +176,11 @@ F_MEASURE Pairwise Comparisons:
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   Bytedance_Piano_transcription vs MT3:
-    t-statistic: 42.8015
+    t-statistic: 59.2802
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: 0.2751
-    Cohen's d: 1.1086 (large)
+    Mean difference: 0.2663
+    Cohen's d: 1.4271 (large)
     Statistical significance: Yes
     Practical significance: Yes
     ** CATEGORY: BOTH **
@@ -246,11 +246,11 @@ F_MEASURE Pairwise Comparisons:
     ** CATEGORY: STATISTICAL ONLY **
     --> Models are statistically different but practically similar
   CREPE_Pitch_Tracker vs MT3:
-    t-statistic: -106.3440
+    t-statistic: -140.8270
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: -0.2861
-    Cohen's d: -1.6091 (large)
+    Mean difference: -0.2950
+    Cohen's d: -1.6527 (large)
     Statistical significance: Yes
     Practical significance: Yes
     ** CATEGORY: BOTH **
@@ -306,15 +306,15 @@ F_MEASURE Pairwise Comparisons:
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   Jointist vs MT3:
-    t-statistic: -14.1217
+    t-statistic: -23.2717
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: -0.0471
-    Cohen's d: -0.2302 (small)
+    Mean difference: -0.0560
+    Cohen's d: -0.3073 (small)
     Statistical significance: Yes
-    Practical significance: No
-    ** CATEGORY: STATISTICAL ONLY **
-    --> Models are statistically different but practically similar
+    Practical significance: Yes
+    ** CATEGORY: BOTH **
+    --> Models are both statistically and practically different
   Jointist vs Madmom:
     t-statistic: -49.2411
     p-value: 0.000000
@@ -356,11 +356,11 @@ F_MEASURE Pairwise Comparisons:
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   MR-MT3 vs MT3:
-    t-statistic: -23.8773
+    t-statistic: -31.5487
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: -0.2912
-    Cohen's d: -1.2559 (large)
+    Mean difference: -0.3001
+    Cohen's d: -1.6318 (large)
     Statistical significance: Yes
     Practical significance: Yes
     ** CATEGORY: BOTH **
@@ -406,41 +406,41 @@ F_MEASURE Pairwise Comparisons:
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   MT3 vs Madmom:
-    t-statistic: -35.0314
+    t-statistic: -51.0007
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: -0.1858
-    Cohen's d: -0.7265 (medium)
+    Mean difference: -0.1769
+    Cohen's d: -0.9388 (large)
     Statistical significance: Yes
     Practical significance: Yes
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   MT3 vs Omnizart:
-    t-statistic: 5.1615
+    t-statistic: 8.7625
     p-value: 0.000000
-    p-value (Bonferroni): 0.000011
-    Mean difference: 0.0298
-    Cohen's d: 0.1337 (small)
+    p-value (Bonferroni): 0.000000
+    Mean difference: 0.0387
+    Cohen's d: 0.2110 (small)
     Statistical significance: Yes
     Practical significance: No
     ** CATEGORY: STATISTICAL ONLY **
     --> Models are statistically different but practically similar
   MT3 vs ReconVAT:
-    t-statistic: 65.3513
+    t-statistic: 90.7238
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: 0.2004
-    Cohen's d: 1.0428 (large)
+    Mean difference: 0.2092
+    Cohen's d: 1.1596 (large)
     Statistical significance: Yes
     Practical significance: Yes
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   MT3 vs Transkun:
-    t-statistic: -57.5947
+    t-statistic: -74.9823
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: -0.3412
-    Cohen's d: -1.4917 (large)
+    Mean difference: -0.3324
+    Cohen's d: -1.8051 (large)
     Statistical significance: Yes
     Practical significance: Yes
     ** CATEGORY: BOTH **
@@ -507,8 +507,8 @@ F_MEASURE Pairwise Comparisons:
     --> Models are both statistically and practically different
 
   SUMMARY FOR F_MEASURE:
-    Both significant: 38/45 (84.4%)
-    Statistical only: 6/45 (13.3%)
+    Both significant: 39/45 (86.7%)
+    Statistical only: 5/45 (11.1%)
     Practical only: 0/45 (0.0%)
     Neither significant: 1/45 (2.2%)
 
@@ -554,11 +554,11 @@ PRECISION Pairwise Comparisons:
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   Basic_Pitch vs MT3:
-    t-statistic: 4.6738
-    p-value: 0.000003
-    p-value (Bonferroni): 0.000134
-    Mean difference: 0.0140
-    Cohen's d: 0.0660 (small)
+    t-statistic: 7.5536
+    p-value: 0.000000
+    p-value (Bonferroni): 0.000000
+    Mean difference: 0.0148
+    Cohen's d: 0.0786 (small)
     Statistical significance: Yes
     Practical significance: No
     ** CATEGORY: STATISTICAL ONLY **
@@ -634,11 +634,11 @@ PRECISION Pairwise Comparisons:
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   Bytedance_Piano_transcription vs MT3:
-    t-statistic: 44.0589
+    t-statistic: 62.3282
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: 0.2868
-    Cohen's d: 1.1411 (large)
+    Mean difference: 0.2876
+    Cohen's d: 1.5005 (large)
     Statistical significance: Yes
     Practical significance: Yes
     ** CATEGORY: BOTH **
@@ -704,11 +704,11 @@ PRECISION Pairwise Comparisons:
     ** CATEGORY: STATISTICAL ONLY **
     --> Models are statistically different but practically similar
   CREPE_Pitch_Tracker vs MT3:
-    t-statistic: -107.7554
+    t-statistic: -136.6128
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: -0.2952
-    Cohen's d: -1.6305 (large)
+    Mean difference: -0.2944
+    Cohen's d: -1.6032 (large)
     Statistical significance: Yes
     Practical significance: Yes
     ** CATEGORY: BOTH **
@@ -764,11 +764,11 @@ PRECISION Pairwise Comparisons:
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   Jointist vs MT3:
-    t-statistic: -21.9164
+    t-statistic: -29.8558
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: -0.0747
-    Cohen's d: -0.3572 (small)
+    Mean difference: -0.0739
+    Cohen's d: -0.3943 (small)
     Statistical significance: Yes
     Practical significance: Yes
     ** CATEGORY: BOTH **
@@ -814,11 +814,11 @@ PRECISION Pairwise Comparisons:
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   MR-MT3 vs MT3:
-    t-statistic: -24.0672
+    t-statistic: -30.4847
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: -0.2991
-    Cohen's d: -1.2658 (large)
+    Mean difference: -0.2983
+    Cohen's d: -1.5767 (large)
     Statistical significance: Yes
     Practical significance: Yes
     ** CATEGORY: BOTH **
@@ -864,41 +864,41 @@ PRECISION Pairwise Comparisons:
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   MT3 vs Madmom:
-    t-statistic: -44.0376
+    t-statistic: -66.2951
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: -0.2351
-    Cohen's d: -0.9133 (large)
+    Mean difference: -0.2359
+    Cohen's d: -1.2203 (large)
     Statistical significance: Yes
     Practical significance: Yes
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   MT3 vs Omnizart:
-    t-statistic: 4.3314
-    p-value: 0.000015
-    p-value (Bonferroni): 0.000672
-    Mean difference: 0.0255
-    Cohen's d: 0.1122 (small)
+    t-statistic: 5.4395
+    p-value: 0.000000
+    p-value (Bonferroni): 0.000002
+    Mean difference: 0.0247
+    Cohen's d: 0.1310 (small)
     Statistical significance: Yes
     Practical significance: No
     ** CATEGORY: STATISTICAL ONLY **
     --> Models are statistically different but practically similar
   MT3 vs ReconVAT:
-    t-statistic: 57.2203
+    t-statistic: 74.7293
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: 0.1780
-    Cohen's d: 0.9130 (large)
+    Mean difference: 0.1772
+    Cohen's d: 0.9551 (large)
     Statistical significance: Yes
     Practical significance: Yes
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   MT3 vs Transkun:
-    t-statistic: -56.3174
+    t-statistic: -74.5665
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: -0.3391
-    Cohen's d: -1.4586 (large)
+    Mean difference: -0.3399
+    Cohen's d: -1.7951 (large)
     Statistical significance: Yes
     Practical significance: Yes
     ** CATEGORY: BOTH **
@@ -1012,11 +1012,11 @@ RECALL Pairwise Comparisons:
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   Basic_Pitch vs MT3:
-    t-statistic: -19.8883
+    t-statistic: -36.5086
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: -0.0603
-    Cohen's d: -0.2809 (small)
+    Mean difference: -0.0706
+    Cohen's d: -0.3797 (small)
     Statistical significance: Yes
     Practical significance: Yes
     ** CATEGORY: BOTH **
@@ -1092,11 +1092,11 @@ RECALL Pairwise Comparisons:
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   Bytedance_Piano_transcription vs MT3:
-    t-statistic: 39.0368
+    t-statistic: 54.1473
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: 0.2559
-    Cohen's d: 1.0111 (large)
+    Mean difference: 0.2456
+    Cohen's d: 1.3036 (large)
     Statistical significance: Yes
     Practical significance: Yes
     ** CATEGORY: BOTH **
@@ -1162,11 +1162,11 @@ RECALL Pairwise Comparisons:
     ** CATEGORY: STATISTICAL ONLY **
     --> Models are statistically different but practically similar
   CREPE_Pitch_Tracker vs MT3:
-    t-statistic: -102.7355
+    t-statistic: -139.3798
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: -0.2849
-    Cohen's d: -1.5545 (large)
+    Mean difference: -0.2952
+    Cohen's d: -1.6357 (large)
     Statistical significance: Yes
     Practical significance: Yes
     ** CATEGORY: BOTH **
@@ -1222,11 +1222,11 @@ RECALL Pairwise Comparisons:
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   Jointist vs MT3:
-    t-statistic: -4.2563
-    p-value: 0.000021
-    p-value (Bonferroni): 0.000941
-    Mean difference: -0.0146
-    Cohen's d: -0.0694 (small)
+    t-statistic: -10.2192
+    p-value: 0.000000
+    p-value (Bonferroni): 0.000000
+    Mean difference: -0.0249
+    Cohen's d: -0.1350 (small)
     Statistical significance: Yes
     Practical significance: No
     ** CATEGORY: STATISTICAL ONLY **
@@ -1272,11 +1272,11 @@ RECALL Pairwise Comparisons:
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   MR-MT3 vs MT3:
-    t-statistic: -23.9858
+    t-statistic: -32.1780
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: -0.2988
-    Cohen's d: -1.2616 (large)
+    Mean difference: -0.3090
+    Cohen's d: -1.6643 (large)
     Statistical significance: Yes
     Practical significance: Yes
     ** CATEGORY: BOTH **
@@ -1322,41 +1322,41 @@ RECALL Pairwise Comparisons:
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   MT3 vs Madmom:
-    t-statistic: -26.1997
+    t-statistic: -37.4925
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: -0.1416
-    Cohen's d: -0.5433 (medium)
+    Mean difference: -0.1314
+    Cohen's d: -0.6901 (medium)
     Statistical significance: Yes
     Practical significance: Yes
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   MT3 vs Omnizart:
-    t-statistic: 7.4247
+    t-statistic: 12.1319
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: 0.0439
-    Cohen's d: 0.1923 (small)
+    Mean difference: 0.0541
+    Cohen's d: 0.2921 (small)
     Statistical significance: Yes
-    Practical significance: No
-    ** CATEGORY: STATISTICAL ONLY **
-    --> Models are statistically different but practically similar
+    Practical significance: Yes
+    ** CATEGORY: BOTH **
+    --> Models are both statistically and practically different
   MT3 vs ReconVAT:
-    t-statistic: 68.2086
+    t-statistic: 97.1320
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: 0.2164
-    Cohen's d: 1.0884 (large)
+    Mean difference: 0.2267
+    Cohen's d: 1.2415 (large)
     Statistical significance: Yes
     Practical significance: Yes
     ** CATEGORY: BOTH **
     --> Models are both statistically and practically different
   MT3 vs Transkun:
-    t-statistic: -54.2797
+    t-statistic: -71.0404
     p-value: 0.000000
     p-value (Bonferroni): 0.000000
-    Mean difference: -0.3282
-    Cohen's d: -1.4058 (large)
+    Mean difference: -0.3180
+    Cohen's d: -1.7103 (large)
     Statistical significance: Yes
     Practical significance: Yes
     ** CATEGORY: BOTH **
@@ -1423,26 +1423,135 @@ RECALL Pairwise Comparisons:
     --> Models are both statistically and practically different
 
   SUMMARY FOR RECALL:
-    Both significant: 39/45 (86.7%)
-    Statistical only: 6/45 (13.3%)
+    Both significant: 40/45 (88.9%)
+    Statistical only: 5/45 (11.1%)
     Practical only: 0/45 (0.0%)
     Neither significant: 0/45 (0.0%)
 
 ============================================================
-PRACTICAL vs STATISTICAL SIGNIFICANCE SUMMARY
+2B. INSTRUMENT CATEGORY (SINGLE vs MULTIPLE) ANALYSIS
 ============================================================
 
-Metric          | Both | Stat Only | Pract Only | Neither
--------------------------------------------------------
-f_measure       |   38 |         6 |          0 |       1
-precision       |   40 |         5 |          0 |       0
-recall          |   39 |         6 |          0 |       0
+Two-way ANOVA (f_measure ~ model × instrument_category):
+                                           sum_sq  ...    PR(>F)
+C(model_name)                         1333.450371  ...  0.000000
+C(instrument_category)                  59.879949  ...  0.000000
+C(model_name):C(instrument_category)     0.103959  ...  0.536657
+Residual                              4748.299398  ...       NaN
 
-INTERPRETATION GUIDE:
-- 'Both Significant': Models are meaningfully different (trust this)
-- 'Statistical Only': Models are similar in practice (your visual observation is correct)
-- 'Practical Only': Large differences but high variance (investigate further)
-- 'Neither': Models perform very similarly
+[4 rows x 4 columns]
+
+Within Single only — ANOVA on f_measure across models:
+  F=1321.3729, p=0.000000
+  Tukey HSD results:
+                       Multiple Comparison of Means - Tukey HSD, FWER=0.05                        
+==================================================================================================
+            group1                        group2            meandiff p-adj   lower   upper  reject
+--------------------------------------------------------------------------------------------------
+                  Basic_Pitch Bytedance_Piano_transcription   0.5679    0.0   0.522  0.6139   True
+                  Basic_Pitch           CREPE_Pitch_Tracker  -0.3716    0.0 -0.4059 -0.3373   True
+                  Basic_Pitch                      Jointist  -0.1229    0.0 -0.1572 -0.0886   True
+                  Basic_Pitch                        MR-MT3  -0.3965    0.0 -0.4424 -0.3506   True
+                  Basic_Pitch                           MT3   0.4122    0.0  0.3697  0.4547   True
+                  Basic_Pitch                        Madmom     0.03 0.1464 -0.0043  0.0643  False
+                  Basic_Pitch                      Omnizart  -0.1557    0.0 -0.2017 -0.1098   True
+                  Basic_Pitch                      ReconVAT  -0.0915    0.0 -0.1373 -0.0456   True
+                  Basic_Pitch                      Transkun   0.3016    0.0  0.2557  0.3475   True
+Bytedance_Piano_transcription           CREPE_Pitch_Tracker  -0.9396    0.0  -0.978 -0.9011   True
+Bytedance_Piano_transcription                      Jointist  -0.6908    0.0 -0.7293 -0.6523   True
+Bytedance_Piano_transcription                        MR-MT3  -0.9644    0.0 -1.0135 -0.9153   True
+Bytedance_Piano_transcription                           MT3  -0.1558    0.0 -0.2017 -0.1098   True
+Bytedance_Piano_transcription                        Madmom  -0.5379    0.0 -0.5764 -0.4994   True
+Bytedance_Piano_transcription                      Omnizart  -0.7237    0.0 -0.7728 -0.6746   True
+Bytedance_Piano_transcription                      ReconVAT  -0.6594    0.0 -0.7085 -0.6103   True
+Bytedance_Piano_transcription                      Transkun  -0.2663    0.0 -0.3155 -0.2172   True
+          CREPE_Pitch_Tracker                      Jointist   0.2488    0.0  0.2254  0.2722   True
+          CREPE_Pitch_Tracker                        MR-MT3  -0.0249  0.566 -0.0633  0.0136  False
+          CREPE_Pitch_Tracker                           MT3   0.7838    0.0  0.7495  0.8181   True
+          CREPE_Pitch_Tracker                        Madmom   0.4016    0.0  0.3782   0.425   True
+          CREPE_Pitch_Tracker                      Omnizart   0.2159    0.0  0.1774  0.2543   True
+          CREPE_Pitch_Tracker                      ReconVAT   0.2802    0.0  0.2417  0.3186   True
+          CREPE_Pitch_Tracker                      Transkun   0.6732    0.0  0.6347  0.7117   True
+                     Jointist                        MR-MT3  -0.2736    0.0 -0.3121 -0.2352   True
+                     Jointist                           MT3    0.535    0.0  0.5007  0.5693   True
+                     Jointist                        Madmom   0.1529    0.0  0.1295  0.1763   True
+                     Jointist                      Omnizart  -0.0329 0.1715 -0.0713  0.0056  False
+                     Jointist                      ReconVAT   0.0314 0.2244  -0.007  0.0698  False
+                     Jointist                      Transkun   0.4244    0.0   0.386  0.4629   True
+                       MR-MT3                           MT3   0.8087    0.0  0.7628  0.8546   True
+                       MR-MT3                        Madmom   0.4265    0.0  0.3881   0.465   True
+                       MR-MT3                      Omnizart   0.2407    0.0  0.1916  0.2899   True
+                       MR-MT3                      ReconVAT    0.305    0.0  0.2559  0.3541   True
+                       MR-MT3                      Transkun   0.6981    0.0   0.649  0.7472   True
+                          MT3                        Madmom  -0.3822    0.0 -0.4165 -0.3479   True
+                          MT3                      Omnizart  -0.5679    0.0 -0.6138  -0.522   True
+                          MT3                      ReconVAT  -0.5036    0.0 -0.5495 -0.4578   True
+                          MT3                      Transkun  -0.1106    0.0 -0.1565 -0.0647   True
+                       Madmom                      Omnizart  -0.1858    0.0 -0.2242 -0.1473   True
+                       Madmom                      ReconVAT  -0.1215    0.0 -0.1599 -0.0831   True
+                       Madmom                      Transkun   0.2716    0.0  0.2331    0.31   True
+                     Omnizart                      ReconVAT   0.0643 0.0014  0.0152  0.1134   True
+                     Omnizart                      Transkun   0.4573    0.0  0.4082  0.5064   True
+                     ReconVAT                      Transkun   0.3931    0.0   0.344  0.4421   True
+--------------------------------------------------------------------------------------------------
+
+Within Multiple only — ANOVA on f_measure across models:
+  F=4556.4386, p=0.000000
+  Tukey HSD results:
+                       Multiple Comparison of Means - Tukey HSD, FWER=0.05                        
+==================================================================================================
+            group1                        group2            meandiff p-adj   lower   upper  reject
+--------------------------------------------------------------------------------------------------
+                  Basic_Pitch Bytedance_Piano_transcription   0.2129    0.0  0.1976  0.2283   True
+                  Basic_Pitch           CREPE_Pitch_Tracker  -0.2452    0.0 -0.2539 -0.2365   True
+                  Basic_Pitch                      Jointist   -0.012  0.004 -0.0218 -0.0023   True
+                  Basic_Pitch                           MT3    0.053    0.0  0.0473  0.0586   True
+                  Basic_Pitch                        Madmom   0.2925    0.0  0.2772  0.3079   True
+                  Basic_Pitch                      Omnizart    0.022 0.0003  0.0067  0.0374   True
+                  Basic_Pitch                      ReconVAT  -0.1674    0.0 -0.1761 -0.1586   True
+                  Basic_Pitch                      Transkun   0.3696    0.0  0.3542   0.385   True
+Bytedance_Piano_transcription           CREPE_Pitch_Tracker  -0.4581    0.0  -0.474 -0.4422   True
+Bytedance_Piano_transcription                      Jointist  -0.2249    0.0 -0.2414 -0.2085   True
+Bytedance_Piano_transcription                           MT3    -0.16    0.0 -0.1744 -0.1455   True
+Bytedance_Piano_transcription                        Madmom   0.0796    0.0  0.0593  0.0999   True
+Bytedance_Piano_transcription                      Omnizart  -0.1909    0.0 -0.2112 -0.1706   True
+Bytedance_Piano_transcription                      ReconVAT  -0.3803    0.0 -0.3962 -0.3644   True
+Bytedance_Piano_transcription                      Transkun   0.1567    0.0  0.1364   0.177   True
+          CREPE_Pitch_Tracker                      Jointist   0.2332    0.0  0.2226  0.2437   True
+          CREPE_Pitch_Tracker                           MT3   0.2982    0.0  0.2912  0.3052   True
+          CREPE_Pitch_Tracker                        Madmom   0.5377    0.0  0.5218  0.5536   True
+          CREPE_Pitch_Tracker                      Omnizart   0.2672    0.0  0.2514  0.2831   True
+          CREPE_Pitch_Tracker                      ReconVAT   0.0778    0.0  0.0682  0.0875   True
+          CREPE_Pitch_Tracker                      Transkun   0.6148    0.0  0.5989  0.6307   True
+                     Jointist                           MT3    0.065    0.0  0.0568  0.0732   True
+                     Jointist                        Madmom   0.3045    0.0  0.2881   0.321   True
+                     Jointist                      Omnizart   0.0341    0.0  0.0176  0.0505   True
+                     Jointist                      ReconVAT  -0.1553    0.0 -0.1659 -0.1448   True
+                     Jointist                      Transkun   0.3816    0.0  0.3652  0.3981   True
+                          MT3                        Madmom   0.2396    0.0  0.2251   0.254   True
+                          MT3                      Omnizart  -0.0309    0.0 -0.0454 -0.0165   True
+                          MT3                      ReconVAT  -0.2203    0.0 -0.2273 -0.2133   True
+                          MT3                      Transkun   0.3167    0.0  0.3022  0.3311   True
+                       Madmom                      Omnizart  -0.2705    0.0 -0.2908 -0.2502   True
+                       Madmom                      ReconVAT  -0.4599    0.0 -0.4758  -0.444   True
+                       Madmom                      Transkun   0.0771    0.0  0.0568  0.0974   True
+                     Omnizart                      ReconVAT  -0.1894    0.0 -0.2053 -0.1735   True
+                     Omnizart                      Transkun   0.3476    0.0  0.3273  0.3679   True
+                     ReconVAT                      Transkun    0.537    0.0  0.5211  0.5529   True
+--------------------------------------------------------------------------------------------------
+
+Within-model Single vs Multiple (Welch t-tests) on f_measure:
+  Basic_Pitch: t=16.132, p=0.00000, p_bonf(models)=0.00000, d=0.921 (Single - Multiple)
+  Bytedance_Piano_transcription: t=68.199, p=0.00000, p_bonf(models)=0.00000, d=2.224 (Single - Multiple)
+  CREPE_Pitch_Tracker: t=38.122, p=0.00000, p_bonf(models)=0.00000, d=1.814 (Single - Multiple)
+  Jointist: t=8.049, p=0.00000, p_bonf(models)=0.00000, d=0.299 (Single - Multiple)
+  MR-MT3: not enough samples (Single n=375, Multiple n=0)
+  MT3: t=34.600, p=0.00000, p_bonf(models)=0.00000, d=2.820 (Single - Multiple)
+  Madmom: t=-10.194, p=0.00000, p_bonf(models)=0.00000, d=-0.361 (Single - Multiple)
+  Omnizart: t=-4.631, p=0.00000, p_bonf(models)=0.00004, d=-0.210 (Single - Multiple)
+  ReconVAT: t=42.446, p=0.00000, p_bonf(models)=0.00000, d=3.279 (Single - Multiple)
+  Transkun: t=10.011, p=0.00000, p_bonf(models)=0.00000, d=0.471 (Single - Multiple)
+Saved plot: statistics/inst_category_effects.png
 
 ============================================================
 MULTIPLE COMPARISON CORRECTION COMPARISON
@@ -1500,7 +1609,7 @@ MR-MT3 vs Omnizart        0.000000   0.000000     0.000000   0.000000
 MR-MT3 vs ReconVAT        0.000000   0.000000     0.000000   0.000000  
 MR-MT3 vs Transkun        0.000000   0.000000     0.000000   0.000000  
 MT3 vs Madmom             0.000000   0.000000     0.000000   0.000000  
-MT3 vs Omnizart           0.000000   0.000011     0.000001   0.000000  
+MT3 vs Omnizart           0.000000   0.000000     0.000000   0.000000  
 MT3 vs ReconVAT           0.000000   0.000000     0.000000   0.000000  
 MT3 vs Transkun           0.000000   0.000000     0.000000   0.000000  
 Madmom vs Omnizart        0.000000   0.000000     0.000000   0.000000  
@@ -1522,86 +1631,86 @@ FOR YOUR RESEARCH:
 PEARSON CORRELATIONS:
 
 duration_seconds vs f_measure:
-  Pearson r: -0.1116 (p=0.000000)
-  Spearman ρ: -0.1377 (p=0.000000)
-  Sample size: 48933
+  Pearson r: -0.1176 (p=0.000000)
+  Spearman ρ: -0.1089 (p=0.000000)
+  Sample size: 156956
   Pearson significant: Yes
   Spearman significant: Yes
 
 duration_seconds vs precision:
-  Pearson r: -0.1351 (p=0.000000)
-  Spearman ρ: -0.1848 (p=0.000000)
-  Sample size: 48933
+  Pearson r: -0.1331 (p=0.000000)
+  Spearman ρ: -0.1404 (p=0.000000)
+  Sample size: 156956
   Pearson significant: Yes
   Spearman significant: Yes
 
 duration_seconds vs recall:
-  Pearson r: -0.1068 (p=0.000000)
-  Spearman ρ: -0.1145 (p=0.000000)
-  Sample size: 48933
+  Pearson r: -0.1126 (p=0.000000)
+  Spearman ρ: -0.0975 (p=0.000000)
+  Sample size: 156956
   Pearson significant: Yes
   Spearman significant: Yes
 
 duration_seconds vs runtime:
-  Pearson r: 0.4185 (p=0.000000)
-  Spearman ρ: 0.2366 (p=0.000000)
-  Sample size: 48933
+  Pearson r: 0.4280 (p=0.000000)
+  Spearman ρ: 0.4794 (p=0.000000)
+  Sample size: 156956
   Pearson significant: Yes
   Spearman significant: Yes
 
 precision vs recall:
-  Pearson r: 0.9069 (p=0.000000)
-  Spearman ρ: 0.8863 (p=0.000000)
-  Sample size: 48933
+  Pearson r: 0.9210 (p=0.000000)
+  Spearman ρ: 0.9025 (p=0.000000)
+  Sample size: 156956
   Pearson significant: Yes
   Spearman significant: Yes
 
 f_measure vs average_overlap_ratio:
-  Pearson r: 0.4906 (p=0.000000)
-  Spearman ρ: 0.6555 (p=0.000000)
-  Sample size: 48933
+  Pearson r: 0.3474 (p=0.000000)
+  Spearman ρ: 0.2720 (p=0.000000)
+  Sample size: 156956
   Pearson significant: Yes
   Spearman significant: Yes
 
 onset_f_measure vs offset_f_measure:
-  Pearson r: 0.7954 (p=0.000000)
-  Spearman ρ: 0.7604 (p=0.000000)
-  Sample size: 48933
+  Pearson r: 0.7160 (p=0.000000)
+  Spearman ρ: 0.5804 (p=0.000000)
+  Sample size: 156956
   Pearson significant: Yes
   Spearman significant: Yes
 
 runtime vs f_measure:
-  Pearson r: 0.0795 (p=0.000000)
-  Spearman ρ: 0.2598 (p=0.000000)
-  Sample size: 48933
+  Pearson r: 0.0110 (p=0.000013)
+  Spearman ρ: 0.1144 (p=0.000000)
+  Sample size: 156956
   Pearson significant: Yes
   Spearman significant: Yes
 
 runtime vs precision:
-  Pearson r: 0.0893 (p=0.000000)
-  Spearman ρ: 0.2027 (p=0.000000)
-  Sample size: 48933
+  Pearson r: 0.0134 (p=0.000000)
+  Spearman ρ: 0.0711 (p=0.000000)
+  Sample size: 156956
   Pearson significant: Yes
   Spearman significant: Yes
 
 runtime vs recall:
-  Pearson r: 0.0634 (p=0.000000)
-  Spearman ρ: 0.2821 (p=0.000000)
-  Sample size: 48933
+  Pearson r: 0.0060 (p=0.018047)
+  Spearman ρ: 0.1233 (p=0.000000)
+  Sample size: 156956
   Pearson significant: Yes
   Spearman significant: Yes
 
 average_overlap_ratio vs precision:
-  Pearson r: 0.4954 (p=0.000000)
-  Spearman ρ: 0.5981 (p=0.000000)
-  Sample size: 48933
+  Pearson r: 0.3438 (p=0.000000)
+  Spearman ρ: 0.2529 (p=0.000000)
+  Sample size: 156956
   Pearson significant: Yes
   Spearman significant: Yes
 
 average_overlap_ratio vs recall:
-  Pearson r: 0.4844 (p=0.000000)
-  Spearman ρ: 0.6684 (p=0.000000)
-  Sample size: 48933
+  Pearson r: 0.3495 (p=0.000000)
+  Spearman ρ: 0.2911 (p=0.000000)
+  Sample size: 156956
   Pearson significant: Yes
   Spearman significant: Yes
 
@@ -1633,9 +1742,9 @@ MR-MT3:
   runtime vs f_measure: r=0.0076 (p=0.883754, n=375)
 
 MT3:
-  duration_seconds vs f_measure: r=0.2188 (p=0.000000, n=10029)
-  precision vs recall: r=0.9150 (p=0.000000, n=10029)
-  runtime vs f_measure: r=0.1672 (p=0.000000, n=10029)
+  duration_seconds vs f_measure: r=-0.0849 (p=0.000000, n=118052)
+  precision vs recall: r=0.9318 (p=0.000000, n=118052)
+  runtime vs f_measure: r=-0.0880 (p=0.000000, n=118052)
 
 MADMOM:
   duration_seconds vs f_measure: r=-0.4270 (p=0.000000, n=3027)
@@ -1660,7 +1769,7 @@ TRANSKUN:
 ============================================================
 4. REGRESSION ANALYSIS
 ============================================================
-Regression analysis sample size: 48933
+Regression analysis sample size: 156956
 
 Predicting F-measure using:
   - duration_seconds
@@ -1668,35 +1777,35 @@ Predicting F-measure using:
   - average_overlap_ratio
 
 REGRESSION RESULTS:
-R-squared: 0.2610
-Adjusted R-squared: 0.2609
-F-statistic: 5759.5803
+R-squared: 0.1313
+Adjusted R-squared: 0.1313
+F-statistic: 7906.8432
 F-statistic p-value: 0.000000
 Model significant: Yes
 
 COEFFICIENTS:
-  const: -0.054276 (p=0.000000) ***
-  duration_seconds: -0.000157 (p=0.000000) ***
-  runtime: 0.000498 (p=0.000000) ***
-  average_overlap_ratio: 0.405710 (p=0.000000) ***
+  const: 0.050223 (p=0.000000) ***
+  duration_seconds: -0.000192 (p=0.000000) ***
+  runtime: 0.000371 (p=0.000000) ***
+  average_overlap_ratio: 0.328750 (p=0.000000) ***
 
 INDIVIDUAL PREDICTOR REGRESSIONS:
 
 duration_seconds:
-  R-squared: 0.0124
-  Coefficient: -0.000141
+  R-squared: 0.0138
+  Coefficient: -0.000202
   p-value: 0.000000
   Significant: Yes
 
 runtime:
-  R-squared: 0.0063
-  Coefficient: 0.000284
-  p-value: 0.000000
+  R-squared: 0.0001
+  Coefficient: 0.000058
+  p-value: 0.000013
   Significant: Yes
 
 average_overlap_ratio:
-  R-squared: 0.2407
-  Coefficient: 0.413737
+  R-squared: 0.1207
+  Coefficient: 0.337933
   p-value: 0.000000
   Significant: Yes
 
@@ -1731,11 +1840,11 @@ F_MEASURE:
     Sample size needed for 80% power: 5 per group
     Adequate power: Yes
   Basic_Pitch vs MT3:
-    Current sample sizes: 10029, 10029
-    Effect size (Cohen's d): 0.1888
-    Achieved power: nan
-    Sample size needed for 80% power: 222 per group
-    Adequate power: No
+    Current sample sizes: 10029, 118052
+    Effect size (Cohen's d): 0.2599
+    Achieved power: 1.000
+    Sample size needed for 80% power: 118 per group
+    Adequate power: Yes
   Basic_Pitch vs Madmom:
     Current sample sizes: 10029, 3027
     Effect size (Cohen's d): 1.0676
@@ -1779,10 +1888,10 @@ F_MEASURE:
     Sample size needed for 80% power: 4 per group
     Adequate power: Yes
   Bytedance_Piano_transcription vs MT3:
-    Current sample sizes: 1751, 10029
-    Effect size (Cohen's d): 1.1086
+    Current sample sizes: 1751, 118052
+    Effect size (Cohen's d): 1.4271
     Achieved power: 1.000
-    Sample size needed for 80% power: 8 per group
+    Sample size needed for 80% power: 6 per group
     Adequate power: Yes
   Bytedance_Piano_transcription vs Madmom:
     Current sample sizes: 1751, 3027
@@ -1821,8 +1930,8 @@ F_MEASURE:
     Sample size needed for 80% power: 88 per group
     Adequate power: No
   CREPE_Pitch_Tracker vs MT3:
-    Current sample sizes: 7737, 10029
-    Effect size (Cohen's d): 1.6091
+    Current sample sizes: 7737, 118052
+    Effect size (Cohen's d): 1.6527
     Achieved power: 1.000
     Sample size needed for 80% power: 5 per group
     Adequate power: Yes
@@ -1857,10 +1966,10 @@ F_MEASURE:
     Sample size needed for 80% power: 4 per group
     Adequate power: Yes
   Jointist vs MT3:
-    Current sample sizes: 6027, 10029
-    Effect size (Cohen's d): 0.2302
+    Current sample sizes: 6027, 118052
+    Effect size (Cohen's d): 0.3073
     Achieved power: 1.000
-    Sample size needed for 80% power: 150 per group
+    Sample size needed for 80% power: 85 per group
     Adequate power: Yes
   Jointist vs Madmom:
     Current sample sizes: 6027, 3027
@@ -1887,11 +1996,11 @@ F_MEASURE:
     Sample size needed for 80% power: 3 per group
     Adequate power: Yes
   MR-MT3 vs MT3:
-    Current sample sizes: 375, 10029
-    Effect size (Cohen's d): 1.2559
-    Achieved power: 1.000
-    Sample size needed for 80% power: 7 per group
-    Adequate power: Yes
+    Current sample sizes: 375, 118052
+    Effect size (Cohen's d): 1.6318
+    Achieved power: nan
+    Sample size needed for 80% power: 5 per group
+    Adequate power: No
   MR-MT3 vs Madmom:
     Current sample sizes: 375, 3027
     Effect size (Cohen's d): 1.6213
@@ -1917,28 +2026,28 @@ F_MEASURE:
     Sample size needed for 80% power: 2 per group
     Adequate power: Yes
   MT3 vs Madmom:
-    Current sample sizes: 10029, 3027
-    Effect size (Cohen's d): 0.7265
+    Current sample sizes: 118052, 3027
+    Effect size (Cohen's d): 0.9388
     Achieved power: 1.000
-    Sample size needed for 80% power: 16 per group
+    Sample size needed for 80% power: 10 per group
     Adequate power: Yes
   MT3 vs Omnizart:
-    Current sample sizes: 10029, 1751
-    Effect size (Cohen's d): 0.1337
-    Achieved power: nan
-    Sample size needed for 80% power: 441 per group
-    Adequate power: No
-  MT3 vs ReconVAT:
-    Current sample sizes: 10029, 6456
-    Effect size (Cohen's d): 1.0428
+    Current sample sizes: 118052, 1751
+    Effect size (Cohen's d): 0.2110
     Achieved power: 1.000
-    Sample size needed for 80% power: 9 per group
+    Sample size needed for 80% power: 178 per group
+    Adequate power: Yes
+  MT3 vs ReconVAT:
+    Current sample sizes: 118052, 6456
+    Effect size (Cohen's d): 1.1596
+    Achieved power: 1.000
+    Sample size needed for 80% power: 7 per group
     Adequate power: Yes
   MT3 vs Transkun:
-    Current sample sizes: 10029, 1751
-    Effect size (Cohen's d): 1.4917
+    Current sample sizes: 118052, 1751
+    Effect size (Cohen's d): 1.8051
     Achieved power: 1.000
-    Sample size needed for 80% power: 5 per group
+    Sample size needed for 80% power: 4 per group
     Adequate power: Yes
   Madmom vs Omnizart:
     Current sample sizes: 3027, 1751
@@ -2003,10 +2112,10 @@ PRECISION:
     Sample size needed for 80% power: 4 per group
     Adequate power: Yes
   Basic_Pitch vs MT3:
-    Current sample sizes: 10029, 10029
-    Effect size (Cohen's d): 0.0660
+    Current sample sizes: 10029, 118052
+    Effect size (Cohen's d): 0.0786
     Achieved power: 1.000
-    Sample size needed for 80% power: 1803 per group
+    Sample size needed for 80% power: 1273 per group
     Adequate power: Yes
   Basic_Pitch vs Madmom:
     Current sample sizes: 10029, 3027
@@ -2051,10 +2160,10 @@ PRECISION:
     Sample size needed for 80% power: 4 per group
     Adequate power: Yes
   Bytedance_Piano_transcription vs MT3:
-    Current sample sizes: 1751, 10029
-    Effect size (Cohen's d): 1.1411
+    Current sample sizes: 1751, 118052
+    Effect size (Cohen's d): 1.5005
     Achieved power: 1.000
-    Sample size needed for 80% power: 8 per group
+    Sample size needed for 80% power: 5 per group
     Adequate power: Yes
   Bytedance_Piano_transcription vs Madmom:
     Current sample sizes: 1751, 3027
@@ -2093,8 +2202,8 @@ PRECISION:
     Sample size needed for 80% power: 85 per group
     Adequate power: Yes
   CREPE_Pitch_Tracker vs MT3:
-    Current sample sizes: 7737, 10029
-    Effect size (Cohen's d): 1.6305
+    Current sample sizes: 7737, 118052
+    Effect size (Cohen's d): 1.6032
     Achieved power: 1.000
     Sample size needed for 80% power: 5 per group
     Adequate power: Yes
@@ -2129,11 +2238,11 @@ PRECISION:
     Sample size needed for 80% power: 5 per group
     Adequate power: Yes
   Jointist vs MT3:
-    Current sample sizes: 6027, 10029
-    Effect size (Cohen's d): 0.3572
-    Achieved power: nan
-    Sample size needed for 80% power: 63 per group
-    Adequate power: No
+    Current sample sizes: 6027, 118052
+    Effect size (Cohen's d): 0.3943
+    Achieved power: 1.000
+    Sample size needed for 80% power: 52 per group
+    Adequate power: Yes
   Jointist vs Madmom:
     Current sample sizes: 6027, 3027
     Effect size (Cohen's d): 1.4634
@@ -2159,10 +2268,10 @@ PRECISION:
     Sample size needed for 80% power: 3 per group
     Adequate power: Yes
   MR-MT3 vs MT3:
-    Current sample sizes: 375, 10029
-    Effect size (Cohen's d): 1.2658
+    Current sample sizes: 375, 118052
+    Effect size (Cohen's d): 1.5767
     Achieved power: nan
-    Sample size needed for 80% power: 7 per group
+    Sample size needed for 80% power: 5 per group
     Adequate power: No
   MR-MT3 vs Madmom:
     Current sample sizes: 375, 3027
@@ -2189,28 +2298,28 @@ PRECISION:
     Sample size needed for 80% power: 2 per group
     Adequate power: Yes
   MT3 vs Madmom:
-    Current sample sizes: 10029, 3027
-    Effect size (Cohen's d): 0.9133
+    Current sample sizes: 118052, 3027
+    Effect size (Cohen's d): 1.2203
     Achieved power: 1.000
-    Sample size needed for 80% power: 11 per group
+    Sample size needed for 80% power: 7 per group
     Adequate power: Yes
   MT3 vs Omnizart:
-    Current sample sizes: 10029, 1751
-    Effect size (Cohen's d): 0.1122
-    Achieved power: nan
-    Sample size needed for 80% power: 625 per group
-    Adequate power: No
-  MT3 vs ReconVAT:
-    Current sample sizes: 10029, 6456
-    Effect size (Cohen's d): 0.9130
+    Current sample sizes: 118052, 1751
+    Effect size (Cohen's d): 0.1310
     Achieved power: 1.000
-    Sample size needed for 80% power: 11 per group
+    Sample size needed for 80% power: 459 per group
+    Adequate power: Yes
+  MT3 vs ReconVAT:
+    Current sample sizes: 118052, 6456
+    Effect size (Cohen's d): 0.9551
+    Achieved power: 1.000
+    Sample size needed for 80% power: 10 per group
     Adequate power: Yes
   MT3 vs Transkun:
-    Current sample sizes: 10029, 1751
-    Effect size (Cohen's d): 1.4586
+    Current sample sizes: 118052, 1751
+    Effect size (Cohen's d): 1.7951
     Achieved power: 1.000
-    Sample size needed for 80% power: 5 per group
+    Sample size needed for 80% power: 4 per group
     Adequate power: Yes
   Madmom vs Omnizart:
     Current sample sizes: 3027, 1751
@@ -2275,11 +2384,11 @@ RECALL:
     Sample size needed for 80% power: 6 per group
     Adequate power: Yes
   Basic_Pitch vs MT3:
-    Current sample sizes: 10029, 10029
-    Effect size (Cohen's d): 0.2809
-    Achieved power: 1.000
-    Sample size needed for 80% power: 101 per group
-    Adequate power: Yes
+    Current sample sizes: 10029, 118052
+    Effect size (Cohen's d): 0.3797
+    Achieved power: nan
+    Sample size needed for 80% power: 56 per group
+    Adequate power: No
   Basic_Pitch vs Madmom:
     Current sample sizes: 10029, 3027
     Effect size (Cohen's d): 0.9083
@@ -2323,10 +2432,10 @@ RECALL:
     Sample size needed for 80% power: 4 per group
     Adequate power: Yes
   Bytedance_Piano_transcription vs MT3:
-    Current sample sizes: 1751, 10029
-    Effect size (Cohen's d): 1.0111
+    Current sample sizes: 1751, 118052
+    Effect size (Cohen's d): 1.3036
     Achieved power: 1.000
-    Sample size needed for 80% power: 9 per group
+    Sample size needed for 80% power: 6 per group
     Adequate power: Yes
   Bytedance_Piano_transcription vs Madmom:
     Current sample sizes: 1751, 3027
@@ -2365,8 +2474,8 @@ RECALL:
     Sample size needed for 80% power: 69 per group
     Adequate power: No
   CREPE_Pitch_Tracker vs MT3:
-    Current sample sizes: 7737, 10029
-    Effect size (Cohen's d): 1.5545
+    Current sample sizes: 7737, 118052
+    Effect size (Cohen's d): 1.6357
     Achieved power: 1.000
     Sample size needed for 80% power: 5 per group
     Adequate power: Yes
@@ -2401,10 +2510,10 @@ RECALL:
     Sample size needed for 80% power: 4 per group
     Adequate power: Yes
   Jointist vs MT3:
-    Current sample sizes: 6027, 10029
-    Effect size (Cohen's d): 0.0694
+    Current sample sizes: 6027, 118052
+    Effect size (Cohen's d): 0.1350
     Achieved power: 1.000
-    Sample size needed for 80% power: 1632 per group
+    Sample size needed for 80% power: 432 per group
     Adequate power: Yes
   Jointist vs Madmom:
     Current sample sizes: 6027, 3027
@@ -2431,11 +2540,11 @@ RECALL:
     Sample size needed for 80% power: 3 per group
     Adequate power: Yes
   MR-MT3 vs MT3:
-    Current sample sizes: 375, 10029
-    Effect size (Cohen's d): 1.2616
-    Achieved power: 1.000
-    Sample size needed for 80% power: 7 per group
-    Adequate power: Yes
+    Current sample sizes: 375, 118052
+    Effect size (Cohen's d): 1.6643
+    Achieved power: nan
+    Sample size needed for 80% power: 5 per group
+    Adequate power: No
   MR-MT3 vs Madmom:
     Current sample sizes: 375, 3027
     Effect size (Cohen's d): 1.4743
@@ -2461,28 +2570,28 @@ RECALL:
     Sample size needed for 80% power: 2 per group
     Adequate power: Yes
   MT3 vs Madmom:
-    Current sample sizes: 10029, 3027
-    Effect size (Cohen's d): 0.5433
+    Current sample sizes: 118052, 3027
+    Effect size (Cohen's d): 0.6901
     Achieved power: 1.000
-    Sample size needed for 80% power: 28 per group
+    Sample size needed for 80% power: 18 per group
     Adequate power: Yes
   MT3 vs Omnizart:
-    Current sample sizes: 10029, 1751
-    Effect size (Cohen's d): 0.1923
+    Current sample sizes: 118052, 1751
+    Effect size (Cohen's d): 0.2921
     Achieved power: 1.000
-    Sample size needed for 80% power: 214 per group
+    Sample size needed for 80% power: 93 per group
     Adequate power: Yes
   MT3 vs ReconVAT:
-    Current sample sizes: 10029, 6456
-    Effect size (Cohen's d): 1.0884
+    Current sample sizes: 118052, 6456
+    Effect size (Cohen's d): 1.2415
     Achieved power: 1.000
-    Sample size needed for 80% power: 8 per group
+    Sample size needed for 80% power: 7 per group
     Adequate power: Yes
   MT3 vs Transkun:
-    Current sample sizes: 10029, 1751
-    Effect size (Cohen's d): 1.4058
+    Current sample sizes: 118052, 1751
+    Effect size (Cohen's d): 1.7103
     Achieved power: 1.000
-    Sample size needed for 80% power: 6 per group
+    Sample size needed for 80% power: 4 per group
     Adequate power: Yes
   Madmom vs Omnizart:
     Current sample sizes: 3027, 1751
@@ -2522,11 +2631,11 @@ RECALL:
     Adequate power: Yes
 
 OVERALL POWER ASSESSMENT:
-Total sample size: 48933
-Samples per model: [10029, 1751, 7737, 6027, 375, 10029, 3027, 1751, 6456, 1751]
+Total sample size: 156956
+Samples per model: [10029, 1751, 7737, 6027, 375, 118052, 3027, 1751, 6456, 1751]
 Minimum sample size per model: 375
 Minimum detectable effect size (Cohen's d): 0.1450
-This corresponds to detecting differences of 0.0347 in F-measure
+This corresponds to detecting differences of 0.0293 in F-measure
 
 ============================================================
 6. SUMMARY FOR PRESENTATION
@@ -2543,25 +2652,25 @@ KEY FINDINGS:
 
 3. Significant Correlations:
    Number of significant correlations: 12
-   duration_seconds_vs_f_measure: r=-0.112
-   duration_seconds_vs_precision: r=-0.135
-   duration_seconds_vs_recall: r=-0.107
-   duration_seconds_vs_runtime: r=0.419
-   precision_vs_recall: r=0.907
-   f_measure_vs_average_overlap_ratio: r=0.491
-   onset_f_measure_vs_offset_f_measure: r=0.795
-   runtime_vs_f_measure: r=0.079
-   runtime_vs_precision: r=0.089
-   runtime_vs_recall: r=0.063
-   average_overlap_ratio_vs_precision: r=0.495
-   average_overlap_ratio_vs_recall: r=0.484
+   duration_seconds_vs_f_measure: r=-0.118
+   duration_seconds_vs_precision: r=-0.133
+   duration_seconds_vs_recall: r=-0.113
+   duration_seconds_vs_runtime: r=0.428
+   precision_vs_recall: r=0.921
+   f_measure_vs_average_overlap_ratio: r=0.347
+   onset_f_measure_vs_offset_f_measure: r=0.716
+   runtime_vs_f_measure: r=0.011
+   runtime_vs_precision: r=0.013
+   runtime_vs_recall: r=0.006
+   average_overlap_ratio_vs_precision: r=0.344
+   average_overlap_ratio_vs_recall: r=0.350
 
 4. Regression Analysis:
-   Multiple R-squared: 0.2610
+   Multiple R-squared: 0.1313
    Model significance: Yes
 
 5. Power Analysis:
-   Comparisons with adequate power (≥0.8): 116/135
+   Comparisons with adequate power (≥0.8): 117/135
    Minimum detectable effect size: 0.145
 
 ============================================================
