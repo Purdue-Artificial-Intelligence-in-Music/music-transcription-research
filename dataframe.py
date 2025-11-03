@@ -168,7 +168,7 @@ def parse_results_file(file_path: str) -> list:
 
     # Find all MIDI file sections using regex
     midi_sections = re.findall(
-        r"([^\n]+\.wav)\n"
+        r"([^\n]+\.(?:wav|mp3))\n"
         r"Duration:\s*(-?[\d.]+)\s*seconds\n"
         r"Reference MIDI Instruments:\s*(-?[\d.]+)\n"
         r"Transcription MIDI Instruments:\s*(-?[\d.]+)\n"
@@ -188,6 +188,7 @@ def parse_results_file(file_path: str) -> list:
         r"Offset_F-measure:\s*(-?[\d.]+)\n"
         r"Runtime:\s*(-?[\d.]+)\s*seconds",
         content,
+        flags=re.IGNORECASE,
     )
 
     # Convert each MIDI section to a dictionary
