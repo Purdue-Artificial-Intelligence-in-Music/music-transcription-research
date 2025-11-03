@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH -A yunglu-k
+#SBATCH -p gpu
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --gres=gpu:2
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=128G
+#SBATCH --gres=gpu:4
+#SBATCH --cpus-per-task=32
+#SBATCH --mem=512G
 #SBATCH --time=2-00:00:00
 
 # Check for internet access for Conda environment creation
@@ -40,7 +40,6 @@ source /etc/profile.d/modules.sh
 module use /opt/spack/cpu/Core
 module use /opt/spack/gpu/Core
 module load ffmpeg
-module load external
 module load conda
 module load parallel
 module load gcc
@@ -68,7 +67,7 @@ mkdir "$temp_dir"
 export temp_dir
 
 # Activate the Conda environment
-conda activate /scratch/gilbreth/ochaturv/.conda/envs/running-env-"$model_name"
+conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$model_name"
 
 # Function to process one audio file
 transcribe_file() {
@@ -161,7 +160,7 @@ if [ ! -s "$details_file" ]; then
 fi
 
 # Activate the Conda environment
-conda activate /scratch/gilbreth/ochaturv/.conda/envs/scoring-env
+conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env
 
 # Function to score one transcribed file
 score_transcription() {

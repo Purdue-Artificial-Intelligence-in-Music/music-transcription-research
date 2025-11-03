@@ -1,10 +1,13 @@
 #!/bin/bash
-#SBATCH -A standby
+#SBATCH -p gpu
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=1
+#SBATCH --mem=240G
 #SBATCH --time=00:05:00
+#SBATCH -J Notify
+#SBATCH -o 0_notify_output.out
 
 # Send final notification
 

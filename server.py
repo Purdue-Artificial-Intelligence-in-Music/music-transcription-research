@@ -13,8 +13,13 @@ from scp import SCPClient
 import os
 from tqdm import tqdm
 
-hostname = "gilbreth.rcac.purdue.edu"  # or "anvil.rcac.purdue.edu"
-username = "ochaturv"  # or "x-ochaturvedi"
+# For Gilbreth
+# hostname = "gilbreth.rcac.purdue.edu"
+# username = "ochaturv"
+
+# For Anvil
+hostname = "anvil.rcac.purdue.edu"
+username = "x-ochaturvedi"
 
 
 def execute_cmd(client, cmd):
@@ -44,7 +49,8 @@ def main() -> None:
 
     scp = SCPClient(client.get_transport())
 
-    remote_path = f"/scratch/gilbreth/{username}/research/"  # or f"/anvil/scratch/{username}/research/"
+    # remote_path = f"/scratch/gilbreth/{username}/research/"
+    remote_path = f"/anvil/scratch/{username}/research/"
 
     # execute_cmd(client, f"rm -rf /scratch/gilbreth/{username}/.conda/")
     execute_cmd(client, f"rm -rf {remote_path}")

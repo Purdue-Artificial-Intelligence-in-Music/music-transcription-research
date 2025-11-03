@@ -1,10 +1,11 @@
 #!/bin/bash
-#SBATCH -A standby
+#SBATCH -p gpu
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=2
-#SBATCH --time=01:30:00
+#SBATCH --mem=240G
+#SBATCH --time=2-00:00:00
 
 # UPLOAD.SH
 
@@ -18,15 +19,14 @@ dataset_name=${2// /_}
 echo "Uploading dataset: $dataset_name"
 
 MAIN_FOLDER_ID="11zBLIit-Cg7Tu5KHJXZBvaUauFr5Dtbc"
-RESEARCH_DIR="/scratch/gilbreth/ochaturv/research"
+RESEARCH_DIR="/anvil/scratch/x-ochaturvedi/research"
 MODEL_DIR="$RESEARCH_DIR/$model_name"
 OUTPUT_DIR="$MODEL_DIR/research_output_${dataset_name}"
 
 source /etc/profile.d/modules.sh
-module load external
 module load conda
 
-conda activate /scratch/gilbreth/ochaturv/.conda/envs/upload-env
+conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env
 
 DETAILS_FILE="$MODEL_DIR/details_${dataset_name}.txt"
 

@@ -1,10 +1,9 @@
 #!/bin/bash
-#SBATCH -A standby
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
+#SBATCH -p gpu
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
-#SBATCH --time=04:00:00
+#SBATCH --mem=240G
+#SBATCH --time=2-00:00:00
 #SBATCH -J main
 #SBATCH -o 0_main_output.out
 
@@ -24,7 +23,6 @@ source /etc/profile.d/modules.sh
 module use /opt/spack/cpu/Core
 module use /opt/spack/gpu/Core
 module load ffmpeg
-module load external
 module load conda
 module load parallel
 module load gcc
@@ -34,14 +32,14 @@ export JOBS="${SLURM_CPUS_PER_TASK:-${SLURM_CPUS_ON_NODE:-$(getconf _NPROCESSORS
 export PARALLEL="--will-cite"
 
 task_time=$(date +%s.%N)
-rm -rf /scratch/gilbreth/ochaturv/.conda/
+rm -rf /anvil/scratch/x-ochaturvedi/.conda/
 echo "Cleaned conda directory in $(echo "$(date +%s.%N) - $task_time" | bc) seconds"
 
 echo "--------------------------------------------------"
-echo "Verifying dataset .wav counts match datasets.json"
+echo "Verifying dataset file counts match datasets.json"
 task_time=$(date +%s.%N)
 
-DATASET_JSON="/scratch/gilbreth/ochaturv/research/datasets.json"
+DATASET_JSON="/anvil/scratch/x-ochaturvedi/research/datasets.json"
 MISMATCHES=0
 
 mapfile -t datasets < <(jq -r '.values[1:][] | @tsv' "$DATASET_JSON")
@@ -85,10 +83,10 @@ echo "--------------------------------------------------"
 echo "Creating default conda environment with mamba"
 task_time=$(date +%s.%N)
 
-export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_default
+export CONDA_PKGS_DIRS=/anvil/scratch/x-ochaturvedi/.conda/pkgs_default
 mkdir -p "$CONDA_PKGS_DIRS"
-conda create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/default-env python=3.12 >/dev/null
-conda activate /scratch/gilbreth/ochaturv/.conda/envs/default-env
+conda create -y -q --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/default-env python=3.12 >/dev/null
+conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/default-env
 conda install -y -q -c conda-forge mamba >/dev/null
 rm -rf "$CONDA_PKGS_DIRS"
 echo "Default conda environment created in $(echo "$(date +%s.%N) - $task_time" | bc) seconds"
@@ -97,22 +95,22 @@ echo "--------------------------------------------------"
 echo "Creating shared conda environments for scoring and Google Drive upload"
 task_time=$(date +%s.%N)
 
-export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_scoring
+export CONDA_PKGS_DIRS=/anvil/scratch/x-ochaturvedi/.conda/pkgs_scoring
 mkdir -p "$CONDA_PKGS_DIRS"
-mamba create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/scoring-env python=3.10 pip setuptools mir_eval pretty_midi numpy=1.23 pyyaml >/dev/null
-sed -i '22s/MAX_TICK = 1e7/MAX_TICK = 1e8/' /scratch/gilbreth/ochaturv/.conda/envs/scoring-env/lib/python3.10/site-packages/pretty_midi/pretty_midi.py
+mamba create -y -q --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env python=3.10 pip setuptools mir_eval pretty_midi numpy=1.23 pyyaml >/dev/null
+sed -i '22s/MAX_TICK = 1e7/MAX_TICK = 1e8/' /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env/lib/python3.10/site-packages/pretty_midi/pretty_midi.py
 rm -rf "$CONDA_PKGS_DIRS"
 
-export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_upload
+export CONDA_PKGS_DIRS=/anvil/scratch/x-ochaturvedi/.conda/pkgs_upload
 mkdir -p "$CONDA_PKGS_DIRS"
-mamba create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/upload-env python=3.10 pip pydrive2 >/dev/null
+mamba create -y -q --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env python=3.10 pip pydrive2 >/dev/null
 rm -rf "$CONDA_PKGS_DIRS"
 
-if [ ! -d "/scratch/gilbreth/ochaturv/.conda/envs/scoring-env" ]; then
+if [ ! -d "/anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env" ]; then
     echo "Scoring environment failed to create. Skipping scoring."
     exit 1
 fi
-if [ ! -d "/scratch/gilbreth/ochaturv/.conda/envs/upload-env" ]; then
+if [ ! -d "/anvil/scratch/x-ochaturvedi/.conda/envs/upload-env" ]; then
     echo "Upload environment failed to create. Skipping upload."
     exit 1
 fi
@@ -122,13 +120,13 @@ echo "--------------------------------------------------"
 echo "Running cloning for all model repositories"
 task_time=$(date +%s.%N)
 
-export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_cloning
+export CONDA_PKGS_DIRS=/anvil/scratch/x-ochaturvedi/.conda/pkgs_cloning
 mkdir -p "$CONDA_PKGS_DIRS"
-mamba create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/cloning-env python=3.12 git-lfs pip requests gitpython >/dev/null
+mamba create -y -q --prefix /anvil/scratch/x-ochaturvedi/.conda/envs/cloning-env python=3.12 git-lfs pip requests gitpython >/dev/null
 rm -rf "$CONDA_PKGS_DIRS"
 
 conda deactivate
-conda activate /scratch/gilbreth/ochaturv/.conda/envs/cloning-env
+conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/cloning-env
 pip install -q requests gitpython >/dev/null
 conda install -c conda-forge -y -q git-lfs >/dev/null
 git lfs install >/dev/null
@@ -172,8 +170,7 @@ echo ""
 echo "Model parsing completed in $(echo "$(date +%s.%N) - $task_time" | bc) seconds"
 
 conda deactivate
-rm -rf /scratch/gilbreth/ochaturv/.conda/envs/cloning-env
-# conda activate /scratch/gilbreth/ochaturv/.conda/envs/default-env
+rm -rf /anvil/scratch/x-ochaturvedi/.conda/envs/cloning-env
 
 echo "--------------------------------------------------"
 echo "Making model conda environments"
@@ -183,8 +180,8 @@ make_env() {
     local MODEL_NAME_RAW="$1"
     MODEL_NAME=${MODEL_NAME_RAW// /_}
     ENV_NAME="running-env-${MODEL_NAME}"
-    ENV_PATH="/scratch/gilbreth/ochaturv/.conda/envs/$ENV_NAME"
-    PKGS_PATH="/scratch/gilbreth/ochaturv/.conda/pkgs_${ENV_NAME}_$$"
+    ENV_PATH="/anvil/scratch/x-ochaturvedi/.conda/envs/$ENV_NAME"
+    PKGS_PATH="/anvil/scratch/x-ochaturvedi/.conda/pkgs_${ENV_NAME}_$$"
     MODEL_DIR="$MODEL_NAME_RAW"
 
     echo "[INFO] PKGS_PATH: $PKGS_PATH"
@@ -211,7 +208,7 @@ make_env() {
     # Retry logic for mamba create
     MAX_ATTEMPTS=3
     for ((i=1; i<=MAX_ATTEMPTS; i++)); do
-        if mamba env create -q -f "./$MODEL_DIR/environment.yml" --prefix "$ENV_PATH" >/dev/null 2>"$ENV_PATH-create.log"; then
+        if mamba env create -y -q -f "./$MODEL_DIR/environment.yml" --prefix "$ENV_PATH" >/dev/null 2>"$ENV_PATH-create.log"; then
             break
         elif [[ $i -lt $MAX_ATTEMPTS ]]; then
             echo "[WARN] Env creation failed for $MODEL_NAME_RAW — retrying ($i/$MAX_ATTEMPTS)..."
@@ -268,29 +265,6 @@ conda info --envs
 
 echo "--------------------------------------------------"
 task_time=$(date +%s.%N)
-# (Optional) Enable for Gilbreth usage
-
-# MAX_ALLOWED=$((50000 - count + 1))
-# SLEEP_INTERVAL=300 # Time in seconds between checks (e.g., 5 minutes)
-
-# # Function to count jobs in cluster
-# count_jobs() {
-#     squeue -A standby | wc -l
-# }
-
-# while true; do
-#     COUNT=$(count_jobs)
-#     echo "$(date): Current jobs = $COUNT"
-
-#     if [ "$COUNT" -lt "$MAX_ALLOWED" ]; then
-#         echo "Job count is within limit. Running job generation..."
-#         # python run.py
-#         break
-#     else
-#         echo "Too many jobs. Sleeping for $SLEEP_INTERVAL seconds..."
-#         sleep $SLEEP_INTERVAL
-#     fi
-# done
 
 python run.py
 
