@@ -34,7 +34,7 @@ def load_json(path):
 
 
 def clone_repo(entry):
-    model_name, github_url, username, token, gilbreth_path = entry
+    model_name, github_url, username, token, rcac_path = entry
     safe_name = model_name.replace("/", "_")
     github_link = github_url.replace("https://", "")
 
@@ -43,17 +43,17 @@ def clone_repo(entry):
 
     local_path = f"./{safe_name}"
 
-    # If the Gilbreth path exists, copy it instead of cloning
-    if gilbreth_path and os.path.exists(gilbreth_path):
+    # If the path on the RCAC server exists, copy it instead of cloning
+    if rcac_path and os.path.exists(rcac_path):
         try:
-            print(f"Copying: {gilbreth_path} to {local_path}")
-            shutil.copytree(gilbreth_path, local_path)
+            print(f"Copying: {rcac_path} to {local_path}")
+            shutil.copytree(rcac_path, local_path)
             return (model_name, True, None)
         except Exception as e:
             return (
                 model_name,
                 False,
-                f"Failed to copy from '{gilbreth_path}': {str(e)}",
+                f"Failed to copy from '{rcac_path}': {str(e)}",
             )
 
     # Otherwise, clone the repo
@@ -100,13 +100,13 @@ def main():
     for name in desired_models:
         if name in name_to_key_row:
             key_row = name_to_key_row[name]
-            # Ensure that there are at least 5 elements (for Model Name, GitHub URL, Username, Token, and Gilbreth Path)
-            gilbreth_path = (
+            # Ensure that there are at least 5 elements (for Model Name, GitHub URL, Username, Token, and RCAC Path)
+            rcac_path = (
                 key_row[4] if len(key_row) > 4 else ""
-            )  # Handle missing Gilbreth Path
+            )  # Handle missing RCAC Path
             entries_to_clone.append(
-                key_row[:4] + [gilbreth_path]
-            )  # Add Gilbreth Path to the row properly
+                key_row[:4] + [rcac_path]
+            )  # Add RCAC Path to the row properly
 
     successful_models = []
     successful_names = set()
