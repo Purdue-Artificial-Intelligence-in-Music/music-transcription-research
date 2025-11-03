@@ -86,6 +86,9 @@ conda clean --all --yes -q
 echo "--------------------------------------------------"
 echo "Upload complete for $model_name / $dataset_name"
 
+echo "Removing output directory to save space"
+rm -rf "$OUTPUT_DIR"
+
 end_time=$(date +%s.%N)
 overall_runtime=$(echo "scale=2; $end_time - $start_time" | bc)
 
