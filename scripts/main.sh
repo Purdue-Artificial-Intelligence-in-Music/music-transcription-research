@@ -46,15 +46,15 @@ mapfile -t datasets < <(jq -r '.values[1:][] | @tsv' "$DATASET_JSON")
 
 # Regenerate lists in parallel
 printf '%s\n' "${datasets[@]}" | parallel -j "$JOBS" --colsep '\t' '
-    name={1}; path={2};
+    name={1}; path={2}; ext={4};
     echo "Regenerating list for: {1}";
-    find "$(realpath "$path")" -type f -name "*.wav" | sort > "${path}.txt"
+    find "$(realpath "$path")" -type f -name "*.${ext}" | sort > "${path}.txt"
 '
 
 # Check counts in parallel
 MISMATCHES=$(
 printf '%s\n' "${datasets[@]}" | parallel -j "$JOBS" --colsep '\t' '
-    name={1}; path={2}; expected={5};
+    name={1}; path={2}; ext={4}; expected={5};
     list_file="${path}.txt";
     if [[ ! -f "$list_file" ]]; then
         echo "[ERROR] Missing list file: $list_file" >&2
@@ -73,7 +73,7 @@ printf '%s\n' "${datasets[@]}" | parallel -j "$JOBS" --colsep '\t' '
 )
 
 if [[ "$MISMATCHES" -gt 0 ]]; then
-    echo "[WARNING] $MISMATCHES mismatches found in dataset .wav counts."
+    echo "[WARNING] $MISMATCHES mismatches found in dataset file counts."
 else
     echo "[SUCCESS] All dataset counts match expected values."
 fi

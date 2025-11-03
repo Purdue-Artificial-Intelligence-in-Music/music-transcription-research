@@ -13,7 +13,7 @@ import subprocess
 import os
 import math
 
-CHUNK_SIZE = 1500
+CHUNK_SIZE = 18750
 MODELS_FILE = "models.json"
 DATASETS_FILE = "datasets.json"
 RUN_SCRIPT = "run.sh"
