@@ -222,9 +222,6 @@ def parse_results_file(file_path: str) -> list:
     return midi_data_list
 
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
-
 def process_folder(folder_path: str) -> pd.DataFrame:
     """
     Process all text files in the local folder and create a pandas DataFrame.
