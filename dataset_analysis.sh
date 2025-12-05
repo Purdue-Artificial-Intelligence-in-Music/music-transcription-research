@@ -1,10 +1,13 @@
 #!/bin/bash
-#SBATCH -A standby
+#SBATCH -A yunglu
+#SBATCH -p a100-80gb
+#SBATCH --qos=normal
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=32
-#SBATCH --time=04:00:00
+#SBATCH --mem=240G
+#SBATCH --time=14-00:00:00
 
 module load conda
 
