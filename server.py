@@ -1,17 +1,21 @@
 #!/opt/homebrew/bin/python3
 """
 Name: server.py
-Purpose: Upload files to the Gilbreth/Anvil computing cluster server at Purdue University RCAC
+Purpose: Sync research files to Gilbreth and optionally submit the main SLURM job.
+
+Usage:
+  python server.py              # sync files + submit sbatch job
+  python server.py --no-submit  # sync files only
 """
 
 __author__ = "Ojas Chaturvedi"
 __github__ = "github.com/ojas-chaturvedi"
 __license__ = "MIT"
 
-from paramiko import SSHClient, AutoAddPolicy
-from scp import SCPClient
 import os
-from tqdm import tqdm
+import subprocess
+import argparse
+from paramiko import SSHClient, AutoAddPolicy
 
 # For Gilbreth
 hostname = "gilbreth.rcac.purdue.edu"
@@ -21,71 +25,71 @@ username = "ochaturv"
 # hostname = "anvil.rcac.purdue.edu"
 # username = "x-ochaturvedi"
 
+LOCAL_DIR = os.path.dirname(os.path.abspath(__file__))
+REMOTE_DIR = f"/scratch/gilbreth/{username}/research"
+# REMOTE_DIR = f"/anvil/scratch/{username}/research"
+
+RSYNC_EXCLUDES = [
+    ".git/",
+    "__pycache__/",
+    "*.pyc",
+    ".DS_Store",
+    "data/",
+    "poster/",
+    "archive/",
+    "results.pdf",
+    "results.tex",
+    "server.py",
+]
+
 
 def execute_cmd(client, cmd):
-    """Execute a remote command via SSH and return the output."""
-    print(f"\nExecuting Command: {cmd}")
+    """Execute a remote SSH command and print output."""
+    print(f"\nExecuting: {cmd}")
     _, stdout, stderr = client.exec_command(cmd)
-
-    output = stdout.read().decode("utf-8").strip()
-    error_output = stderr.read().decode("utf-8").strip()
-
-    if output:
-        print(f"STDOUT: {output}")
-    if error_output:
-        print(f"STDERR: {error_output}")
-
+    out = stdout.read().decode("utf-8").strip()
+    err = stderr.read().decode("utf-8").strip()
+    if out:
+        print(f"STDOUT: {out}")
+    if err:
+        print(f"STDERR: {err}")
     exit_code = stdout.channel.recv_exit_status()
     print(f"Return Code: {exit_code}")
+    return out
 
-    return output
+
+def sync_files(client):
+    execute_cmd(client, f"rm -rf {REMOTE_DIR}")
+    execute_cmd(client, f"mkdir -p {REMOTE_DIR}")
+
+    cmd = ["rsync", "-avz", "--progress"]
+    for exc in RSYNC_EXCLUDES:
+        cmd += ["--exclude", exc]
+    cmd += [f"{LOCAL_DIR}/", f"{username}@{hostname}:{REMOTE_DIR}/"]
+
+    print(f"\nSyncing {LOCAL_DIR}/ → {REMOTE_DIR}/")
+    subprocess.run(cmd, check=True)
+    print("Sync complete.")
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Sync research files to Gilbreth.")
+    parser.add_argument(
+        "--no-submit", action="store_true", help="Sync files only, do not submit SLURM job"
+    )
+    args = parser.parse_args()
+
     client = SSHClient()
     client.load_system_host_keys()
     client.set_missing_host_key_policy(AutoAddPolicy())
     client.connect(hostname, username=username)
 
-    scp = SCPClient(client.get_transport())
+    sync_files(client)
 
-    remote_path = f"/scratch/gilbreth/{username}/research/"
-    # remote_path = f"/anvil/scratch/{username}/research/"
+    if not args.no_submit:
+        execute_cmd(client, f"cd {REMOTE_DIR} && sbatch scripts/main.sh")
 
-    # execute_cmd(client, f"rm -rf /scratch/gilbreth/{username}/.conda/")
-    execute_cmd(client, f"rm -rf {remote_path}")
-    execute_cmd(client, f"mkdir -p {remote_path}")
-    print("")
-
-    # Gather all files to upload
-    files_to_upload = []
-
-    # Gather files from the current directory
-    for script in os.listdir():
-        if (
-            script.endswith(".sh")
-            or script.endswith(".py")
-            or script.endswith(".json")
-            or script.endswith(".yaml")
-        ) and script != "main.py":
-            files_to_upload.append(script)
-
-    # Gather files from the scripts directory
-    for script in os.listdir("scripts"):
-        if (
-            script.endswith(".sh")
-            or script.endswith(".py")
-            or script.endswith(".json")
-            or script.endswith(".yaml")
-        ):
-            files_to_upload.append(f"scripts/{script}")
-
-    # Use tqdm to show progress
-    for script in tqdm(files_to_upload, desc="Uploading files", unit="file"):
-        scp.put(script, remote_path=remote_path)
-
-    # Execute the job script
-    execute_cmd(client, f"cd {remote_path} && sbatch main.sh")
+    client.close()
 
 
 if __name__ == "__main__":
