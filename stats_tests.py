@@ -917,9 +917,46 @@ for bar in bars:
 
 plt.tight_layout()
 plt.savefig("statistics/statistical_analysis_summary.png", dpi=300, bbox_inches="tight")
-plt.show()
+# plt.show()
 
 print("\nVisualization saved as: statistics/statistical_analysis_summary.png")
 print(
     "\nAnalysis complete! You now have comprehensive statistical results for your presentation."
 )
+
+print("\n" + "=" * 80)
+print("TABLE GENERATION: Mean +/- Std Dev by Exact Instrument Count")
+print("=" * 80)
+
+# Filter out 'Unknown' if any exist
+df_clean = df[df["instrument_category"] != "Unknown"]
+
+
+# Group by Model and the new count category
+summary_stats = df_clean.groupby(["model_name", "instrument_category"])[
+    ["f_measure", "precision", "recall"]
+].agg(["mean", "std", "count"])
+
+# Sort the index so Count = 1, 2, 3 appear in order
+summary_stats = summary_stats.sort_index(level=["model_name", "instrument_category"])
+
+print(
+    f"{'Model':<20} | {'Instrument Type':<15} | {'F-measure':<25} | {'Precision':<25} | {'Recall':<25}"
+)
+print("-" * 120)
+
+for index, row in summary_stats.iterrows():
+    model, category = index
+    count = int(row[("f_measure", "count")])
+
+    # Format the math for LaTeX
+    f_meas_str = (
+        f"{row[('f_measure', 'mean')]:.4f} \\pm {row[('f_measure', 'std')]:.4f}"
+    )
+    prec_str = f"{row[('precision', 'mean')]:.4f} \\pm {row[('precision', 'std')]:.4f}"
+    rec_str = f"{row[('recall', 'mean')]:.4f} \\pm {row[('recall', 'std')]:.4f}"
+
+    cat_str = f"{category} (n={count})"
+    print(
+        f"{model:<20} | {cat_str:<15} | {f_meas_str:<25} | {prec_str:<25} | {rec_str:<25}"
+    )
