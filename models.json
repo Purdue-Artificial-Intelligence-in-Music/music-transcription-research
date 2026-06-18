@@ -5,26 +5,26 @@
             "MT3",
             "Multiple",
             ["Maestro", "Slakh 2100 Redux", "Cerberus", "GuitarSet", "MusicNet", "URMP"],
-            ["BiMMuDa", "MSMD", "POP909", "AAM", "NESMDB", "XMIDI"]
+            []
         ],
-        ["MR-MT3", "Multiple", ["Slakh 2100 Redux"], ["BiMMuDa"]],
-        ["ReconVAT", "Multiple", ["MAPS", "MusicNet"], ["POP909", "MSMD", "AAM", "BiMMuDa"]],
-        ["Bytedance Piano transcription", "Piano", ["Maestro"], ["BiMMuDa", "MSMD", "POP909"]],
-        ["Transkun", "Piano", ["Maestro", "MAPS", "SMD"], ["BiMMuDa", "MSMD", "POP909"]],
-        ["Omnizart", "Piano", ["Maestro"], ["MSMD", "BiMMuDa", "POP909"]],
-        ["Madmom", "Piano", [], ["BiMMuDa", "MSMD", "POP909", "Maestro"]],
-        ["Jointist", "Multiple", ["Slakh 2100 Redux"], ["AAM", "POP909", "Maestro", "BiMMuDa", "MSMD"]],
+        ["MR-MT3", "Multiple", ["Slakh 2100 Redux"], []],
+        ["ReconVAT", "Multiple", ["MAPS", "MusicNet"], []],
+        ["Bytedance Piano transcription", "Piano", ["Maestro"], []],
+        ["Transkun", "Piano", ["Maestro", "MAPS", "SMD"], []],
+        ["Omnizart", "Piano", ["Maestro"], []],
+        ["Madmom", "Piano", [], []],
+        ["Jointist", "Multiple", ["Slakh 2100 Redux"], []],
         [
             "CREPE Pitch Tracker",
             "Multiple",
             ["MIR-1K", "Bach10", "RWC-Synth", "MedleyDB", "MDB-STEM-Synth", "NSynth"],
-            ["BiMMuDa", "MSMD", "POP909", "AAM", "Slakh 2100 Redux", "Maestro"]
+            []
         ],
         [
             "Basic Pitch",
             "Multiple",
             ["Molina", "GuitarSet", "Maestro", "Slakh 2100 Redux", "Phenicx", "iKala", "MedleyDB"],
-            ["BiMMuDa", "MSMD", "POP909", "AAM", "NESMDB, XMIDI"]
+            []
         ]
     ]
 }
