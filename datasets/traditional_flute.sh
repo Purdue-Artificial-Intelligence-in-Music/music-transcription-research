@@ -1,5 +1,6 @@
 #!/bin/bash
-#SBATCH -A standby
+#SBATCH -A yunglu
+#SBATCH -p a100-40gb
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
