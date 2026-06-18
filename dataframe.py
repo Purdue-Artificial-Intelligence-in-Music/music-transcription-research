@@ -24,6 +24,7 @@ from time import time
 
 def authenticate_service_account():
     """Authenticate with Google Drive using a service account."""
+    print("[Auth] Initializing Google Drive service account authentication...")
     gauth = GoogleAuth()
     gauth.settings = {
         "client_config_backend": "service",
@@ -39,24 +40,36 @@ def authenticate_service_account():
     }
     gauth.ServiceAuth()
     gauth.http = build_http()
+    print("[Auth] Authentication successful.")
     return GoogleDrive(gauth)
 
 
 def download_details_files(folder_id, local_directory):
     """Download all .txt files containing 'details' from a Google Drive folder and subfolders using concurrency."""
+    print("[Download] Starting Google Drive scan for details files...")
     drive = authenticate_service_account()
 
     if not os.path.exists(local_directory):
         os.makedirs(local_directory)
+        print(f"[Download] Created local directory: {local_directory}")
+    else:
+        print(f"[Download] Using existing local directory: {local_directory}")
 
     downloaded_files = []
     folders_to_search = [(folder_id, None)]  # (folder_id, folder_name)
     download_tasks = []
+    scanned_folder_count = 0
 
     while folders_to_search:
+        start_scan = time()
         current_folder_id, parent_folder_name = folders_to_search.pop(0)
+        scanned_folder_count += 1
+        print(
+            f"[Download] Scanning folder {scanned_folder_count}: {current_folder_id}"
+        )
         query = f"'{current_folder_id}' in parents and trashed=false"
         file_list = drive.ListFile({"q": query}).GetList()
+        scan_duration = time() - start_scan
 
         for file in file_list:
             file_name = file["title"]
@@ -70,7 +83,7 @@ def download_details_files(folder_id, local_directory):
             elif file_name.lower().endswith(".txt") and "details" in file_name.lower():
                 download_tasks.append((file, parent_folder_name))
 
-    print(f"Found {len(download_tasks)} files to download...")
+    print(f"[Download] Found {len(download_tasks)} files to download in {scan_duration:.2f}s.")
 
     def download_file(file_info):
         file, parent_folder_name = file_info
@@ -88,13 +101,14 @@ def download_details_files(folder_id, local_directory):
 
             local_file_path = os.path.join(local_directory, new_filename)
             drive_file.GetContentFile(local_file_path)
-            print(f"Downloaded: {new_filename}")
+            print(f"[Download] Downloaded: {new_filename}")
             return new_filename
         except Exception as e:
-            print(f"Error downloading {file['title']}: {str(e)}")
+            print(f"[Download] Error downloading {file['title']}: {str(e)}")
             return None
 
     with ThreadPoolExecutor() as executor:
+        print("[Download] Downloading files in parallel...")
         futures = {
             executor.submit(download_file, task): task for task in download_tasks
         }
@@ -103,6 +117,7 @@ def download_details_files(folder_id, local_directory):
             if result:
                 downloaded_files.append(result)
 
+    print(f"[Download] Completed. {len(downloaded_files)} files downloaded successfully.")
     return len(downloaded_files)
 
 
@@ -219,6 +234,7 @@ def parse_results_file(file_path: str) -> list:
         }
         midi_data_list.append(midi_data)
 
+    print(f"[Parse] {os.path.basename(file_path)} -> extracted {len(midi_data_list)} MIDI entries")
     return midi_data_list
 
 
@@ -247,7 +263,7 @@ def process_folder(folder_path: str) -> pd.DataFrame:
         print(f"No .txt files found in '{folder_path}' folder.")
         return pd.DataFrame()
 
-    print(f"Found {len(txt_files)} text files to process...")
+    print(f"[Process] Found {len(txt_files)} text files to process.")
 
     def parse_file_concurrently(filename):
         file_path = os.path.join(folder_path, filename)
@@ -255,10 +271,11 @@ def process_folder(folder_path: str) -> pd.DataFrame:
             midi_results = parse_results_file(file_path)
             return (filename, midi_results)
         except Exception as e:
-            print(f"Error processing {filename}: {str(e)}")
+            print(f"[Process] Error processing {filename}: {str(e)}")
             return (filename, [])
 
     with ThreadPoolExecutor() as executor:
+        print("[Process] Parsing files in parallel...")
         future_to_file = {
             executor.submit(parse_file_concurrently, filename): filename
             for filename in txt_files
@@ -268,7 +285,7 @@ def process_folder(folder_path: str) -> pd.DataFrame:
             filename, midi_results = future.result()
             all_midi_data.extend(midi_results)
             file_parsed_counts[filename] = len(midi_results)
-            print(f"Processed: {filename} ({len(midi_results)} MIDI files)")
+            print(f"[Process] Processed: {filename} ({len(midi_results)} MIDI files)")
 
     expected_counts_path = "datasets.json"
     EXPECTED_COUNTS = load_expected_counts(expected_counts_path)
@@ -282,7 +299,7 @@ def process_folder(folder_path: str) -> pd.DataFrame:
 
         if expected_count is not None and parsed_count != expected_count:
             print(
-                f"\nERROR: {filename:<40} | Dataset: {dataset_name:<10} | Expected {expected_count}, Found {parsed_count}"
+                f"\n[Validate] ERROR: {filename:<40} | Dataset: {dataset_name:<10} | Expected {expected_count}, Found {parsed_count}"
             )
 
     if not all_midi_data:
@@ -339,16 +356,16 @@ def print_dataframe_info(df: pd.DataFrame):
 
 if __name__ == "__main__":
     start_time = time()
-    print("Downloading details files from cloud...")
+    print("[Main] Downloading details files from cloud...")
     print("=" * 60)
 
-    folder_id = "11zBLIit-Cg7Tu5KHJXZBvaUauFr5Dtbc"
+    folder_id = "1aP9Nc49RfXheSiV5vmp-AFr5WBuUxDlE"
     local_directory = "./data"
     count = download_details_files(folder_id, local_directory)
-    print(f"Downloaded {count} files")
+    print(f"[Main] Downloaded {count} files")
 
     print("=" * 60)
-    print("Processing music model results...")
+    print("[Main] Processing music model results...")
     print("=" * 60)
 
     # Process all files and create DataFrame
@@ -363,8 +380,11 @@ if __name__ == "__main__":
         print_dataframe_info(df)
 
         # Save DataFrame to CSV and pickle
+        print("[Main] Saving DataFrame outputs...")
         df.to_csv(f"{local_directory}/dataframe.csv", index=False)
         df.to_pickle(f"{local_directory}/dataframe.pkl")
+        print(f"[Main] Saved: {local_directory}/dataframe.csv")
+        print(f"[Main] Saved: {local_directory}/dataframe.pkl")
 
     else:
         print(
