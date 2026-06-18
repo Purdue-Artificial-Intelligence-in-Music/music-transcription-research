@@ -6,8 +6,9 @@
 #SBATCH --cpus-per-task=32
 #SBATCH --time=01:30:00
 
-module load ffmpeg
-module load parallel
+source /etc/profile.d/modules.sh
+module load external
+module load parallel ffmpeg
 
 # Download the zip file
 wget --progress=bar:force -O maestro-v3.0.0.zip https://storage.googleapis.com/magentadata/datasets/maestro/v3.0.0/maestro-v3.0.0-midi.zip

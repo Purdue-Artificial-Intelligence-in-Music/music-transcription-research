@@ -8,10 +8,10 @@
 
 rm -rf xmidi_dataset xmidi_dataset.txt xmidi_dataset.zip
 
+source /etc/profile.d/modules.sh
 module load external
-module load conda
-module load ffmpeg
-module load parallel
+module load conda parallel ffmpeg
+source "$(conda info --base)/etc/profile.d/conda.sh"
 
 # Ensure gdown is installed
 if ! command -v gdown &>/dev/null; then

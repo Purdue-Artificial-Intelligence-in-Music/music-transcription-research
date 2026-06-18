@@ -6,8 +6,9 @@
 #SBATCH --cpus-per-task=32
 #SBATCH --time=01:30:00
 
-module load ffmpeg
-module load parallel
+source /etc/profile.d/modules.sh
+module load external
+module load parallel ffmpeg
 
 # Clone the POP909 repository and keep relevant files
 git clone --depth=1 https://github.com/music-x-lab/POP909-Dataset.git POP909

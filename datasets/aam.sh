@@ -6,10 +6,10 @@
 #SBATCH --cpus-per-task=32
 #SBATCH --time=01:30:00
 
+source /etc/profile.d/modules.sh
 module load external
-module load conda
-module load ffmpeg
-module load parallel
+module load conda parallel ffmpeg
+source "$(conda info --base)/etc/profile.d/conda.sh"
 
 ZENODO_URLS=(
     "https://zenodo.org/records/5794629/files/0001-1000-midis.zip?download=1",
@@ -38,8 +38,8 @@ done
 echo "Total MIDI files before merging: $(find "$TARGET_DIR" -name '*.mid' | wc -l)"
 
 # Create conda environment for Python dependencies
-conda create -n aam python=3.10 -y -q > /dev/null
-source activate aam
+conda create --prefix /scratch/gilbreth/ochaturv/.conda/envs/aam python=3.10 -y -q > /dev/null
+conda activate /scratch/gilbreth/ochaturv/.conda/envs/aam
 pip install miditoolkit pretty_midi -q
 
 # Write Python script for merging MIDI files
@@ -254,7 +254,7 @@ find aam_dataset -type f -name "*.mid" | parallel --jobs 32 convert_midi {}
 
 # Clean up
 rm -f "$FS_DEFINITION" "$FS_CONTAINER" midi_combiner.py
-rm -rf /home/ochaturv/.conda/envs/aam
+rm -rf /scratch/gilbreth/ochaturv/.conda/envs/aam
 
 # Generate a sorted list of all input files
 find "$(realpath "aam_dataset")" -type f -name "*.wav" | sort >aam_dataset.txt

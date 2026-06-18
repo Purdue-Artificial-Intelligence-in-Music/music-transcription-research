@@ -6,8 +6,9 @@
 #SBATCH --cpus-per-task=32
 #SBATCH --time=03:00:00
 
-module load ffmpeg
-module load parallel
+source /etc/profile.d/modules.sh
+module load external
+module load parallel ffmpeg
 
 ZENODO_URL="https://zenodo.org/record/2597505/files/msmd_aug_v1-1_no-audio.zip?download=1"
 ZIP_FILE="msmd_aug_v1-1_no-audio.zip"

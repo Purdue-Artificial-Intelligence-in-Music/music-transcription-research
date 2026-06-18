@@ -6,8 +6,9 @@
 #SBATCH --cpus-per-task=32
 #SBATCH --time=02:30:00
 
-module load parallel
-module load ffmpeg
+source /etc/profile.d/modules.sh
+module load external
+module load parallel ffmpeg
 
 # Download the dataset
 wget -O slakh2100_flac_redux.tar.gz "https://zenodo.org/record/4599666/files/slakh2100_flac_redux.tar.gz?download=1" >/dev/null

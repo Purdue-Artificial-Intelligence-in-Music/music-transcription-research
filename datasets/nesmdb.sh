@@ -6,10 +6,10 @@
 #SBATCH --cpus-per-task=32
 #SBATCH --time=01:30:00
 
+source /etc/profile.d/modules.sh
 module load external
-module load conda
-module load ffmpeg
-module load parallel
+module load conda parallel ffmpeg
+source "$(conda info --base)/etc/profile.d/conda.sh"
 
 # Download and unzip the NES-MDB datasets
 pip install gdown -q
@@ -29,9 +29,9 @@ echo "Found $num_vgm .vgm files"
 echo "Found $num_midi .mid files"
 
 # Conda creation
-rm -rf /home/ochaturv/.conda/envs/nesmdb
-conda create -n nesmdb python=2.7 -y -q > /dev/null
-source activate nesmdb
+rm -rf /scratch/gilbreth/ochaturv/.conda/envs/nesmdb
+conda create --prefix /scratch/gilbreth/ochaturv/.conda/envs/nesmdb python=2.7 -y -q > /dev/null
+conda activate /scratch/gilbreth/ochaturv/.conda/envs/nesmdb
 git clone https://github.com/chrisdonahue/nesmdb.git
 cd nesmdb
 git fetch origin pull/14/head:pr-14
@@ -84,7 +84,7 @@ find nesmdb-midi -name '*.mid' -exec cp {} nesmdb/ \;
 # Clean up
 conda deactivate
 rm -f nesmdb-vgm.tar.gz nesmdb-midi.tar.gz nesmdb-convertor.py
-rm -rf nesmdb-vgm nesmdb-midi /home/ochaturv/.conda/envs/nesmdb
+rm -rf nesmdb-vgm nesmdb-midi /scratch/gilbreth/ochaturv/.conda/envs/nesmdb
 
 # Check consistency
 echo "Checking consistency of .wav and .mid files..."
