@@ -11,6 +11,7 @@ __license__ = "MIT"
 import os
 import json
 import re
+import subprocess
 import pandas as pd
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
@@ -310,9 +311,30 @@ def process_folder(folder_path: str) -> pd.DataFrame:
     df = pd.DataFrame(all_midi_data)
 
     print(
-        f"\nSuccessfully created DataFrame with {len(df)} rows and {len(df.columns)} columns"
+        f"\n[Process] Successfully created DataFrame with {len(df)} rows and {len(df.columns)} columns"
     )
     return df
+
+
+def send_completion_notification():
+    """Send a terminal notification using ntfy.sh when processing is complete."""
+    cmd = [
+        "curl",
+        "-s",
+        "-d",
+        "Check terminal",
+        "-H",
+        "Title: AIM Download Finished",
+        "-H",
+        "Topic: cvirl-aortopathy",
+        "ntfy.sh/cvirl-aortopathy",
+    ]
+    print("[Notify] Sending completion notification...")
+    try:
+        subprocess.run(cmd, check=True)
+        print("[Notify] Notification sent successfully.")
+    except Exception as e:
+        print(f"[Notify] Failed to send notification: {e}")
 
 
 def print_dataframe_info(df: pd.DataFrame):
@@ -392,9 +414,15 @@ if __name__ == "__main__":
         )
 
     # Delete all .txt files in the local directory
+    print("[Main] Cleaning up downloaded .txt files...")
+    deleted_count = 0
     for file in os.listdir(local_directory):
         if file.endswith(".txt"):
             os.remove(os.path.join(local_directory, file))
+            deleted_count += 1
+    print(f"[Main] Cleanup complete. Deleted {deleted_count} .txt files.")
 
     end_time = time()
-    print(f"\nTotal processing time: {end_time - start_time:.2f}")
+    print(f"\n[Main] Total processing time: {end_time - start_time:.2f} seconds")
+
+    send_completion_notification()
