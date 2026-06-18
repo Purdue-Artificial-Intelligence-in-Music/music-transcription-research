@@ -26,7 +26,9 @@ MODEL_DIR="$RESEARCH_DIR/$model_name"
 OUTPUT_DIR="$MODEL_DIR/research_output_${dataset_name}"
 
 source /etc/profile.d/modules.sh
+module load external
 module load conda
+source "$(conda info --base)/etc/profile.d/conda.sh"
 
 conda activate /scratch/gilbreth/ochaturv/.conda/envs/upload-env
 
@@ -76,7 +78,7 @@ fi
 
 # Perform upload
 echo "--> Uploading $OUTPUT_DIR to Google Drive"
-python "$RESEARCH_DIR/upload.py" \
+python "$RESEARCH_DIR/scripts/upload.py" \
     --main-folder="$MAIN_FOLDER_ID" \
     --model-name="$model_name" \
     --dataset-name="$dataset_name" \

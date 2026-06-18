@@ -18,18 +18,16 @@ if ! curl --silent --head --fail https://repo.anaconda.com > /dev/null; then
     exit 1
 fi
 
+cd "$SLURM_SUBMIT_DIR"
+
 start_time=$(date +%s.%N)
 
 echo "--------------------------------------------------"
 echo "Running main.sh"
 
 source /etc/profile.d/modules.sh
-module use /opt/spack/cpu/Core
-module use /opt/spack/gpu/Core
-module load ffmpeg
-module load conda
-module load parallel
-module load gcc
+module load external
+module load conda parallel ffmpeg gcc
 source "$(conda info --base)/etc/profile.d/conda.sh"
 
 export JOBS="${SLURM_CPUS_PER_TASK:-${SLURM_CPUS_ON_NODE:-$(getconf _NPROCESSORS_ONLN)}}"
@@ -84,25 +82,22 @@ fi
 echo "Dataset verification completed in $(echo "$(date +%s.%N) - $task_time" | bc) seconds"
 
 echo "--------------------------------------------------"
-echo "Creating default conda environment with mamba"
-task_time=$(date +%s.%N)
-
-export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_default
-mkdir -p "$CONDA_PKGS_DIRS"
-conda create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/default-env python=3.12 >/dev/null
-conda activate /scratch/gilbreth/ochaturv/.conda/envs/default-env
-conda install -y -q -c conda-forge mamba >/dev/null
-rm -rf "$CONDA_PKGS_DIRS"
-echo "Default conda environment created in $(echo "$(date +%s.%N) - $task_time" | bc) seconds"
-
-echo "--------------------------------------------------"
 echo "Creating shared conda environments for scoring and Google Drive upload"
 task_time=$(date +%s.%N)
 
 export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_scoring
 mkdir -p "$CONDA_PKGS_DIRS"
 mamba create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/scoring-env python=3.10 pip setuptools mir_eval pretty_midi numpy=1.23 pyyaml >/dev/null
-sed -i '22s/MAX_TICK = 1e7/MAX_TICK = 1e8/' /scratch/gilbreth/ochaturv/.conda/envs/scoring-env/lib/python3.10/site-packages/pretty_midi/pretty_midi.py
+
+# Raise pretty_midi's MAX_TICK so long files don't trip its sanity check
+PM_FILE=$(ls /scratch/gilbreth/ochaturv/.conda/envs/scoring-env/lib/python3*/site-packages/pretty_midi/pretty_midi.py 2>/dev/null | head -1)
+if [ -n "$PM_FILE" ] && [ -f "$PM_FILE" ]; then
+    sed -i 's/^MAX_TICK = 1e7/MAX_TICK = 1e8/' "$PM_FILE"
+    echo "Patched MAX_TICK in $PM_FILE"
+else
+    echo "[WARN] pretty_midi.py not found; MAX_TICK patch skipped"
+fi
+
 rm -rf "$CONDA_PKGS_DIRS"
 
 export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_upload
@@ -129,13 +124,12 @@ mkdir -p "$CONDA_PKGS_DIRS"
 mamba create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/cloning-env python=3.12 git-lfs pip requests gitpython >/dev/null
 rm -rf "$CONDA_PKGS_DIRS"
 
-conda deactivate
 conda activate /scratch/gilbreth/ochaturv/.conda/envs/cloning-env
 pip install -q requests gitpython >/dev/null
 conda install -c conda-forge -y -q git-lfs >/dev/null
 git lfs install >/dev/null
 
-python cloning.py
+python scripts/cloning.py
 echo "Cloning completed in $(echo "$(date +%s.%N) - $task_time" | bc) seconds"
 
 echo "--------------------------------------------------"
@@ -270,7 +264,7 @@ conda info --envs
 echo "--------------------------------------------------"
 task_time=$(date +%s.%N)
 
-python run.py
+python scripts/run.py
 
 job_count="UNKNOWN"
 if [ -f "jobs_submitted.txt" ]; then

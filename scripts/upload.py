@@ -1,4 +1,4 @@
-#!/opt/homebrew/bin/python3
+#!/usr/bin/env python3
 """
 Name: upload.py
 Purpose: Upload files to Google Drive using an IAM service account

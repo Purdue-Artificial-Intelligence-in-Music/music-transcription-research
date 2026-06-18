@@ -39,12 +39,8 @@ chunk_basename=$(basename "$chunk_file" .txt)
 export chunk_basename
 
 source /etc/profile.d/modules.sh
-module use /opt/spack/cpu/Core
-module use /opt/spack/gpu/Core
-module load ffmpeg
-module load conda
-module load parallel
-module load gcc
+module load external
+module load conda parallel ffmpeg gcc
 source "$(conda info --base)/etc/profile.d/conda.sh"
 
 export PIP_NO_CACHE_DIR=true
@@ -215,7 +211,7 @@ score_transcription() {
     fi
 
     # Score the transcription
-    local output=$(python ../scoring.py --reference "$reference_file" --transcription "$transcription_path")
+    local output=$(python ../scripts/scoring.py --reference "$reference_file" --transcription "$transcription_path")
 
     # Read runtime captured earlier by the transcribe step (if present)
     local runtime="UNKNOWN"

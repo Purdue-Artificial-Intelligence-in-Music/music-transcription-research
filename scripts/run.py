@@ -1,4 +1,4 @@
-#!/opt/homebrew/bin/python3
+#!/usr/bin/env python3
 """
 Name: run.py
 Purpose: Submit SLURM jobs for each model in the AMT research paper
@@ -16,9 +16,9 @@ import math
 CHUNK_SIZE = 1000
 MODELS_FILE = "models.json"
 DATASETS_FILE = "datasets.json"
-RUN_SCRIPT = "run.sh"
-UPLOAD_SCRIPT = "upload.sh"
-NOTIFICATION_SCRIPT = "notification.sh"
+RUN_SCRIPT = "scripts/run.sh"
+UPLOAD_SCRIPT = "scripts/upload.sh"
+NOTIFICATION_SCRIPT = "scripts/notification.sh"
 
 
 def extract_slurm_id(output: str) -> str:

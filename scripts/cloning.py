@@ -1,4 +1,4 @@
-#!/opt/homebrew/bin/python3
+#!/usr/bin/env python3
 """
 Name: cloning.py
 Purpose: Clone or copy GitHub repositories for paper backend
