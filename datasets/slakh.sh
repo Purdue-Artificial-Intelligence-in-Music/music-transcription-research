@@ -5,6 +5,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=32
+#SBATCH --mem=240G
 #SBATCH --time=02:30:00
 
 source /etc/profile.d/modules.sh
