@@ -31,7 +31,7 @@ os.environ["HF_DATASETS_CACHE"] = "/depot/yunglu/data/transcription/datasets"
 os.environ["HF_METRICS_CACHE"] = "/depot/yunglu/data/transcription/metrics"
 
 # Replace with your token (keep this secret!)
-HF_TOKEN = "$HF_TOKEN"
+HF_TOKEN = os.environ.get("HF_TOKEN", "")
 login(token=HF_TOKEN)
 
 # Output path
