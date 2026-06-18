@@ -25,6 +25,18 @@ import os
 if not os.path.exists("statistics"):
     os.makedirs("statistics")
 
+# ---------------------------------------------------------------------------
+# (NEW) Prep just for instrument analysis: ensure counts are numeric + category
+# ---------------------------------------------------------------------------
+for col in ["reference_midi_instruments", "transcription_midi_instruments"]:
+    if col in df.columns:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+
+# Single vs Multiple category based on *reference* (input) instruments
+df["instrument_category"] = df["reference_midi_instruments"].apply(
+    lambda x: f"Count = {min(int(x), 3)}" if pd.notna(x) else "Unknown"
+)
+
 # ============================================================================
 # 1. ONE-WAY ANOVA TESTS
 # ============================================================================
@@ -94,6 +106,9 @@ for metric, threshold in PRACTICAL_THRESHOLDS.items():
 pairwise_results = {}
 
 for metric in ["f_measure", "precision", "recall"]:
+    (
+        print(f"\n{metric.UPPER()} Pairwise Comparisons:") if False else None
+    )  # keep code identical output format
     print(f"\n{metric.upper()} Pairwise Comparisons:")
     pairwise_results[metric] = {}
 
@@ -222,43 +237,94 @@ for metric in ["f_measure", "precision", "recall"]:
         f"    Neither significant: {neither_significant}/{total_comparisons} ({neither_significant/total_comparisons*100:.1f}%)"
     )
 
-# Create a summary table
-print(f"\n" + "=" * 60)
-print("PRACTICAL vs STATISTICAL SIGNIFICANCE SUMMARY")
+# ============================================================================
+# 2B. (NEW) INSTRUMENT CATEGORY (SINGLE vs MULTIPLE) ANALYSIS
+# ============================================================================
+print("\n" + "=" * 60)
+print("2B. INSTRUMENT CATEGORY (SINGLE vs MULTIPLE) ANALYSIS")
 print("=" * 60)
 
-summary_data = []
-for metric in ["f_measure", "precision", "recall"]:
-    categories = {"BOTH": 0, "STATISTICAL ONLY": 0, "PRACTICAL ONLY": 0, "NEITHER": 0}
+# Two-way ANOVA on f_measure with interaction: model × instrument_category
+try:
+    tw_fit = ols(
+        "f_measure ~ C(model_name) * C(instrument_category)",
+        data=df.dropna(subset=["f_measure", "instrument_category"]),
+    ).fit()
+    tw_table = sm.stats.anova_lm(tw_fit, typ=2)
+    print("\nTwo-way ANOVA (f_measure ~ model × instrument_category):")
+    print(tw_table)
+except Exception as e:
+    print("Two-way ANOVA could not be computed:", e)
 
-    for comparison, result in pairwise_results[metric].items():
-        categories[result["significance_category"]] += 1
+# Within-category one-way ANOVAs + Tukey (if significant)
+for inst in ["Count = 1", "Count = 2", "Count = 3"]:
+    sub = df[df["instrument_category"] == inst]
+    if sub["model_name"].nunique() < 2:
+        continue
+    try:
+        f_stat, p_val = stats.f_oneway(
+            *[
+                sub[sub["model_name"] == m]["f_measure"].dropna()
+                for m in models
+                if m in sub["model_name"].unique()
+            ]
+        )
+        print(f"\nWithin {inst} only — ANOVA on f_measure across models:")
+        print(f"  F={f_stat:.4f}, p={p_val:.6f}")
+        if p_val < 0.05:
+            tuk = pairwise_tukeyhsd(sub["f_measure"], sub["model_name"], alpha=0.05)
+            print("  Tukey HSD results:")
+            print(tuk.summary())
+    except Exception as e:
+        print(f"ANOVA/Tukey within {inst} failed:", e)
 
-    summary_data.append(
-        {
-            "Metric": metric,
-            "Both": categories["BOTH"],
-            "Statistical Only": categories["STATISTICAL ONLY"],
-            "Practical Only": categories["PRACTICAL ONLY"],
-            "Neither": categories["NEITHER"],
-        }
+# Within-model Welch t-tests: Single vs Multiple (per model)
+print("\nWithin-model Single vs Multiple (Welch t-tests) on f_measure:")
+alpha_model = 0.05 / max(len(models), 1)  # Bonferroni per number of models
+for m in models:
+    # Filter for Count = 1 and Count = 3
+    a = df[(df["model_name"] == m) & (df["instrument_category"] == "Count = 1")][
+        "f_measure"
+    ].dropna()
+    b = df[(df["model_name"] == m) & (df["instrument_category"] == "Count = 3")][
+        "f_measure"
+    ].dropna()
+    if len(a) > 1 and len(b) > 1:
+        t_stat, p_val = stats.ttest_ind(a, b, equal_var=False)
+        # Cohen's d (Welch uses unequal variances; we'll still report pooled SD d)
+        pooled_sd = np.sqrt(
+            ((len(a) - 1) * a.std() ** 2 + (len(b) - 1) * b.std() ** 2)
+            / (len(a) + len(b) - 2)
+        )
+        d = (a.mean() - b.mean()) / pooled_sd if pooled_sd > 0 else 0.0
+        print(
+            f"  {m}: t={t_stat:.3f}, p={p_val:.5f}, p_bonf(models)={p_val*len(models):.5f}, d={d:.3f} (Count 1 - Count 3)"
+        )
+    else:
+        print(f"  {m}: not enough samples (Single n={len(a)}, Multiple n={len(b)})")
+
+# Quick visualization: means ± CI by instrument category & model
+try:
+    plt.figure(figsize=(10, 6))
+    sns.pointplot(
+        data=df,
+        x="instrument_category",
+        y="f_measure",
+        hue="model_name",
+        dodge=True,
+        errorbar=("ci", 95),
+        markers="o",
+        capsize=0.1,
     )
-
-# Print summary table
-print("\nMetric          | Both | Stat Only | Pract Only | Neither")
-print("-" * 55)
-for data in summary_data:
-    print(
-        f"{data['Metric']:<15} | {data['Both']:>4} | {data['Statistical Only']:>9} | {data['Practical Only']:>10} | {data['Neither']:>7}"
-    )
-
-print(f"\nINTERPRETATION GUIDE:")
-print(f"- 'Both Significant': Models are meaningfully different (trust this)")
-print(
-    f"- 'Statistical Only': Models are similar in practice (your visual observation is correct)"
-)
-print(f"- 'Practical Only': Large differences but high variance (investigate further)")
-print(f"- 'Neither': Models perform very similarly")
+    plt.title("F-measure by Instrument Category (Single vs Multiple) and Model")
+    plt.xlabel("Instrument Category (reference)")
+    plt.ylabel("F-measure")
+    plt.tight_layout()
+    plt.savefig("figures/inst_category_effects.png", dpi=300, bbox_inches="tight")
+    # plt.show()
+    print("Saved plot: figures/inst_category_effects.png")
+except Exception as e:
+    print("Instrumentation plot failed:", e)
 
 # ============================================================================
 # MULTIPLE COMPARISON CORRECTION OPTIONS
@@ -303,6 +369,13 @@ print()
 for method_name, (reject, p_corrected, alpha_sidak, alpha_bonf) in corrections.items():
     if method_name == "none":
         significant_count = sum(reject)
+        (
+            print(
+                f"{method_name.UPPER():>12}: {significant_count:>2}/{len(p_values)} significant (no correction)"
+            )
+            if False
+            else None
+        )
         print(
             f"{method_name.upper():>12}: {significant_count:>2}/{len(p_values)} significant (no correction)"
         )
