@@ -20,15 +20,15 @@ model_name="$1"
 dataset_name=${2// /_}
 echo "Uploading dataset: $dataset_name"
 
-MAIN_FOLDER_ID="11zBLIit-Cg7Tu5KHJXZBvaUauFr5Dtbc"
-RESEARCH_DIR="/anvil/scratch/x-ochaturvedi/research"
+MAIN_FOLDER_ID="1aP9Nc49RfXheSiV5vmp-AFr5WBuUxDlE"
+RESEARCH_DIR="/scratch/gilbreth/ochaturv/research"
 MODEL_DIR="$RESEARCH_DIR/$model_name"
 OUTPUT_DIR="$MODEL_DIR/research_output_${dataset_name}"
 
 source /etc/profile.d/modules.sh
 module load conda
 
-conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/upload-env
+conda activate /scratch/gilbreth/ochaturv/.conda/envs/upload-env
 
 DETAILS_FILE="$MODEL_DIR/details_${dataset_name}.txt"
 

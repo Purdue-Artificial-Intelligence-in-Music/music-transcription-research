@@ -69,7 +69,7 @@ mkdir "$temp_dir"
 export temp_dir
 
 # Activate the Conda environment
-conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/running-env-"$model_name"
+conda activate /scratch/gilbreth/ochaturv/.conda/envs/running-env-"$model_name"
 
 # Function to process one audio file
 transcribe_file() {
@@ -162,7 +162,7 @@ if [ ! -s "$details_file" ]; then
 fi
 
 # Activate the Conda environment
-conda activate /anvil/scratch/x-ochaturvedi/.conda/envs/scoring-env
+conda activate /scratch/gilbreth/ochaturv/.conda/envs/scoring-env
 
 # Function to score one transcribed file
 score_transcription() {
