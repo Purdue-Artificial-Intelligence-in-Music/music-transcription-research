@@ -1,10 +1,12 @@
 #!/bin/bash
-#SBATCH -p gpu
+#SBATCH -A yunglu
+#SBATCH -p a100-80gb
+#SBATCH --qos=normal
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --gres=gpu:4
+#SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=32
-#SBATCH --mem=512G
+#SBATCH --mem=240G
 #SBATCH --time=2-00:00:00
 
 # Check for internet access for Conda environment creation
