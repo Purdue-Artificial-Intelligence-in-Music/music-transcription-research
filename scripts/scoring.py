@@ -37,6 +37,7 @@ def extract_intervals_and_pitches(midi_file):
         for note in instrument.notes:
             intervals.append([note.start, note.end])
             pitches.append(pretty_midi.note_number_to_hz(note.pitch))
+            print(note)
 
     if not intervals:
         return np.empty((0, 2)), np.array([])
@@ -52,6 +53,7 @@ def count_instruments(midi_file):
     Counts the number of instruments in a MIDI file.
     """
     midi_data = pretty_midi.PrettyMIDI(midi_file)
+    print(midi_data.instruments)
     return len(midi_data.instruments)
 
 
