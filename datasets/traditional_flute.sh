@@ -53,10 +53,9 @@ From: ubuntu:22.04
         curl \
         ca-certificates
 
-    # Download the FluidR3 GM soundfont
+    # Download the FluidR3 GM soundfont (GitHub mirror; the S3 source 403s on Anvil)
     mkdir -p /usr/share/sounds/sf2
-    wget -O /tmp/FluidR3_GM.zip https://keymusician01.s3.amazonaws.com/FluidR3_GM.zip
-    unzip -o /tmp/FluidR3_GM.zip -d /usr/share/sounds/sf2
+    wget -O /usr/share/sounds/sf2/FluidR3_GM.sf2 "https://raw.githubusercontent.com/urish/cinto/master/media/FluidR3%20GM.sf2"
 
 %environment
     export SOUND_FONT=/usr/share/sounds/sf2/FluidR3_GM.sf2
