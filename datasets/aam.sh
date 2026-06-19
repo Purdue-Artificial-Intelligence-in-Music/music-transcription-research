@@ -266,3 +266,6 @@ find "$(realpath "aam_dataset")" -type f -name "*.wav" | sort >aam_dataset.txt
 # Print the number of .MID files and then .WAV files
 echo "Number of .MID files: $(find aam_dataset -type f -name "*.mid" | wc -l)"
 echo "Number of .WAV files: $(find aam_dataset -type f -name "*.wav" | wc -l)"
+
+# Real-time completion notification
+notify "**[$CLUSTER] Dataset build complete:** \`AAM\` — \`$(wc -l < aam_dataset.txt 2>/dev/null || echo 0)\` files"

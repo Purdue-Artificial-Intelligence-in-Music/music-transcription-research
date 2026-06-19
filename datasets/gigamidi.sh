@@ -144,3 +144,6 @@ find "$(realpath gigamidi)" -type f -name "*.wav" | sort >gigamidi.txt
 
 echo "Number of .MID files: $(find gigamidi -type f -name "*.mid" | wc -l)"
 echo "Number of .WAV files: $(find gigamidi -type f -name "*.wav" | wc -l)"
+
+# Real-time completion notification
+notify "**[$CLUSTER] Dataset build complete:** \`GigaMIDI\` — \`$(wc -l < gigamidi.txt 2>/dev/null || echo 0)\` files"

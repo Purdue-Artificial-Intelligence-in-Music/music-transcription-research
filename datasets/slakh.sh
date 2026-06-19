@@ -110,3 +110,6 @@ find "$(realpath ./slakh2100)" -type f -name "*.wav" | sort >slakh2100.txt
 # Print the number of .MID files and then .WAV files
 echo "Number of .MID files: $(find slakh2100 -type f -name "*.mid" | wc -l)"
 echo "Number of .WAV files: $(find slakh2100 -type f -name "*.wav" | wc -l)"
+
+# Real-time completion notification
+notify "**[$CLUSTER] Dataset build complete:** \`Slakh 2100 Redux\` — \`$(wc -l < slakh2100.txt 2>/dev/null || echo 0)\` files"

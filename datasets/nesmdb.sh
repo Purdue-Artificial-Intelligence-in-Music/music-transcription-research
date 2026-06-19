@@ -130,3 +130,6 @@ echo "Final: $final_wavs .wav and $final_mids .mid files"
 
 # Generate a sorted list of all .wav files
 find "$(realpath "nesmdb")" -type f -name "*.wav" | sort > nesmdb.txt
+
+# Real-time completion notification
+notify "**[$CLUSTER] Dataset build complete:** \`NESMDB\` — \`$(wc -l < nesmdb.txt 2>/dev/null || echo 0)\` files"

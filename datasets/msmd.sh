@@ -147,3 +147,6 @@ rm -f "$FS_DEFINITION" "$FS_CONTAINER" "$ZIP_FILE" "$YAML_FILE" "$SUCCESS_LIST"
 
 # Generate a sorted list of all input files
 find "$(realpath "$TARGET_DIR")" -type f -name "*.wav" | sort >msmd_data.txt
+
+# Real-time completion notification
+notify "**[$CLUSTER] Dataset build complete:** \`MSMD\` — \`$(wc -l < msmd_data.txt 2>/dev/null || echo 0)\` files"

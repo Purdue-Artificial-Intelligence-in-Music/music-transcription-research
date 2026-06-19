@@ -98,3 +98,6 @@ find "$(realpath "POP909")" -type f -name "*.wav" | sort >POP909.txt
 # Print the number of .MID files and then .WAV files
 echo "Number of .MID files: $(find POP909 -type f -name "*.mid" | wc -l)"
 echo "Number of .WAV files: $(find POP909 -type f -name "*.wav" | wc -l)"
+
+# Real-time completion notification
+notify "**[$CLUSTER] Dataset build complete:** \`POP909\` — \`$(wc -l < POP909.txt 2>/dev/null || echo 0)\` files"

@@ -100,3 +100,6 @@ rm "$FS_DEFINITION" "$FS_CONTAINER" xmidi_dataset.zip
 
 # Generate a sorted list of all input files
 find "$(realpath ./xmidi_dataset)" -type f -name "*.wav" | sort >xmidi_dataset.txt
+
+# Real-time completion notification
+notify "**[$CLUSTER] Dataset build complete:** \`XMIDI\` — \`$(wc -l < xmidi_dataset.txt 2>/dev/null || echo 0)\` files"

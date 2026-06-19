@@ -100,3 +100,6 @@ find "$(realpath traditional_flute)" -type f -name "*.wav" | sort >traditional_f
 
 echo "Number of .MID files: $(find traditional_flute -type f -name "*.mid" | wc -l)"
 echo "Number of .WAV files: $(find traditional_flute -type f -name "*.wav" | wc -l)"
+
+# Real-time completion notification
+notify "**[$CLUSTER] Dataset build complete:** \`Traditional Flute\` — \`$(wc -l < traditional_flute.txt 2>/dev/null || echo 0)\` files"

@@ -102,3 +102,6 @@ find "$(realpath ./maestro-v3.0.0)" -type f -name "*.wav" | sort >maestro-v3.0.0
 # Print the number of .MID files and then .WAV files
 echo "Number of .MID files: $(find maestro-v3.0.0 -type f -name "*.mid" | wc -l)"
 echo "Number of .WAV files: $(find maestro-v3.0.0 -type f -name "*.wav" | wc -l)"
+
+# Real-time completion notification
+notify "**[$CLUSTER] Dataset build complete:** \`Maestro\` — \`$(wc -l < maestro-v3.0.0.txt 2>/dev/null || echo 0)\` files"
