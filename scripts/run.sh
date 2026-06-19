@@ -1,7 +1,7 @@
 #!/bin/bash
+# Defaults target Gilbreth; run.py overrides -A/-p/--qos per cluster (gpu_flags).
 #SBATCH -A yunglu
 #SBATCH -p a100-80gb
-#SBATCH --qos=normal
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
@@ -9,10 +9,12 @@
 #SBATCH --mem=240G
 #SBATCH --time=2-00:00:00
 
+source "${SLURM_SUBMIT_DIR:-$(pwd)}/scripts/cluster_env.sh"
+
 # Check for internet access for Conda environment creation
 if ! curl --silent --head --fail https://repo.anaconda.com > /dev/null; then
     echo "No internet access. Cannot create Conda environment. Exiting."
-    curl -s -X POST -H "Content-Type: application/json" -d '{"content": "URGENT: NO INTERNET ACCESS FOR CONDA CREATION", "avatar_url": "https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png"}' https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux
+    notify "URGENT: NO INTERNET ACCESS FOR CONDA CREATION ($CLUSTER)" mention
     exit 1
 fi
 
@@ -45,10 +47,7 @@ fi
 chunk_basename=$(basename "$chunk_file" .txt)
 export chunk_basename
 
-source /etc/profile.d/modules.sh
-module load external
-module load conda parallel ffmpeg gcc
-source "$(conda info --base)/etc/profile.d/conda.sh"
+load_modules
 
 export PIP_NO_CACHE_DIR=true
 
@@ -72,7 +71,7 @@ mkdir "$temp_dir"
 export temp_dir
 
 # Activate the Conda environment
-conda activate /scratch/gilbreth/ochaturv/.conda/envs/running-env-"$model_name"
+conda activate "$CONDA_ROOT/envs/running-env-$model_name"
 
 # Function to process one audio file
 transcribe_file() {
@@ -165,7 +164,7 @@ if [ ! -s "$details_file" ]; then
 fi
 
 # Activate the Conda environment
-conda activate /scratch/gilbreth/ochaturv/.conda/envs/scoring-env
+conda activate "$CONDA_ROOT/envs/scoring-env"
 
 # Function to score one transcribed file
 score_transcription() {
@@ -298,9 +297,4 @@ seconds=$(echo "$overall_runtime % 60" | bc | cut -d'.' -f1)
 overall_runtime_formatted=$(printf '%02d:%02d:%02d' "$hours" "$minutes" "$seconds")
 echo "Total runtime: $overall_runtime_formatted"
 
-curl -s -X POST -H "Content-Type: application/json" -d "{
-    \"content\": \"**Model Evaluation Completed**\n**Model:** \`$1\`\n**Dataset:** \`$2\`\n**Chunk:** \`$chunk_basename\`\n**Average F-measure:** \`$avg_fmeasure\`\n**Total Runtime:** \`$overall_runtime_formatted\`\",
-    \"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\"
-}" \
-    -H "Content-Type: application/json" \
-    "https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux" >/dev/null
+notify "**[$CLUSTER] Model Evaluation Completed**\n**Model:** \`$1\`\n**Dataset:** \`$2\`\n**Chunk:** \`$chunk_basename\`\n**Average F-measure:** \`$avg_fmeasure\`\n**Total Runtime:** \`$overall_runtime_formatted\`"

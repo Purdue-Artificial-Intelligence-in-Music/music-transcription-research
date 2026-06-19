@@ -1,18 +1,18 @@
 #!/bin/bash
-# Uploading to Google Drive is network/CPU-bound, not GPU work. Run on the
-# preemptible standby QOS so it never consumes one of yunglu's 3 normal-QOS
-# GPUs. (Gilbreth requires a GPU request even for CPU-only jobs.)
-#SBATCH -A yunglu
-#SBATCH -p a100-80gb
-#SBATCH --qos=standby
+# Uploading to Google Drive is network/CPU-bound, not GPU work. run.py submits
+# this with cluster-appropriate account/partition/QOS (Gilbreth: preemptible
+# standby + a forced GPU; Anvil: the CPU shared partition). nodes/cpus/mem/time
+# below are defaults; -A/-p/--qos/--gres come from run.py's support_flags().
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=16G
 #SBATCH --time=04:00:00
 
 # UPLOAD.SH
+
+source "${SLURM_SUBMIT_DIR:-$(pwd)}/scripts/cluster_env.sh"
+load_modules
 
 start_time=$(date +%s.%N)
 
@@ -24,16 +24,10 @@ dataset_name=${2// /_}
 echo "Uploading dataset: $dataset_name"
 
 MAIN_FOLDER_ID="1aP9Nc49RfXheSiV5vmp-AFr5WBuUxDlE"
-RESEARCH_DIR="/scratch/gilbreth/ochaturv/research"
 MODEL_DIR="$RESEARCH_DIR/$model_name"
 OUTPUT_DIR="$MODEL_DIR/research_output_${dataset_name}"
 
-source /etc/profile.d/modules.sh
-module load external
-module load conda
-source "$(conda info --base)/etc/profile.d/conda.sh"
-
-conda activate /scratch/gilbreth/ochaturv/.conda/envs/upload-env
+conda activate "$CONDA_ROOT/envs/upload-env"
 
 DETAILS_FILE="$MODEL_DIR/details_${dataset_name}.txt"
 
@@ -106,10 +100,4 @@ seconds=$(echo "$overall_runtime % 60" | bc | cut -d'.' -f1)
 overall_runtime_formatted=$(printf '%02d:%02d:%02d' "$hours" "$minutes" "$seconds")
 echo "Total runtime: $overall_runtime_formatted"
 
-curl -s -X POST -H "Content-Type: application/json" -d "{
-\"content\": \"<@746026689397653534> Finished uploading results for **$model_name / $dataset_name**\\n.wav files: $num_wavs\\nAvg F-measure: $avg_fmeasure\\nTotal runtime: $overall_runtime_formatted\",
-\"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\",
-\"allowed_mentions\": {
-    \"users\": [\"746026689397653534\"]
-}
-}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
+notify "[$CLUSTER] Finished uploading results for **$model_name / $dataset_name**\\n.wav files: $num_wavs\\nAvg F-measure: $avg_fmeasure\\nTotal runtime: $overall_runtime_formatted" mention

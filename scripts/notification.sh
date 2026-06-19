@@ -1,25 +1,16 @@
 #!/bin/bash
-# This job only fires a Discord webhook. Run on preemptible standby with
-# minimal resources so it never holds one of yunglu's 3 normal-QOS GPUs.
-# (Gilbreth requires a GPU request even for trivial CPU-only jobs.)
-#SBATCH -A yunglu
-#SBATCH -p a100-80gb
-#SBATCH --qos=standby
+# This job only fires a Discord webhook. run.py submits it with cluster-
+# appropriate account/partition/QOS (Gilbreth: preemptible standby + forced GPU;
+# Anvil: CPU shared partition) via support_flags(). Resources below are defaults.
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=2G
 #SBATCH --time=00:05:00
 #SBATCH -J Notify
 #SBATCH -o 0_notify_output.out
 
-# Send final notification
+source "${SLURM_SUBMIT_DIR:-$(pwd)}/scripts/cluster_env.sh"
 
-curl -s -X POST -H "Content-Type: application/json" -d "{
-\"content\": \"<@746026689397653534> **All jobs have finished running**\",
-\"avatar_url\": \"https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png\",
-\"allowed_mentions\": {
-    \"users\": [\"746026689397653534\"]
-}
-}" https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
+# Send final notification
+notify "**[$CLUSTER] All jobs have finished running**" mention

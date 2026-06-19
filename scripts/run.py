@@ -27,6 +27,33 @@ NOTIFICATION_SCRIPT = "scripts/notification.sh"
 ARRAY_THROTTLE = None
 
 
+def gpu_flags():
+    """SLURM account/partition/QOS for GPU jobs, from cluster_env.sh exports."""
+    flags = []
+    if os.environ.get("GPU_ACCOUNT"):
+        flags += ["-A", os.environ["GPU_ACCOUNT"]]
+    if os.environ.get("GPU_PARTITION"):
+        flags += ["-p", os.environ["GPU_PARTITION"]]
+    if os.environ.get("GPU_QOS"):
+        flags += ["--qos", os.environ["GPU_QOS"]]
+    return flags
+
+
+def support_flags():
+    """SLURM flags for support jobs (upload/notify). On Gilbreth this is the
+    preemptible standby QOS with a forced GPU; on Anvil it's a CPU partition."""
+    flags = []
+    if os.environ.get("SUPPORT_ACCOUNT"):
+        flags += ["-A", os.environ["SUPPORT_ACCOUNT"]]
+    if os.environ.get("SUPPORT_PARTITION"):
+        flags += ["-p", os.environ["SUPPORT_PARTITION"]]
+    if os.environ.get("SUPPORT_QOS"):
+        flags += ["--qos", os.environ["SUPPORT_QOS"]]
+    if os.environ.get("SUPPORT_GRES"):
+        flags += [f"--gres={os.environ['SUPPORT_GRES']}"]
+    return flags
+
+
 def extract_slurm_id(output: str) -> str:
     """Extract SLURM job ID from sbatch output."""
     return next((word for word in output.split() if word.isdigit()), "")
@@ -157,6 +184,7 @@ def main():
 
             sbatch_cmd = [
                 "sbatch",
+                *gpu_flags(),
                 "-J",
                 job_name,
                 "-o",
@@ -184,6 +212,7 @@ def main():
             upload_job_name = f"Upload-{model_name}-{dataset_name}"
             upload_cmd = [
                 "sbatch",
+                *support_flags(),
                 "-J",
                 upload_job_name,
                 "--dependency=afterany:" + array_job_id,
@@ -205,6 +234,7 @@ def main():
         dependency_str = ":".join(all_upload_ids)
         notify_cmd = [
             "sbatch",
+            *support_flags(),
             "-J",
             "Notify",
             "--dependency=afterany:" + dependency_str,

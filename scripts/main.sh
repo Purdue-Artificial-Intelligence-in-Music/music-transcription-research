@@ -1,7 +1,8 @@
 #!/bin/bash
+# Defaults target Gilbreth. To run on Anvil, submit with overrides, e.g.:
+#   sbatch -A cis240587-gpu -p gpu scripts/main.sh
 #SBATCH -A yunglu
 #SBATCH -p a100-80gb
-#SBATCH --qos=normal
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
@@ -11,37 +12,35 @@
 #SBATCH -J main
 #SBATCH -o 0_main_output.out
 
+cd "$SLURM_SUBMIT_DIR"
+source "${SLURM_SUBMIT_DIR:-$(pwd)}/scripts/cluster_env.sh"
+
 # Check for internet access for Conda environment creation
 if ! curl --silent --head --fail https://repo.anaconda.com > /dev/null; then
     echo "No internet access. Cannot create Conda environment. Exiting."
-    curl -s -X POST -H "Content-Type: application/json" -d '{"content": "URGENT: NO INTERNET ACCESS FOR CONDA CREATION", "avatar_url": "https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png"}' https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux
+    notify "URGENT: NO INTERNET ACCESS FOR CONDA CREATION ($CLUSTER)" mention
     exit 1
 fi
-
-cd "$SLURM_SUBMIT_DIR"
 
 start_time=$(date +%s.%N)
 
 echo "--------------------------------------------------"
-echo "Running main.sh"
+echo "Running main.sh on $CLUSTER"
 
-source /etc/profile.d/modules.sh
-module load external
-module load conda parallel ffmpeg gcc
-source "$(conda info --base)/etc/profile.d/conda.sh"
+load_modules
 
 export JOBS="${SLURM_CPUS_PER_TASK:-${SLURM_CPUS_ON_NODE:-$(getconf _NPROCESSORS_ONLN)}}"
 export PARALLEL="--will-cite"
 
 task_time=$(date +%s.%N)
-rm -rf /scratch/gilbreth/ochaturv/.conda/
+rm -rf "$CONDA_ROOT/"
 echo "Cleaned conda directory in $(echo "$(date +%s.%N) - $task_time" | bc) seconds"
 
 echo "--------------------------------------------------"
 echo "Verifying dataset file counts match datasets.json"
 task_time=$(date +%s.%N)
 
-DATASET_JSON="/scratch/gilbreth/ochaturv/research/datasets.json"
+DATASET_JSON="$RESEARCH_DIR/datasets.json"
 MISMATCHES=0
 
 mapfile -t datasets < <(jq -r '.values[1:][] | @tsv' "$DATASET_JSON")
@@ -85,12 +84,12 @@ echo "--------------------------------------------------"
 echo "Creating shared conda environments for scoring and Google Drive upload"
 task_time=$(date +%s.%N)
 
-export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_scoring
+export CONDA_PKGS_DIRS=$CONDA_ROOT/pkgs_scoring
 mkdir -p "$CONDA_PKGS_DIRS"
-mamba create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/scoring-env python=3.10 pip setuptools mir_eval pretty_midi numpy=1.23 pyyaml >/dev/null
+mamba create -y -q --prefix $CONDA_ROOT/envs/scoring-env python=3.10 pip setuptools mir_eval pretty_midi numpy=1.23 pyyaml >/dev/null
 
 # Raise pretty_midi's MAX_TICK so long files don't trip its sanity check
-PM_FILE=$(ls /scratch/gilbreth/ochaturv/.conda/envs/scoring-env/lib/python3*/site-packages/pretty_midi/pretty_midi.py 2>/dev/null | head -1)
+PM_FILE=$(ls $CONDA_ROOT/envs/scoring-env/lib/python3*/site-packages/pretty_midi/pretty_midi.py 2>/dev/null | head -1)
 if [ -n "$PM_FILE" ] && [ -f "$PM_FILE" ]; then
     sed -i 's/^MAX_TICK = 1e7/MAX_TICK = 1e8/' "$PM_FILE"
     echo "Patched MAX_TICK in $PM_FILE"
@@ -100,16 +99,16 @@ fi
 
 rm -rf "$CONDA_PKGS_DIRS"
 
-export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_upload
+export CONDA_PKGS_DIRS=$CONDA_ROOT/pkgs_upload
 mkdir -p "$CONDA_PKGS_DIRS"
-mamba create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/upload-env python=3.10 pip pydrive2 >/dev/null
+mamba create -y -q --prefix $CONDA_ROOT/envs/upload-env python=3.10 pip pydrive2 >/dev/null
 rm -rf "$CONDA_PKGS_DIRS"
 
-if [ ! -d "/scratch/gilbreth/ochaturv/.conda/envs/scoring-env" ]; then
+if [ ! -d "$CONDA_ROOT/envs/scoring-env" ]; then
     echo "Scoring environment failed to create. Skipping scoring."
     exit 1
 fi
-if [ ! -d "/scratch/gilbreth/ochaturv/.conda/envs/upload-env" ]; then
+if [ ! -d "$CONDA_ROOT/envs/upload-env" ]; then
     echo "Upload environment failed to create. Skipping upload."
     exit 1
 fi
@@ -119,12 +118,12 @@ echo "--------------------------------------------------"
 echo "Running cloning for all model repositories"
 task_time=$(date +%s.%N)
 
-export CONDA_PKGS_DIRS=/scratch/gilbreth/ochaturv/.conda/pkgs_cloning
+export CONDA_PKGS_DIRS=$CONDA_ROOT/pkgs_cloning
 mkdir -p "$CONDA_PKGS_DIRS"
-mamba create -y -q --prefix /scratch/gilbreth/ochaturv/.conda/envs/cloning-env python=3.12 git-lfs pip requests gitpython >/dev/null
+mamba create -y -q --prefix $CONDA_ROOT/envs/cloning-env python=3.12 git-lfs pip requests gitpython >/dev/null
 rm -rf "$CONDA_PKGS_DIRS"
 
-conda activate /scratch/gilbreth/ochaturv/.conda/envs/cloning-env
+conda activate $CONDA_ROOT/envs/cloning-env
 pip install -q requests gitpython >/dev/null
 conda install -c conda-forge -y -q git-lfs >/dev/null
 git lfs install >/dev/null
@@ -168,7 +167,7 @@ echo ""
 echo "Model parsing completed in $(echo "$(date +%s.%N) - $task_time" | bc) seconds"
 
 conda deactivate
-rm -rf /scratch/gilbreth/ochaturv/.conda/envs/cloning-env
+rm -rf $CONDA_ROOT/envs/cloning-env
 
 echo "--------------------------------------------------"
 echo "Making model conda environments"
@@ -178,8 +177,8 @@ make_env() {
     local MODEL_NAME_RAW="$1"
     MODEL_NAME=${MODEL_NAME_RAW// /_}
     ENV_NAME="running-env-${MODEL_NAME}"
-    ENV_PATH="/scratch/gilbreth/ochaturv/.conda/envs/$ENV_NAME"
-    PKGS_PATH="/scratch/gilbreth/ochaturv/.conda/pkgs_${ENV_NAME}_$$"
+    ENV_PATH="$CONDA_ROOT/envs/$ENV_NAME"
+    PKGS_PATH="$CONDA_ROOT/pkgs_${ENV_NAME}_$$"
     MODEL_DIR="$MODEL_NAME_RAW"
 
     echo "[INFO] PKGS_PATH: $PKGS_PATH"
@@ -287,4 +286,4 @@ seconds=$(echo "$overall_runtime % 60" | bc | cut -d'.' -f1)
 overall_runtime_formatted=$(printf '%02d:%02d:%02d' "$hours" "$minutes" "$seconds")
 echo "Total runtime: $overall_runtime_formatted"
 
-curl -s -X POST -H "Content-Type: application/json" -d '{"content": "Main script for paper has been executed!\nTotal runtime: '"$overall_runtime_formatted"'\n**Jobs submitted**: '"$job_count"'", "avatar_url": "https://droplr.com/wp-content/uploads/2020/10/Screenshot-on-2020-10-21-at-10_29_26.png"}' https://discord.com/api/webhooks/1355780352530055208/84HI6JSNN3cPHbux6fC2qXanozCSrza7-0nAGJgsC_dC2dWAqdnMR7d4wsmwQ4Ai4Iux >/dev/null
+notify "**[$CLUSTER] main.sh completed**\nTotal runtime: $overall_runtime_formatted\n**Jobs submitted**: $job_count"
