@@ -33,8 +33,15 @@ echo "Audio type: $4"
 audio_type=${4// /_}
 export audio_type
 
-echo "Chunk file: $5"
-chunk_file="$5"
+# $5 is the chunk directory; this array task picks its own chunk file by index.
+chunk_dir="$5"
+chunk_file="$chunk_dir/chunk_$(printf '%03d' "${SLURM_ARRAY_TASK_ID:-0}").txt"
+echo "Chunk dir: $chunk_dir"
+echo "Chunk file: $chunk_file"
+if [[ ! -f "$chunk_file" ]]; then
+    echo "Chunk file $chunk_file not found, exiting."
+    exit 1
+fi
 chunk_basename=$(basename "$chunk_file" .txt)
 export chunk_basename
 

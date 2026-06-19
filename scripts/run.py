@@ -20,6 +20,12 @@ RUN_SCRIPT = "scripts/run.sh"
 UPLOAD_SCRIPT = "scripts/upload.sh"
 NOTIFICATION_SCRIPT = "scripts/notification.sh"
 
+# Optional cap on how many array tasks (chunks) a single model/dataset array may
+# run at once. None = let the SLURM allocation throttle naturally. On the normal
+# QOS yunglu only has 3 GPUs, so the allocation caps real concurrency anyway;
+# this just keeps the scheduler view tidy if set.
+ARRAY_THROTTLE = None
+
 
 def extract_slurm_id(output: str) -> str:
     """Extract SLURM job ID from sbatch output."""
@@ -94,8 +100,23 @@ def main():
         num_chunks = math.ceil(total_files / CHUNK_SIZE)
         print(f"\t- Total files: {total_files}, Chunks: {num_chunks}")
 
-        chunk_dir = f"chunks/{dataset_name}"
+        if num_chunks == 0:
+            print(f"\t- No files to process for {dataset_name}, skipping.")
+            continue
+
+        # Chunk contents depend only on the dataset's file list, so write them
+        # once here and reuse the same chunk directory for every model.
+        chunk_dir = os.path.abspath(f"chunks/{dataset_name}")
         os.makedirs(chunk_dir, exist_ok=True)
+        for i in range(num_chunks):
+            chunk_files = all_files[i * CHUNK_SIZE : (i + 1) * CHUNK_SIZE]
+            with open(f"{chunk_dir}/chunk_{i:03d}.txt", "w") as chunk_file:
+                chunk_file.write("\n".join(chunk_files) + "\n")
+
+        # SLURM array spec: one task per chunk (0-indexed), optionally throttled.
+        array_spec = f"0-{num_chunks - 1}"
+        if ARRAY_THROTTLE:
+            array_spec += f"%{ARRAY_THROTTLE}"
 
         for model_row in model_data:
             model_name, instrument_type, training_datasets, completed_datasets = (
@@ -124,62 +145,60 @@ def main():
                 print(f"\t\t- Skipping: model and dataset instrument mismatch.")
                 continue
 
-            chunk_job_ids = []
+            # sbatch -o won't create missing parent directories.
+            os.makedirs(f"{model_name}/research_output", exist_ok=True)
 
-            for i in range(num_chunks):
-                chunk_files = all_files[i * CHUNK_SIZE : (i + 1) * CHUNK_SIZE]
-                chunk_path = os.path.abspath(f"{chunk_dir}/chunk_{i:03d}.txt")
+            # Submit all chunks as a single SLURM array job. run.sh selects its
+            # chunk from $SLURM_ARRAY_TASK_ID inside the shared chunk directory.
+            job_name = f"{model_name}_{dataset_name}"
+            output_file = (
+                f"{model_name}/research_output/{dataset_name}_chunk%a_slurm_output.txt"
+            )
 
-                with open(chunk_path, "w") as chunk_file:
-                    chunk_file.write("\n".join(chunk_files) + "\n")
+            sbatch_cmd = [
+                "sbatch",
+                "-J",
+                job_name,
+                "-o",
+                output_file,
+                f"--array={array_spec}",
+                RUN_SCRIPT,
+                model_name,
+                dataset_name,
+                dataset_path,
+                audio_type,
+                chunk_dir,
+            ]
 
-                job_name = f"{model_name}_{dataset_name}_chunk{i:03d}"
-                output_file = f"{model_name}/research_output/{dataset_name}_chunk{i:03d}_slurm_output.txt"
+            array_job_id = submit_job(sbatch_cmd)
+            if not array_job_id:
+                print(f"\t\t- Failed to submit array job for {model_name}.")
+                continue
 
-                sbatch_cmd = [
-                    "sbatch",
-                    "-J",
-                    job_name,
-                    "-o",
-                    output_file,
-                    RUN_SCRIPT,
-                    model_name,
-                    dataset_name,
-                    dataset_path,
-                    audio_type,
-                    chunk_path,
-                ]
+            total_jobs_submitted += 1
+            print(
+                f"\t\t- Submitted array job {array_job_id} ({num_chunks} chunk task(s))"
+            )
 
-                job_id = submit_job(sbatch_cmd)
-                if job_id:
-                    chunk_job_ids.append(job_id)
-                    total_jobs_submitted += 1
-                    print(
-                        f"\t\t- Submitted chunk {i + 1}/{num_chunks} as job ID: {job_id}"
-                    )
-                else:
-                    print(f"\t\t- Failed to submit chunk {i + 1}/{num_chunks}")
+            # Upload waits for every task in the array to finish (afterany).
+            upload_job_name = f"Upload-{model_name}-{dataset_name}"
+            upload_cmd = [
+                "sbatch",
+                "-J",
+                upload_job_name,
+                "--dependency=afterany:" + array_job_id,
+                UPLOAD_SCRIPT,
+                model_name,
+                dataset_name,
+            ]
 
-            if chunk_job_ids:
-                dependency_str = ":".join(chunk_job_ids)
-                upload_job_name = f"Upload-{model_name}-{dataset_name}"
-                upload_cmd = [
-                    "sbatch",
-                    "-J",
-                    upload_job_name,
-                    "--dependency=afterany:" + dependency_str,
-                    UPLOAD_SCRIPT,
-                    model_name,
-                    dataset_name,
-                ]
-
-                upload_job_id = submit_job(upload_cmd)
-                if upload_job_id:
-                    print(f"\t\t- Upload job submitted (Job ID: {upload_job_id})")
-                    total_jobs_submitted += 1
-                    all_upload_ids.append(upload_job_id)
-                else:
-                    print(f"\t\t- Failed to submit upload job.")
+            upload_job_id = submit_job(upload_cmd)
+            if upload_job_id:
+                print(f"\t\t- Upload job submitted (Job ID: {upload_job_id})")
+                total_jobs_submitted += 1
+                all_upload_ids.append(upload_job_id)
+            else:
+                print(f"\t\t- Failed to submit upload job.")
 
     # Submit final notification job
     if all_upload_ids:
