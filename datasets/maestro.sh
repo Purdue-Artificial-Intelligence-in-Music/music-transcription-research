@@ -16,6 +16,9 @@ load_modules
 mkdir -p "$DATA_ROOT"
 cd "$DATA_ROOT"
 
+# Start clean so re-runs don't merge with a previous build
+rm -rf maestro-v3.0.0 maestro-v3.0.0.txt
+
 # Download the zip file
 wget --progress=bar:force -O maestro-v3.0.0.zip https://storage.googleapis.com/magentadata/datasets/maestro/v3.0.0/maestro-v3.0.0-midi.zip
 

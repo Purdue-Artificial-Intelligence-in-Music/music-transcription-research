@@ -16,6 +16,9 @@ load_modules
 mkdir -p "$DATA_ROOT"
 cd "$DATA_ROOT"
 
+# Start clean so re-runs don't merge with a previous build
+rm -rf slakh2100 slakh2100.txt slakh2100_flac_redux.tar.gz
+
 # Download the dataset
 wget -O slakh2100_flac_redux.tar.gz "https://zenodo.org/record/4599666/files/slakh2100_flac_redux.tar.gz?download=1" >/dev/null
 

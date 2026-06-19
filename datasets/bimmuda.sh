@@ -17,6 +17,7 @@ mkdir -p "$DATA_ROOT"
 cd "$DATA_ROOT"
 
 # Clone the BiMMuDa repository and keep relevant files
+rm -rf BiMMuDa BiMMuDa.txt
 git clone --depth=1 https://github.com/madelinehamilton/BiMMuDa.git BiMMuDa
 find BiMMuDa -mindepth 1 -maxdepth 1 ! -name "bimmuda_dataset" -exec rm -rf {} +
 if [ -d BiMMuDa/bimmuda_dataset ]; then

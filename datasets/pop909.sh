@@ -17,6 +17,7 @@ mkdir -p "$DATA_ROOT"
 cd "$DATA_ROOT"
 
 # Clone the POP909 repository and keep relevant files
+rm -rf POP909 POP909.txt
 git clone --depth=1 https://github.com/music-x-lab/POP909-Dataset.git POP909
 find POP909 -mindepth 1 -maxdepth 1 ! -name "POP909" -exec rm -rf {} +
 if [ -d POP909/POP909 ]; then
