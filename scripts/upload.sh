@@ -1,13 +1,16 @@
 #!/bin/bash
+# Uploading to Google Drive is network/CPU-bound, not GPU work. Run on the
+# preemptible standby QOS so it never consumes one of yunglu's 3 normal-QOS
+# GPUs. (Gilbreth requires a GPU request even for CPU-only jobs.)
 #SBATCH -A yunglu
 #SBATCH -p a100-80gb
-#SBATCH --qos=normal
+#SBATCH --qos=standby
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=2
-#SBATCH --mem=240G
-#SBATCH --time=2-00:00:00
+#SBATCH --mem=16G
+#SBATCH --time=04:00:00
 
 # UPLOAD.SH
 

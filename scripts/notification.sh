@@ -1,12 +1,15 @@
 #!/bin/bash
+# This job only fires a Discord webhook. Run on preemptible standby with
+# minimal resources so it never holds one of yunglu's 3 normal-QOS GPUs.
+# (Gilbreth requires a GPU request even for trivial CPU-only jobs.)
 #SBATCH -A yunglu
 #SBATCH -p a100-80gb
-#SBATCH --qos=normal
+#SBATCH --qos=standby
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=240G
+#SBATCH --mem=2G
 #SBATCH --time=00:05:00
 #SBATCH -J Notify
 #SBATCH -o 0_notify_output.out
