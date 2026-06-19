@@ -197,8 +197,8 @@ parallel -j 32 python3 midi_combiner.py --midi_dir "$TARGET_DIR" --prefix {} :::
 conda deactivate
 
 # Create a Singularity container for FluidSynth
-FS_CONTAINER="fluidsynth.sif"
-FS_DEFINITION="fluidsynth.def"
+FS_CONTAINER="fluidsynth_${SLURM_JOB_ID:-$$}.sif"
+FS_DEFINITION="fluidsynth_${SLURM_JOB_ID:-$$}.def"
 cat <<EOF >$FS_DEFINITION
 BootStrap: docker
 From: ubuntu:22.04

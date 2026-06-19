@@ -33,8 +33,8 @@ find xmidi_dataset -type f -name "*.midi" | while read -r file; do
     mv "$file" "${file%.midi}.mid"
 done
 
-FS_CONTAINER="fluidsynth.sif"
-FS_DEFINITION="fluidsynth.def"
+FS_CONTAINER="fluidsynth_${SLURM_JOB_ID:-$$}.sif"
+FS_DEFINITION="fluidsynth_${SLURM_JOB_ID:-$$}.def"
 
 cat <<EOF >$FS_DEFINITION
 BootStrap: docker

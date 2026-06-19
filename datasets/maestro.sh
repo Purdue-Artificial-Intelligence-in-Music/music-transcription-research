@@ -34,8 +34,8 @@ find maestro-v3.0.0 -type f -name "*.midi" | while read -r file; do
 done
 
 # Create a Singularity container for FluidSynth
-FS_CONTAINER="fluidsynth.sif"
-FS_DEFINITION="fluidsynth.def"
+FS_CONTAINER="fluidsynth_${SLURM_JOB_ID:-$$}.sif"
+FS_DEFINITION="fluidsynth_${SLURM_JOB_ID:-$$}.def"
 cat <<EOF >$FS_DEFINITION
 BootStrap: docker
 From: ubuntu:22.04
