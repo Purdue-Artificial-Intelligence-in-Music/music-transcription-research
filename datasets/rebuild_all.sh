@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -A yunglu
-#SBATCH -p a100-40gb
+#SBATCH -p a100-80gb
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
@@ -12,19 +12,8 @@
 
 cd "$SLURM_SUBMIT_DIR"
 
-echo "Cleaning up existing datasets..."
-rm -rf maestro-v3.0.0         && rm -f maestro-v3.0.0.txt
-rm -rf slakh2100               && rm -f slakh2100.txt
-rm -rf msmd_data               && rm -f msmd_data.txt
-rm -rf xmidi_dataset           && rm -f xmidi_dataset.txt
-rm -rf POP909                  && rm -f POP909.txt
-rm -rf gigamidi                && rm -f gigamidi.txt
-rm -rf nesmdb                  && rm -f nesmdb.txt
-rm -rf BiMMuDa                 && rm -f BiMMuDa.txt
-rm -rf aam_dataset             && rm -f aam_dataset.txt
-rm -rf traditional_flute       && rm -f traditional_flute.txt
-echo "Cleanup complete."
-
+# Each dataset script wipes and rebuilds its own directory inside $DATA_ROOT
+# (see scripts/cluster_env.sh), so simply submitting them rebuilds from scratch.
 echo "Submitting dataset build jobs..."
 sbatch datasets/maestro.sh
 sbatch datasets/slakh.sh

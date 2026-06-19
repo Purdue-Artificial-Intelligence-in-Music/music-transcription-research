@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -A yunglu
-#SBATCH -p a100-40gb
+#SBATCH -p a100-80gb
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
@@ -8,11 +8,15 @@
 #SBATCH --mem=240G
 #SBATCH --time=01:30:00
 
-rm -rf traditional_flute
+source "${SLURM_SUBMIT_DIR:-$(pwd)}/scripts/cluster_env.sh"
+load_modules
 
-source /etc/profile.d/modules.sh
-module load external
-module load parallel ffmpeg
+# Build into the cluster's dataset directory so the generated .txt file list
+# points at the canonical location referenced by datasets.json.
+mkdir -p "$DATA_ROOT"
+cd "$DATA_ROOT"
+
+rm -rf traditional_flute
 
 KAGGLE_URL="https://www.kaggle.com/api/v1/datasets/download/jbraga/traditional-flute-dataset"
 ZIP_FILE="traditional_flute.zip"

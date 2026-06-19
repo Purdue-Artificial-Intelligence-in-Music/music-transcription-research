@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -A yunglu
-#SBATCH -p a100-40gb
+#SBATCH -p a100-80gb
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
@@ -8,9 +8,13 @@
 #SBATCH --mem=240G
 #SBATCH --time=01:30:00
 
-source /etc/profile.d/modules.sh
-module load external
-module load parallel ffmpeg
+source "${SLURM_SUBMIT_DIR:-$(pwd)}/scripts/cluster_env.sh"
+load_modules
+
+# Build into the cluster's dataset directory so the generated .txt file list
+# points at the canonical location referenced by datasets.json.
+mkdir -p "$DATA_ROOT"
+cd "$DATA_ROOT"
 
 # Download the zip file
 wget --progress=bar:force -O maestro-v3.0.0.zip https://storage.googleapis.com/magentadata/datasets/maestro/v3.0.0/maestro-v3.0.0-midi.zip

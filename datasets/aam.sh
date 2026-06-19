@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -A yunglu
-#SBATCH -p a100-40gb
+#SBATCH -p a100-80gb
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
@@ -8,10 +8,13 @@
 #SBATCH --mem=240G
 #SBATCH --time=01:30:00
 
-source /etc/profile.d/modules.sh
-module load external
-module load conda parallel ffmpeg
-source "$(conda info --base)/etc/profile.d/conda.sh"
+source "${SLURM_SUBMIT_DIR:-$(pwd)}/scripts/cluster_env.sh"
+load_modules
+
+# Build into the cluster's dataset directory so the generated .txt file list
+# points at the canonical location referenced by datasets.json.
+mkdir -p "$DATA_ROOT"
+cd "$DATA_ROOT"
 
 ZENODO_URLS=(
     "https://zenodo.org/records/5794629/files/0001-1000-midis.zip?download=1",
@@ -40,8 +43,8 @@ done
 echo "Total MIDI files before merging: $(find "$TARGET_DIR" -name '*.mid' | wc -l)"
 
 # Create conda environment for Python dependencies
-conda create --prefix /scratch/gilbreth/ochaturv/.conda/envs/aam python=3.10 -y -q > /dev/null
-conda activate /scratch/gilbreth/ochaturv/.conda/envs/aam
+conda create --prefix $CONDA_ROOT/envs/aam python=3.10 -y -q > /dev/null
+conda activate $CONDA_ROOT/envs/aam
 pip install miditoolkit pretty_midi -q
 
 # Write Python script for merging MIDI files
@@ -256,7 +259,7 @@ find aam_dataset -type f -name "*.mid" | parallel --jobs 32 convert_midi {}
 
 # Clean up
 rm -f "$FS_DEFINITION" "$FS_CONTAINER" midi_combiner.py
-rm -rf /scratch/gilbreth/ochaturv/.conda/envs/aam
+rm -rf $CONDA_ROOT/envs/aam
 
 # Generate a sorted list of all input files
 find "$(realpath "aam_dataset")" -type f -name "*.wav" | sort >aam_dataset.txt

@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -A yunglu
-#SBATCH -p a100-40gb
+#SBATCH -p a100-80gb
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
@@ -8,13 +8,16 @@
 #SBATCH --mem=240G
 #SBATCH --time=04:00:00
 
+source "${SLURM_SUBMIT_DIR:-$(pwd)}/scripts/cluster_env.sh"
+load_modules
+
+# Build into the cluster's dataset directory so the generated .txt file list
+# points at the canonical location referenced by datasets.json.
+mkdir -p "$DATA_ROOT"
+cd "$DATA_ROOT"
+
 rm -rf gigamidi
 mkdir -p gigamidi
-
-source /etc/profile.d/modules.sh
-module load external
-module load conda parallel ffmpeg
-source "$(conda info --base)/etc/profile.d/conda.sh"
 
 # Download and unzip the GigaMIDI dataset
 # wget --header="Authorization: Bearer $HF_TOKEN" \
@@ -28,10 +31,10 @@ from datasets import load_dataset
 from huggingface_hub import login
 
 # Set custom cache directories (adjust to your quota-safe path!)
-os.environ["HF_HOME"] = "/depot/yunglu/data/transcription"
-os.environ["TRANSFORMERS_CACHE"] = "/depot/yunglu/data/transcription/transformers"
-os.environ["HF_DATASETS_CACHE"] = "/depot/yunglu/data/transcription/datasets"
-os.environ["HF_METRICS_CACHE"] = "/depot/yunglu/data/transcription/metrics"
+os.environ["HF_HOME"] = "$DATA_ROOT/.hf_cache"
+os.environ["TRANSFORMERS_CACHE"] = "$DATA_ROOT/.hf_cache/transformers"
+os.environ["HF_DATASETS_CACHE"] = "$DATA_ROOT/.hf_cache/datasets"
+os.environ["HF_METRICS_CACHE"] = "$DATA_ROOT/.hf_cache/metrics"
 
 # Replace with your token (keep this secret!)
 HF_TOKEN = os.environ.get("HF_TOKEN", "")
@@ -59,14 +62,14 @@ print(f"All MIDI files saved to: {output_dir}")
 EOF
 
 # Conda creation
-rm -rf /scratch/gilbreth/ochaturv/.conda/envs/gigamidi
-conda create --prefix /scratch/gilbreth/ochaturv/.conda/envs/gigamidi python=3.10 -y -q > /dev/null
-conda activate /scratch/gilbreth/ochaturv/.conda/envs/gigamidi
+rm -rf $CONDA_ROOT/envs/gigamidi
+conda create --prefix $CONDA_ROOT/envs/gigamidi python=3.10 -y -q > /dev/null
+conda activate $CONDA_ROOT/envs/gigamidi
 pip install datasets huggingface_hub -q > /dev/null
 
 python extract_gigamidi.py
 conda deactivate
-rm -rf /scratch/gilbreth/ochaturv/.conda/envs/gigamidi
+rm -rf $CONDA_ROOT/envs/gigamidi
 rm -f extract_gigamidi.py
 
 # Print the number of MIDI files found

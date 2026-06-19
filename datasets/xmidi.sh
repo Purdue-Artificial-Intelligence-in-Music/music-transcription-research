@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -A yunglu
-#SBATCH -p a100-40gb
+#SBATCH -p a100-80gb
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
@@ -8,12 +8,15 @@
 #SBATCH --mem=240G
 #SBATCH --time=2-00:00:00
 
-rm -rf xmidi_dataset xmidi_dataset.txt xmidi_dataset.zip
+source "${SLURM_SUBMIT_DIR:-$(pwd)}/scripts/cluster_env.sh"
+load_modules
 
-source /etc/profile.d/modules.sh
-module load external
-module load conda parallel ffmpeg
-source "$(conda info --base)/etc/profile.d/conda.sh"
+# Build into the cluster's dataset directory so the generated .txt file list
+# points at the canonical location referenced by datasets.json.
+mkdir -p "$DATA_ROOT"
+cd "$DATA_ROOT"
+
+rm -rf xmidi_dataset xmidi_dataset.txt xmidi_dataset.zip
 
 # Ensure gdown is installed
 if ! command -v gdown &>/dev/null; then

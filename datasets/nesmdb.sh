@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -A yunglu
-#SBATCH -p a100-40gb
+#SBATCH -p a100-80gb
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
@@ -8,10 +8,13 @@
 #SBATCH --mem=240G
 #SBATCH --time=01:30:00
 
-source /etc/profile.d/modules.sh
-module load external
-module load conda parallel ffmpeg
-source "$(conda info --base)/etc/profile.d/conda.sh"
+source "${SLURM_SUBMIT_DIR:-$(pwd)}/scripts/cluster_env.sh"
+load_modules
+
+# Build into the cluster's dataset directory so the generated .txt file list
+# points at the canonical location referenced by datasets.json.
+mkdir -p "$DATA_ROOT"
+cd "$DATA_ROOT"
 
 # Download and unzip the NES-MDB datasets
 pip install gdown -q
@@ -31,9 +34,9 @@ echo "Found $num_vgm .vgm files"
 echo "Found $num_midi .mid files"
 
 # Conda creation
-rm -rf /scratch/gilbreth/ochaturv/.conda/envs/nesmdb
-conda create --prefix /scratch/gilbreth/ochaturv/.conda/envs/nesmdb python=2.7 -y -q > /dev/null
-conda activate /scratch/gilbreth/ochaturv/.conda/envs/nesmdb
+rm -rf $CONDA_ROOT/envs/nesmdb
+conda create --prefix $CONDA_ROOT/envs/nesmdb python=2.7 -y -q > /dev/null
+conda activate $CONDA_ROOT/envs/nesmdb
 git clone https://github.com/chrisdonahue/nesmdb.git
 cd nesmdb
 git fetch origin pull/14/head:pr-14
@@ -86,7 +89,7 @@ find nesmdb-midi -name '*.mid' -exec cp {} nesmdb/ \;
 # Clean up
 conda deactivate
 rm -f nesmdb-vgm.tar.gz nesmdb-midi.tar.gz nesmdb-convertor.py
-rm -rf nesmdb-vgm nesmdb-midi /scratch/gilbreth/ochaturv/.conda/envs/nesmdb
+rm -rf nesmdb-vgm nesmdb-midi $CONDA_ROOT/envs/nesmdb
 
 # Check consistency
 echo "Checking consistency of .wav and .mid files..."
