@@ -28,6 +28,7 @@ MODEL_DIR="$RESEARCH_DIR/$model_name"
 OUTPUT_DIR="$MODEL_DIR/research_output_${dataset_name}"
 
 conda activate "$CONDA_ROOT/envs/upload-env"
+conda_lib_priority
 
 DETAILS_FILE="$MODEL_DIR/details_${dataset_name}.txt"
 
@@ -55,14 +56,17 @@ else
     echo "Warning: No details_${dataset_name}.txt file found"
 fi
 
-# Move relevant SLURM output files into the output directory
+# Copy (don't move) the SLURM output files into the output directory so they get
+# uploaded to Drive but ALSO remain under research_output/ for cluster-side
+# debugging. Moving them deleted the transcription logs when OUTPUT_DIR was
+# removed below, making model failures impossible to diagnose.
 echo "Looking for SLURM output files for dataset: $dataset_name"
 shopt -s nullglob
 slurm_files=("$MODEL_DIR/research_output/${2}_chunk"*"_slurm_output.txt")
 
 if (( ${#slurm_files[@]} > 0 )); then
-    echo "Found ${#slurm_files[@]} SLURM output file(s). Moving to output directory."
-    mv "${slurm_files[@]}" "$OUTPUT_DIR/"
+    echo "Found ${#slurm_files[@]} SLURM output file(s). Copying to output directory."
+    cp "${slurm_files[@]}" "$OUTPUT_DIR/"
 else
     echo "No SLURM output files found for dataset: $dataset_name"
 fi

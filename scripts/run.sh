@@ -72,6 +72,7 @@ export temp_dir
 
 # Activate the Conda environment
 conda activate "$CONDA_ROOT/envs/running-env-$model_name"
+conda_lib_priority
 
 # Function to process one audio file
 transcribe_file() {
@@ -165,6 +166,7 @@ fi
 
 # Activate the Conda environment
 conda activate "$CONDA_ROOT/envs/scoring-env"
+conda_lib_priority
 
 # Function to score one transcribed file
 score_transcription() {

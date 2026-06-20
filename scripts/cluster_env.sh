@@ -88,6 +88,15 @@ notify() {
     curl -s -X POST -H "Content-Type: application/json" -d "${payload}" "${WEBHOOK_URL}" >/dev/null 2>&1 || true
 }
 
-export -f load_modules notify 2>/dev/null || true
+# Call right AFTER `conda activate <env>` so the activated env's own shared
+# libraries (libstdc++, etc.) take precedence over older module-provided ones.
+# Without this, a cluster module's stale libstdc++ shadows the env's newer one
+# and compiled extensions fail to import (e.g. matplotlib: "CXXABI_1.3.15 not
+# found"), which silently makes every model produce no output.
+conda_lib_priority() {
+    [ -n "$CONDA_PREFIX" ] && export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:${LD_LIBRARY_PATH}"
+}
+
+export -f load_modules notify conda_lib_priority 2>/dev/null || true
 
 echo "[cluster_env] CLUSTER=$CLUSTER DATA_ROOT=$DATA_ROOT GPU=$GPU_ACCOUNT/$GPU_PARTITION SUPPORT=$SUPPORT_ACCOUNT/$SUPPORT_PARTITION"
