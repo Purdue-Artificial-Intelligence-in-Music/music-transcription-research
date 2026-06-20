@@ -13,7 +13,10 @@
         ["Transkun", "Piano", ["Maestro", "MAPS", "SMD"], []],
         ["Omnizart", "Piano", ["Maestro"], []],
         ["Madmom", "Piano", [], []],
-        ["Jointist", "Multiple", ["Slakh 2100 Redux"], []],
+        ["Jointist", "Multiple", ["Slakh 2100 Redux"], []]
+    ],
+    "_comment": "Models under 'disabled' are intentionally excluded from runs; the pipeline reads only 'values'. Move a row back into 'values' to re-enable. CREPE Pitch Tracker: token in keys.json needs refreshing. Basic Pitch: main.py must be wrapped to the '-i <file> -o <file>.mid' interface.",
+    "disabled": [
         [
             "CREPE Pitch Tracker",
             "Multiple",
