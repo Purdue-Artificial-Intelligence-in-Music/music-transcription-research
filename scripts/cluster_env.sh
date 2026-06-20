@@ -21,6 +21,10 @@ if [ -d /anvil ]; then
     export DATA_ROOT="${DATA_ROOT:-/anvil/scratch/x-ochaturvedi/transcription}"
     export CONDA_ROOT="${CONDA_ROOT:-/anvil/scratch/x-ochaturvedi/.conda}"
     export RESEARCH_DIR="${RESEARCH_DIR:-/anvil/scratch/x-ochaturvedi/research}"
+    # Writable root for model checkpoints/weights. Model wrappers read this
+    # (e.g. "$MODEL_DATA_DIR/piano_transcription_inference_data/...pth") so they
+    # never hardcode a cluster-specific path; missing checkpoints auto-download.
+    export MODEL_DATA_DIR="${MODEL_DATA_DIR:-/anvil/scratch/x-ochaturvedi/model_data}"
 
     # GPU jobs (transcription / dataset builds): A100 nodes on the gpu partition.
     export GPU_ACCOUNT="${GPU_ACCOUNT:-cis240587-gpu}"
@@ -43,6 +47,10 @@ elif [ -d /depot/yunglu ]; then
     export DATA_ROOT="${DATA_ROOT:-/depot/yunglu/data/transcription}"
     export CONDA_ROOT="${CONDA_ROOT:-/scratch/gilbreth/ochaturv/.conda}"
     export RESEARCH_DIR="${RESEARCH_DIR:-/scratch/gilbreth/ochaturv/research}"
+    # Writable root for model checkpoints/weights. Points at the existing
+    # /scratch/gilbreth/ochaturv/<model>_data location so current checkpoints
+    # are reused (no re-download); model wrappers read $MODEL_DATA_DIR.
+    export MODEL_DATA_DIR="${MODEL_DATA_DIR:-/scratch/gilbreth/ochaturv}"
 
     # GPU jobs: yunglu's only runnable partition is a100-80gb (3 GPUs, normal QOS).
     export GPU_ACCOUNT="${GPU_ACCOUNT:-yunglu}"
