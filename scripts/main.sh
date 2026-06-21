@@ -86,7 +86,9 @@ task_time=$(date +%s.%N)
 
 export CONDA_PKGS_DIRS=$CONDA_ROOT/pkgs_scoring
 mkdir -p "$CONDA_PKGS_DIRS"
-mamba create -y -q --prefix $CONDA_ROOT/envs/scoring-env python=3.10 pip setuptools mir_eval pretty_midi numpy=1.23 pyyaml >/dev/null
+# setuptools must stay <81: 81+ removed pkg_resources, which pretty_midi 0.2.x
+# imports (otherwise scoring.py crashes and every F-measure comes back 0.0).
+mamba create -y -q --prefix $CONDA_ROOT/envs/scoring-env python=3.10 pip "setuptools<81" mir_eval pretty_midi numpy=1.23 pyyaml >/dev/null
 
 # Raise pretty_midi's MAX_TICK so long files don't trip its sanity check
 PM_FILE=$(ls $CONDA_ROOT/envs/scoring-env/lib/python3*/site-packages/pretty_midi/pretty_midi.py 2>/dev/null | head -1)
@@ -101,7 +103,7 @@ rm -rf "$CONDA_PKGS_DIRS"
 
 export CONDA_PKGS_DIRS=$CONDA_ROOT/pkgs_upload
 mkdir -p "$CONDA_PKGS_DIRS"
-mamba create -y -q --prefix $CONDA_ROOT/envs/upload-env python=3.10 pip pydrive2 >/dev/null
+mamba create -y -q --prefix $CONDA_ROOT/envs/upload-env python=3.10 pip "setuptools<81" pydrive2 >/dev/null
 rm -rf "$CONDA_PKGS_DIRS"
 
 if [ ! -d "$CONDA_ROOT/envs/scoring-env" ]; then
