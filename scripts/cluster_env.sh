@@ -102,7 +102,16 @@ notify() {
 # and compiled extensions fail to import (e.g. matplotlib: "CXXABI_1.3.15 not
 # found"), which silently makes every model produce no output.
 conda_lib_priority() {
-    [ -n "$CONDA_PREFIX" ] && export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:${LD_LIBRARY_PATH}"
+    [ -z "$CONDA_PREFIX" ] && return
+    # PyTorch (pip) bundles its own CUDA libs (cuDNN, cuBLAS, NCCL, ...) under
+    # site-packages/nvidia/*/lib. Put those FIRST so a conda-installed cuDNN in
+    # $CONDA_PREFIX/lib can't shadow the version PyTorch was built against
+    # (otherwise: "cuDNN version incompatibility ... conflicting cuDNN in
+    # LD_LIBRARY_PATH"). $CONDA_PREFIX/lib still precedes system/module dirs so
+    # the env's newer libstdc++ wins (fixes the matplotlib CXXABI import error).
+    local nvlibs
+    nvlibs=$(ls -d "$CONDA_PREFIX"/lib/python3*/site-packages/nvidia/*/lib 2>/dev/null | paste -sd: -)
+    export LD_LIBRARY_PATH="${nvlibs:+$nvlibs:}$CONDA_PREFIX/lib:${LD_LIBRARY_PATH}"
 }
 
 export -f load_modules notify conda_lib_priority 2>/dev/null || true
