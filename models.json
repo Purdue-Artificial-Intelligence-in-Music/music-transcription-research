@@ -1,20 +1,20 @@
 {
     "values": [
         ["Model Name", "Instrument", "Training Datasets", "Completed Datasets"],
+        ["ReconVAT", "Multiple", ["MAPS", "MusicNet"], []],
+        ["Bytedance Piano transcription", "Piano", ["Maestro"], []],
+        ["Transkun", "Piano", ["Maestro", "MAPS", "SMD"], []],
+        ["Madmom", "Piano", [], []]
+    ],
+    "_comment": "Models under 'disabled' are excluded from runs; the pipeline reads only 'values'. Move a row back to re-enable. MT3: env.yml pip install fails on a flax/jax dependency conflict (needs version resolution). Omnizart: staged checkpoint is missing configurations.yaml (needs `omnizart download-checkpoints`). MR-MT3 + Jointist: git-LFS weights need a valid keys.json token (clone fails: Bad credentials). CREPE Pitch Tracker: token needs refreshing. Basic Pitch: main.py must be wrapped to the '-i <file> -o <file>.mid' interface.",
+    "disabled": [
         [
             "MT3",
             "Multiple",
             ["Maestro", "Slakh 2100 Redux", "Cerberus", "GuitarSet", "MusicNet", "URMP"],
             []
         ],
-        ["ReconVAT", "Multiple", ["MAPS", "MusicNet"], []],
-        ["Bytedance Piano transcription", "Piano", ["Maestro"], []],
-        ["Transkun", "Piano", ["Maestro", "MAPS", "SMD"], []],
         ["Omnizart", "Piano", ["Maestro"], []],
-        ["Madmom", "Piano", [], []]
-    ],
-    "_comment": "Models under 'disabled' are intentionally excluded from runs; the pipeline reads only 'values'. Move a row back into 'values' to re-enable. MR-MT3 + Jointist: git-LFS weights need a valid keys.json token (clone fails with Bad credentials). CREPE Pitch Tracker: token in keys.json needs refreshing. Basic Pitch: main.py must be wrapped to the '-i <file> -o <file>.mid' interface.",
-    "disabled": [
         ["MR-MT3", "Multiple", ["Slakh 2100 Redux"], []],
         ["Jointist", "Multiple", ["Slakh 2100 Redux"], []],
         [
