@@ -43,17 +43,26 @@ def clone_repo(entry):
 
     local_path = f"./{safe_name}"
 
-    # If the path on the RCAC server exists, copy it instead of cloning
-    if rcac_path and os.path.exists(rcac_path):
+    # Prefer copying a pre-staged model dir (code + weights) over git-cloning, so
+    # models with git-LFS weights work without a working LFS token. Check the
+    # cluster's MODEL_STAGE_DIR/<safe_name> first (set per-cluster by
+    # cluster_env.sh), then fall back to the keys.json rcac_path.
+    stage_dir = os.environ.get("MODEL_STAGE_DIR", "")
+    staged_candidates = [
+        os.path.join(stage_dir, safe_name) if stage_dir else "",
+        rcac_path or "",
+    ]
+    src = next((p for p in staged_candidates if p and os.path.exists(p)), None)
+    if src:
         try:
-            print(f"Copying: {rcac_path} to {local_path}")
-            shutil.copytree(rcac_path, local_path)
+            print(f"Copying: {src} to {local_path}")
+            shutil.copytree(src, local_path)
             return (model_name, True, None)
         except Exception as e:
             return (
                 model_name,
                 False,
-                f"Failed to copy from '{rcac_path}': {str(e)}",
+                f"Failed to copy from '{src}': {str(e)}",
             )
 
     # Otherwise, clone the repo

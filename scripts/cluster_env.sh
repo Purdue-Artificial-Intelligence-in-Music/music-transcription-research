@@ -25,6 +25,10 @@ if [ -d /anvil ]; then
     # (e.g. "$MODEL_DATA_DIR/piano_transcription_inference_data/...pth") so they
     # never hardcode a cluster-specific path; missing checkpoints auto-download.
     export MODEL_DATA_DIR="${MODEL_DATA_DIR:-/anvil/scratch/x-ochaturvedi/model_data}"
+    # Pre-staged model dirs (code + weights). cloning.py copies from here instead
+    # of git-cloning, so models with git-LFS weights work even when the token
+    # can't pull LFS. Stage a working model dir here per cluster to enable it.
+    export MODEL_STAGE_DIR="${MODEL_STAGE_DIR:-/anvil/scratch/x-ochaturvedi/models}"
 
     # GPU jobs (transcription / dataset builds): A100 nodes on the gpu partition.
     export GPU_ACCOUNT="${GPU_ACCOUNT:-cis240587-gpu}"
@@ -51,6 +55,9 @@ elif [ -d /depot/yunglu ]; then
     # /scratch/gilbreth/ochaturv/<model>_data location so current checkpoints
     # are reused (no re-download); model wrappers read $MODEL_DATA_DIR.
     export MODEL_DATA_DIR="${MODEL_DATA_DIR:-/scratch/gilbreth/ochaturv}"
+    # Pre-staged model dirs (code + weights); cloning.py copies from here rather
+    # than git-cloning, so git-LFS weights work without a working LFS token.
+    export MODEL_STAGE_DIR="${MODEL_STAGE_DIR:-/scratch/gilbreth/ochaturv/models}"
 
     # GPU jobs: yunglu's only runnable partition is a100-80gb (3 GPUs, normal QOS).
     export GPU_ACCOUNT="${GPU_ACCOUNT:-yunglu}"
