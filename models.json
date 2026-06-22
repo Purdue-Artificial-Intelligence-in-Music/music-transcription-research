@@ -1,13 +1,13 @@
 {
     "values": [
         ["Model Name", "Instrument", "Training Datasets", "Completed Datasets"],
-        ["ReconVAT", "Multiple", ["MAPS", "MusicNet"], []],
         ["Bytedance Piano transcription", "Piano", ["Maestro"], []],
         ["Transkun", "Piano", ["Maestro", "MAPS", "SMD"], []],
         ["Madmom", "Piano", [], []]
     ],
-    "_comment": "Models under 'disabled' are excluded from runs; the pipeline reads only 'values'. Move a row back to re-enable. MT3: env.yml pip install fails on a flax/jax dependency conflict (needs version resolution). Omnizart: staged checkpoint is missing configurations.yaml (needs `omnizart download-checkpoints`). MR-MT3 + Jointist: git-LFS weights need a valid keys.json token (clone fails: Bad credentials). CREPE Pitch Tracker: token needs refreshing. Basic Pitch: main.py must be wrapped to the '-i <file> -o <file>.mid' interface.",
+    "_comment": "Models under 'disabled' are excluded from runs; the pipeline reads only 'values'. Move a row back to re-enable. ALL Multiple-instrument models are currently blocked: ReconVAT + MR-MT3 + Jointist need git-LFS weights that the keys.json token can't pull (Bad credentials); MT3's env.yml pip install fails on a flax/jax conflict. So only the 3 Piano models work, and the Multiple datasets (Slakh/NESMDB/AAM/XMIDI) are uncovered until the LFS token is refreshed or MT3 is fixed. Omnizart: staged checkpoint missing configurations.yaml (needs `omnizart download-checkpoints`). CREPE: token needs refreshing. Basic Pitch: main.py must be wrapped to '-i <file> -o <file>.mid'.",
     "disabled": [
+        ["ReconVAT", "Multiple", ["MAPS", "MusicNet"], []],
         [
             "MT3",
             "Multiple",
