@@ -12,8 +12,15 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 import os
 import sys
+import time
+import random
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+# Google Drive rate-limits a single user/service account, so keep concurrency
+# modest and retry rate-limit errors with exponential backoff.
+MAX_UPLOAD_WORKERS = 4
+MAX_RETRIES = 7
 
 
 def authenticate_service_account():
@@ -86,21 +93,38 @@ def create_folder(drive, model_name, dataset_name, parent_folder_id=None):
 
 
 def upload_single_file(drive, file_path, filename, target_folder_id):
-    """Upload a single file to a specific folder. Returns True on success."""
-    try:
-        file = drive.CreateFile(
-            {
-                "title": filename,
-                "parents": [{"id": target_folder_id}],
-            }
-        )
-        file.SetContentFile(file_path)
-        file.Upload()
-        print(f"Uploaded {filename} to folder ID: {target_folder_id}")
-        return True
-    except Exception as e:
-        print(f"Failed to upload {filename}: {e}")
-        return False
+    """Upload a single file, retrying rate-limit errors with backoff. Returns True on success."""
+    for attempt in range(MAX_RETRIES):
+        try:
+            file = drive.CreateFile(
+                {
+                    "title": filename,
+                    "parents": [{"id": target_folder_id}],
+                }
+            )
+            file.SetContentFile(file_path)
+            file.Upload()
+            print(f"Uploaded {filename} to folder ID: {target_folder_id}")
+            return True
+        except Exception as e:
+            msg = str(e)
+            rate_limited = (
+                "rateLimitExceeded" in msg
+                or "userRateLimitExceeded" in msg
+                or "User rate limit exceeded" in msg
+                or "403" in msg
+                or "500" in msg
+                or "503" in msg
+            )
+            if rate_limited and attempt < MAX_RETRIES - 1:
+                # exponential backoff with jitter
+                wait = min(2 ** attempt, 60) + random.uniform(0, 1.0)
+                print(f"Rate-limited on {filename}; retry {attempt + 1}/{MAX_RETRIES} in {wait:.1f}s")
+                time.sleep(wait)
+                continue
+            print(f"Failed to upload {filename}: {e}")
+            return False
+    return False
 
 
 def upload_files_to_folder(drive, local_directory, folder_id, output_folder_id=None):
@@ -118,7 +142,7 @@ def upload_files_to_folder(drive, local_directory, folder_id, output_folder_id=N
             files_to_upload.append((file_path, filename, target_folder_id))
 
     failures = 0
-    with ThreadPoolExecutor(max_workers=16) as executor:
+    with ThreadPoolExecutor(max_workers=MAX_UPLOAD_WORKERS) as executor:
         futures = [
             executor.submit(upload_single_file, drive, fp, fn, folder_id)
             for fp, fn, folder_id in files_to_upload
