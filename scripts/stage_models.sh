@@ -8,8 +8,8 @@
 #
 # Reads model name / URL / user / token from keys.json.
 
-set -uo pipefail
-
+# NB: no `set -u` — sourcing the cluster module system references unbound vars
+# (e.g. ROOTSAFE on Gilbreth) which would abort the script under strict mode.
 RESEARCH_DIR="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 source "$RESEARCH_DIR/scripts/cluster_env.sh"
 load_modules

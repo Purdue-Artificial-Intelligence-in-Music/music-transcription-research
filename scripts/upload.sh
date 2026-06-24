@@ -84,15 +84,23 @@ python "$RESEARCH_DIR/scripts/upload.py" \
     --model-name="$model_name" \
     --dataset-name="$dataset_name" \
     --local-directory="$OUTPUT_DIR"
+upload_rc=$?
 
 conda deactivate
 conda clean --all --yes -q
 
 echo "--------------------------------------------------"
-echo "Upload complete for $model_name / $dataset_name"
-
-echo "Removing output directory to save space"
-rm -rf "$OUTPUT_DIR"
+# Only delete the transcription output if the upload actually succeeded.
+# Deleting on failure (e.g. Drive folder not shared with the service account)
+# permanently loses the .mid results and forces a full re-run.
+if [[ "$upload_rc" -eq 0 ]]; then
+    echo "Upload succeeded for $model_name / $dataset_name; removing output dir"
+    rm -rf "$OUTPUT_DIR"
+else
+    echo "[ERROR] Upload FAILED (rc=$upload_rc) for $model_name / $dataset_name"
+    echo "Keeping $OUTPUT_DIR so the upload can be retried (no re-transcription needed)."
+    notify "[$CLUSTER] **Upload FAILED** for \`$model_name / $dataset_name\` (rc=$upload_rc). Output kept for retry." mention
+fi
 
 end_time=$(date +%s.%N)
 overall_runtime=$(echo "scale=2; $end_time - $start_time" | bc)

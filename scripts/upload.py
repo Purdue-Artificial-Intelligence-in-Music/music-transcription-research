@@ -11,6 +11,7 @@ __license__ = "MIT"
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 import os
+import sys
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -85,7 +86,7 @@ def create_folder(drive, model_name, dataset_name, parent_folder_id=None):
 
 
 def upload_single_file(drive, file_path, filename, target_folder_id):
-    """Upload a single file to a specific folder."""
+    """Upload a single file to a specific folder. Returns True on success."""
     try:
         file = drive.CreateFile(
             {
@@ -96,12 +97,14 @@ def upload_single_file(drive, file_path, filename, target_folder_id):
         file.SetContentFile(file_path)
         file.Upload()
         print(f"Uploaded {filename} to folder ID: {target_folder_id}")
+        return True
     except Exception as e:
         print(f"Failed to upload {filename}: {e}")
+        return False
 
 
 def upload_files_to_folder(drive, local_directory, folder_id, output_folder_id=None):
-    """Upload all files from a local directory using parallel threads."""
+    """Upload all files from a local directory; return the number of failures."""
     files_to_upload = []
 
     for filename in os.listdir(local_directory):
@@ -114,13 +117,16 @@ def upload_files_to_folder(drive, local_directory, folder_id, output_folder_id=N
                 target_folder_id = folder_id
             files_to_upload.append((file_path, filename, target_folder_id))
 
+    failures = 0
     with ThreadPoolExecutor(max_workers=16) as executor:
         futures = [
             executor.submit(upload_single_file, drive, fp, fn, folder_id)
             for fp, fn, folder_id in files_to_upload
         ]
-        for _ in as_completed(futures):
-            pass  # Already handled in upload_single_file with print
+        for f in as_completed(futures):
+            if not f.result():
+                failures += 1
+    return failures
 
 
 def main():
@@ -148,26 +154,36 @@ def main():
     print(f"\tDataset Name: {args.dataset_name}")
     print(f"\tLocal Directory: {args.local_directory}")
 
-    drive = authenticate_service_account()
+    try:
+        drive = authenticate_service_account()
 
-    # Get or create the model folder
-    model_folder_id, model_folder_link = create_folder(
-        drive, args.model_name, args.dataset_name, args.main_folder
-    )
-    print(f"Using folder for {args.model_name} with ID: {model_folder_id}")
-    print(f"\tModel folder link: {model_folder_link}")
+        # Get or create the model folder
+        model_folder_id, model_folder_link = create_folder(
+            drive, args.model_name, args.dataset_name, args.main_folder
+        )
+        print(f"Using folder for {args.model_name} with ID: {model_folder_id}")
+        print(f"\tModel folder link: {model_folder_link}")
 
-    # Create Output subfolder inside the submission folder
-    output_folder_name = "Model Output"
-    output_folder_id, output_folder_link = create_folder(
-        drive, output_folder_name, None, model_folder_id
-    )
-    print(f"\tModel Output subfolder link: {output_folder_link}")
+        # Create Output subfolder inside the submission folder
+        output_folder_name = "Model Output"
+        output_folder_id, output_folder_link = create_folder(
+            drive, output_folder_name, None, model_folder_id
+        )
+        print(f"\tModel Output subfolder link: {output_folder_link}")
 
-    # Upload files
-    upload_files_to_folder(
-        drive, args.local_directory, model_folder_id, output_folder_id
-    )
+        # Upload files
+        failures = upload_files_to_folder(
+            drive, args.local_directory, model_folder_id, output_folder_id
+        )
+    except Exception as e:
+        # e.g. the Drive folder isn't shared with the service account.
+        print(f"[ERROR] Upload failed: {e}")
+        sys.exit(1)
+
+    if failures:
+        print(f"[ERROR] {failures} file(s) failed to upload.")
+        sys.exit(1)
+    print("All files uploaded successfully.")
 
 
 if __name__ == "__main__":
