@@ -34,12 +34,13 @@ if [ -d /anvil ]; then
     export GPU_ACCOUNT="${GPU_ACCOUNT:-cis240587-gpu}"
     export GPU_PARTITION="${GPU_PARTITION:-gpu}"
     export GPU_QOS="${GPU_QOS:-}"
-    # Support jobs (upload / notify): pure CPU work -> shared CPU partition,
-    # no GPU needed, billed to the CPU allocation.
-    export SUPPORT_ACCOUNT="${SUPPORT_ACCOUNT:-cis220051}"
-    export SUPPORT_PARTITION="${SUPPORT_PARTITION:-shared}"
+    # Support jobs (upload / notify): the CPU allocation (cis220051) hit its
+    # AssocGrpCPUMinutesLimit, so route these to the GPU account/partition,
+    # which has surplus SU. (Uploads don't use the GPU, but Anvil has plenty.)
+    export SUPPORT_ACCOUNT="${SUPPORT_ACCOUNT:-cis240587-gpu}"
+    export SUPPORT_PARTITION="${SUPPORT_PARTITION:-gpu}"
     export SUPPORT_QOS="${SUPPORT_QOS:-}"
-    export SUPPORT_GRES="${SUPPORT_GRES:-}"
+    export SUPPORT_GRES="${SUPPORT_GRES:-gpu:1}"
 
     load_modules() {
         # Anvil exposes conda/parallel/ffmpeg directly (no "external" module).
