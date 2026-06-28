@@ -99,7 +99,21 @@ transcribe_file() {
         temp_wav_created=1
     fi
 
-    # local duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$file")
+    # Pad very short audio with trailing silence so model CNNs don't crash on
+    # inputs shorter than their receptive field (e.g. ReconVAT on sub-second NES
+    # SFX: "Kernel size can't be greater than actual input size"). Trailing
+    # silence adds no notes, so scoring against the reference is unaffected.
+    local MIN_DUR=2
+    local dur=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$file" 2>/dev/null)
+    if [[ -n "$dur" ]] && awk "BEGIN{exit !($dur < $MIN_DUR)}"; then
+        local padded_wav="$temp_dir/${base_name}_padded.wav"
+        echo "Padding short audio (${dur}s) to ${MIN_DUR}s: $base_name"
+        if ffmpeg -loglevel error -y -i "$file" -af "apad=whole_dur=${MIN_DUR}" -ac 1 -ar 44100 "$padded_wav" 2>/dev/null; then
+            [[ "$temp_wav_created" -eq 1 ]] && rm -f "$file"
+            file="$padded_wav"
+            temp_wav_created=1
+        fi
+    fi
 
     local start_time=$(date +%s.%N)
 

@@ -78,19 +78,26 @@ convert_midi() {
 
     echo "Processing: $midi_path"
 
-    # Convert MIDI to WAV using FluidSynth
-    if singularity exec "$FS_CONTAINER" fluidsynth -ni "$SF_PATH" "$midi_path" -F "$tmp" -r 44100 2>/dev/null; then
-        # Convert to mono 44.1kHz with ffmpeg
-        if ffmpeg -loglevel error -y -i "$tmp" -ac 1 -ar 44100 "$out" 2>/dev/null; then
-            rm "$tmp"
-            echo "Converted: $out"
+    # FluidSynth can exit 0 yet render silence, leaving a ~200-byte (empty) WAV
+    # that downstream models can't transcribe. Verify the output is non-trivial
+    # and retry once if it isn't.
+    local attempt sz
+    for attempt in 1 2; do
+        if singularity exec "$FS_CONTAINER" fluidsynth -ni "$SF_PATH" "$midi_path" -F "$tmp" -r 44100 2>/dev/null \
+            && ffmpeg -loglevel error -y -i "$tmp" -ac 1 -ar 44100 "$out" 2>/dev/null; then
+            rm -f "$tmp"
+            sz=$(stat -c%s "$out" 2>/dev/null || stat -f%z "$out" 2>/dev/null)
+            if [[ -n "$sz" && "$sz" -ge 2048 ]]; then
+                echo "Converted: $out"
+                return
+            fi
+            echo "Empty WAV (${sz}B) for $midi_path (attempt $attempt)"
         else
             rm -f "$tmp"
-            echo "FFmpeg failed on: $midi_path"
+            echo "FluidSynth/ffmpeg failed on: $midi_path (attempt $attempt)"
         fi
-    else
-        echo "FluidSynth failed on: $midi_path"
-    fi
+    done
+    echo "WARN: could not synthesize a non-empty WAV for $midi_path"
 }
 
 # Export the function and variables for parallel
