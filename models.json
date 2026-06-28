@@ -1,12 +1,12 @@
 {
     "values": [
         ["Model Name", "Instrument", "Training Datasets", "Completed Datasets"],
-        ["ReconVAT", "Multiple", ["MAPS", "MusicNet"], []],
+        ["ReconVAT", "Multiple", ["MAPS", "MusicNet"], ["Maestro", "Slakh 2100 Redux", "MSMD", "BiMMuDa", "POP909", "NESMDB", "AAM"]],
         ["MR-MT3", "Multiple", ["Slakh 2100 Redux"], []],
         ["Jointist", "Multiple", ["Slakh 2100 Redux"], []],
-        ["Bytedance Piano transcription", "Piano", ["Maestro"], []],
-        ["Transkun", "Piano", ["Maestro", "MAPS", "SMD"], []],
-        ["Madmom", "Piano", [], []]
+        ["Bytedance Piano transcription", "Piano", ["Maestro"], ["MSMD", "BiMMuDa", "POP909"]],
+        ["Transkun", "Piano", ["Maestro", "MAPS", "SMD"], ["MSMD", "BiMMuDa", "POP909"]],
+        ["Madmom", "Piano", [], ["Maestro", "MSMD", "BiMMuDa", "POP909"]]
     ],
     "_comment": "Models under 'disabled' are excluded from runs; the pipeline reads only 'values'. Move a row back to re-enable. ReconVAT/MR-MT3/Jointist now have a valid LFS token (keys.json) so they clone with real weights. Still disabled: MT3 (env.yml pip flax/jax conflict, needs resolution), Omnizart (staged checkpoint missing configurations.yaml, needs `omnizart download-checkpoints`), CREPE Pitch Tracker (tgondil repo - fork to own account), Basic Pitch (KayshavBhardwaj repo - fork + wrap main.py to '-i <file> -o <file>.mid').",
     "disabled": [
