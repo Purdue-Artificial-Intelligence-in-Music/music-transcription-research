@@ -10,6 +10,9 @@
 
 source "${SLURM_SUBMIT_DIR:-$(pwd)}/scripts/cluster_env.sh"
 load_modules
+# mido is used to normalize MIDIs that FluidSynth can't render (malformed meta
+# events like "Invalid length for KeySignature" -> silent output).
+pip install --quiet mido >/dev/null 2>&1 || true
 
 # Build into the cluster's dataset directory so the generated .txt file list
 # points at the canonical location referenced by datasets.json.
@@ -79,16 +82,21 @@ convert_midi() {
     echo "Processing: $midi_path"
 
     # FluidSynth can exit 0 yet render silence, leaving a ~200-byte (empty) WAV
-    # that downstream models can't transcribe. Verify the output is non-trivial
-    # and retry once if it isn't.
+    # that downstream models can't transcribe. Verify the output is non-trivial;
+    # if it's empty, normalize the MIDI through mido (fixes malformed meta events
+    # like "Invalid length for KeySignature" that make FluidSynth render nothing)
+    # and retry with the re-saved file.
+    local src="$midi_path"
+    local resaved="${midi_path%.mid}_resaved.mid"
     local attempt sz
     for attempt in 1 2; do
-        if singularity exec "$FS_CONTAINER" fluidsynth -ni "$SF_PATH" "$midi_path" -F "$tmp" -r 44100 2>/dev/null \
+        if singularity exec "$FS_CONTAINER" fluidsynth -ni "$SF_PATH" "$src" -F "$tmp" -r 44100 2>/dev/null \
             && ffmpeg -loglevel error -y -i "$tmp" -ac 1 -ar 44100 "$out" 2>/dev/null; then
             rm -f "$tmp"
             sz=$(stat -c%s "$out" 2>/dev/null || stat -f%z "$out" 2>/dev/null)
             if [[ -n "$sz" && "$sz" -ge 2048 ]]; then
                 echo "Converted: $out"
+                rm -f "$resaved"
                 return
             fi
             echo "Empty WAV (${sz}B) for $midi_path (attempt $attempt)"
@@ -96,7 +104,12 @@ convert_midi() {
             rm -f "$tmp"
             echo "FluidSynth/ffmpeg failed on: $midi_path (attempt $attempt)"
         fi
+        # Normalize via mido before retrying.
+        if python3 -c "import mido; mido.MidiFile('$midi_path').save('$resaved')" 2>/dev/null; then
+            src="$resaved"
+        fi
     done
+    rm -f "$resaved"
     echo "WARN: could not synthesize a non-empty WAV for $midi_path"
 }
 
