@@ -112,4 +112,8 @@ seconds=$(echo "$overall_runtime % 60" | bc | cut -d'.' -f1)
 overall_runtime_formatted=$(printf '%02d:%02d:%02d' "$hours" "$minutes" "$seconds")
 echo "Total runtime: $overall_runtime_formatted"
 
-notify "[$CLUSTER] Finished uploading results for **$model_name / $dataset_name**\\n.wav files: $num_wavs\\nAvg F-measure: $avg_fmeasure\\nTotal runtime: $overall_runtime_formatted" mention
+# Only announce success if the upload actually succeeded (otherwise the
+# "Upload FAILED ... kept for retry" message above already fired).
+if [[ "$upload_rc" -eq 0 ]]; then
+    notify "[$CLUSTER] Finished uploading results for **$model_name / $dataset_name**\\n.wav files: $num_wavs\\nAvg F-measure: $avg_fmeasure\\nTotal runtime: $overall_runtime_formatted" mention
+fi
