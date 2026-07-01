@@ -6,17 +6,12 @@
         ["Jointist", "Multiple", ["Slakh 2100 Redux"], []],
         ["Bytedance Piano transcription", "Piano", ["Maestro"], ["MSMD", "BiMMuDa", "POP909"]],
         ["Transkun", "Piano", ["Maestro", "MAPS", "SMD"], ["MSMD", "BiMMuDa", "POP909"]],
-        ["Madmom", "Piano", [], ["Maestro", "MSMD", "BiMMuDa", "POP909"]]
+        ["Madmom", "Piano", [], ["Maestro", "MSMD", "BiMMuDa", "POP909"]],
+        ["MT3", "Multiple", ["Maestro", "Slakh 2100 Redux", "Cerberus", "GuitarSet", "MusicNet", "URMP"], ["BiMMuDa"]],
+        ["Omnizart", "Piano", ["Maestro"], ["BiMMuDa"]]
     ],
-    "_comment": "Models under 'disabled' are excluded from runs; the pipeline reads only 'values'. Move a row back to re-enable. ReconVAT/MR-MT3/Jointist now have a valid LFS token (keys.json) so they clone with real weights. Still disabled: MT3 (env.yml pip flax/jax conflict, needs resolution), Omnizart (staged checkpoint missing configurations.yaml, needs `omnizart download-checkpoints`), CREPE Pitch Tracker (tgondil repo - fork to own account), Basic Pitch (KayshavBhardwaj repo - fork + wrap main.py to '-i <file> -o <file>.mid').",
+    "_comment": "Models under 'disabled' are excluded from runs; the pipeline reads only 'values'. Move a row back to re-enable. ReconVAT/MR-MT3/Jointist have a valid LFS token (keys.json) so they clone with real weights. MT3 and Omnizart are fixed and validated end-to-end on BiMMuDa (marked complete): MT3 drops ddsp/t5 (vendored compute_logmel + inlined DEFAULT_EXTRA_IDS); Omnizart has its music_piano checkpoint assembled and runs without spleeter/madmom/vamp. Still disabled pending validation: CREPE Pitch Tracker and Basic Pitch (forked to ojas-chaturvedi; being validated on Anvil).",
     "disabled": [
-        [
-            "MT3",
-            "Multiple",
-            ["Maestro", "Slakh 2100 Redux", "Cerberus", "GuitarSet", "MusicNet", "URMP"],
-            []
-        ],
-        ["Omnizart", "Piano", ["Maestro"], []],
         [
             "CREPE Pitch Tracker",
             "Multiple",

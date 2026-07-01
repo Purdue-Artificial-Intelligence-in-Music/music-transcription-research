@@ -89,6 +89,29 @@ else
     load_modules() { :; }
 fi
 
+# Keep ALL package caches, conda envs, and tool caches OFF $HOME. Cluster home
+# quotas are tiny (Anvil: 25 GB) while scratch is huge; conda/mamba, pip,
+# huggingface, torch, numba and matplotlib all default to writing under $HOME,
+# which silently fills the home quota and then breaks env creation with
+# "Disk quota exceeded" (e.g. mamba writing ~/.conda/environments.txt). Point
+# every cache/registry at scratch (derived from the cluster's CONDA_ROOT).
+if [ -n "$CONDA_ROOT" ]; then
+    export CONDA_PKGS_DIRS="$CONDA_ROOT/pkgs"
+    # NB: do NOT set CONDA_ENVS_DIRS -- it aliases conda's `envs_dirs`, which
+    # collides with a pre-existing `envs_path` alias and raises MultipleKeysError,
+    # breaking every conda call. The pipeline creates envs with an explicit
+    # --prefix under $CONDA_ROOT/envs anyway, so envs already land on scratch.
+    _CACHE_ROOT="$(dirname "$CONDA_ROOT")/.cache"
+    export PIP_CACHE_DIR="$_CACHE_ROOT/pip"
+    export XDG_CACHE_HOME="$_CACHE_ROOT/xdg"
+    export HF_HOME="$_CACHE_ROOT/huggingface"
+    export TORCH_HOME="$_CACHE_ROOT/torch"
+    export NUMBA_CACHE_DIR="$_CACHE_ROOT/numba"
+    export MPLCONFIGDIR="$_CACHE_ROOT/matplotlib"
+    mkdir -p "$CONDA_PKGS_DIRS" "$PIP_CACHE_DIR" "$XDG_CACHE_HOME" \
+        "$HF_HOME" "$TORCH_HOME" "$NUMBA_CACHE_DIR" "$MPLCONFIGDIR" 2>/dev/null || true
+fi
+
 # notify "<message>"        -> plain Discord message
 # notify "<message>" mention -> message that also pings DISCORD_USER_ID
 notify() {
