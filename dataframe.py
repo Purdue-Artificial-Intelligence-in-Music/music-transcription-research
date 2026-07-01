@@ -326,8 +326,8 @@ def send_completion_notification():
         "-H",
         "Title: AIM Download Finished",
         "-H",
-        "Topic: cvirl-aortopathy",
-        "ntfy.sh/cvirl-aortopathy",
+        "Topic: aim",
+        "ntfy.sh/aim",
     ]
     print("[Notify] Sending completion notification...")
     try:
