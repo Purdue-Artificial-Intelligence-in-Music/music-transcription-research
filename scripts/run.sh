@@ -290,9 +290,16 @@ for file in "$temp_dir"/*.fmeasure; do
     fi
 done
 if [[ $count -gt 0 ]]; then
-    avg_fmeasure=$(echo "scale=4; $total / $count" | bc)
+    # Format with a leading zero (bc yields ".5618"); always non-empty so the
+    # Discord notification's markdown stays well-formed.
+    avg_fmeasure=$(echo "scale=6; $total / $count" | bc | awk '{printf "%.4f", $0}')
     echo "Average F-measure per file: $avg_fmeasure"
 else
+    # No file produced a valid F-measure (model failed / no output). Use a
+    # non-empty placeholder so the notify below doesn't emit empty backticks,
+    # which break the message formatting (an empty code span swallows the
+    # following lines).
+    avg_fmeasure="N/A"
     echo "No valid F-measures collected."
 fi
 
