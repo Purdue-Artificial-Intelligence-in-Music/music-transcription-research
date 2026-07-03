@@ -2,27 +2,17 @@
     "values": [
         ["Model Name", "Instrument", "Training Datasets", "Completed Datasets"],
         ["ReconVAT", "Multiple", ["MAPS", "MusicNet"], ["Maestro", "Slakh 2100 Redux", "MSMD", "BiMMuDa", "POP909", "NESMDB", "AAM"]],
-        ["MR-MT3", "Multiple", ["Slakh 2100 Redux"], []],
-        ["Jointist", "Multiple", ["Slakh 2100 Redux"], []],
+        ["Jointist", "Multiple", ["Slakh 2100 Redux"], ["BiMMuDa"]],
         ["Bytedance Piano transcription", "Piano", ["Maestro"], ["MSMD", "BiMMuDa", "POP909"]],
         ["Transkun", "Piano", ["Maestro", "MAPS", "SMD"], ["MSMD", "BiMMuDa", "POP909"]],
         ["Madmom", "Piano", [], ["Maestro", "MSMD", "BiMMuDa", "POP909"]],
         ["MT3", "Multiple", ["Maestro", "Slakh 2100 Redux", "Cerberus", "GuitarSet", "MusicNet", "URMP"], ["BiMMuDa"]],
-        ["Omnizart", "Piano", ["Maestro"], ["BiMMuDa"]]
+        ["Omnizart", "Piano", ["Maestro"], ["BiMMuDa"]],
+        ["CREPE Pitch Tracker", "Multiple", ["MIR-1K", "Bach10", "RWC-Synth", "MedleyDB", "MDB-STEM-Synth", "NSynth"], ["BiMMuDa"]],
+        ["Basic Pitch", "Multiple", ["Molina", "GuitarSet", "Maestro", "Slakh 2100 Redux", "Phenicx", "iKala", "MedleyDB"], []]
     ],
-    "_comment": "Models under 'disabled' are excluded from runs; the pipeline reads only 'values'. Move a row back to re-enable. ReconVAT/MR-MT3/Jointist have a valid LFS token (keys.json) so they clone with real weights. MT3 and Omnizart are fixed and validated end-to-end on BiMMuDa (marked complete): MT3 drops ddsp/t5 (vendored compute_logmel + inlined DEFAULT_EXTRA_IDS); Omnizart has its music_piano checkpoint assembled and runs without spleeter/madmom/vamp. Still disabled pending validation: CREPE Pitch Tracker and Basic Pitch (forked to ojas-chaturvedi; being validated on Anvil).",
+    "_comment": "Pipeline reads only 'values'. 9 models validated and enabled. Completed Datasets skip already-run+uploaded results (BiMMuDa validated for MT3/Omnizart/Jointist/CREPE; piano models + ReconVAT completed earlier). Basic Pitch has completed=[] (its -i/-o wrapper was just fixed, so it re-runs including BiMMuDa). MR-MT3 is disabled/deferred: its env is buildable (torch 2.1.0+cu121 / TF 2.13, segfault fixed) but the seqio/t5 stack (tensorflow_metadata/tfds/protobuf) still conflicts; its sibling MT3 already works. CREPE is a monophonic pitch tracker so its scores on polyphonic data are near-zero by design.",
     "disabled": [
-        [
-            "CREPE Pitch Tracker",
-            "Multiple",
-            ["MIR-1K", "Bach10", "RWC-Synth", "MedleyDB", "MDB-STEM-Synth", "NSynth"],
-            []
-        ],
-        [
-            "Basic Pitch",
-            "Multiple",
-            ["Molina", "GuitarSet", "Maestro", "Slakh 2100 Redux", "Phenicx", "iKala", "MedleyDB"],
-            []
-        ]
+        ["MR-MT3", "Multiple", ["Slakh 2100 Redux"], []]
     ]
 }
