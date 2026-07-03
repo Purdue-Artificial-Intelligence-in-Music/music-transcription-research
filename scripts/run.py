@@ -13,7 +13,11 @@ import subprocess
 import os
 import math
 
-CHUNK_SIZE = 1000
+# Smaller chunks -> shorter per-job runtime -> the jobs backfill into gaps on a
+# heavily-contended, fully-reserved partition (Anvil's gpu queue had ~1670
+# pending jobs and every free GPU was PLANNED for higher-priority jobs). A
+# 250-file chunk runs in a few hours instead of most of a day.
+CHUNK_SIZE = 250
 MODELS_FILE = "models.json"
 DATASETS_FILE = "datasets.json"
 RUN_SCRIPT = "scripts/run.sh"

@@ -30,8 +30,12 @@ if [ -d /anvil ]; then
     # can't pull LFS. Stage a working model dir here per cluster to enable it.
     export MODEL_STAGE_DIR="${MODEL_STAGE_DIR:-/anvil/scratch/x-ochaturvedi/models}"
 
-    # GPU jobs (transcription / dataset builds): A100 nodes on the gpu partition.
-    export GPU_ACCOUNT="${GPU_ACCOUNT:-cis240587-gpu}"
+    # GPU jobs (transcription / dataset builds): the gpu partition (the cis*-gpu
+    # accounts are associated only with it -- the `ai` partition rejects them).
+    # Use a FRESH allocation (cis240580-gpu, FairShare 1.0, unused) rather than
+    # cis240587-gpu (FairShare 0.57, heavily used) so jobs rank higher in the
+    # heavily-contended gpu queue and actually get scheduled.
+    export GPU_ACCOUNT="${GPU_ACCOUNT:-cis240580-gpu}"
     export GPU_PARTITION="${GPU_PARTITION:-gpu}"
     export GPU_QOS="${GPU_QOS:-}"
     # Anvil GPU nodes are SHARED: 512G RAM / 4 GPUs (~128G per GPU). Requesting a
@@ -42,7 +46,7 @@ if [ -d /anvil ]; then
     # Support jobs (upload / notify): the CPU allocation (cis220051) hit its
     # AssocGrpCPUMinutesLimit, so route these to the GPU account/partition,
     # which has surplus SU. (Uploads don't use the GPU, but Anvil has plenty.)
-    export SUPPORT_ACCOUNT="${SUPPORT_ACCOUNT:-cis240587-gpu}"
+    export SUPPORT_ACCOUNT="${SUPPORT_ACCOUNT:-cis240580-gpu}"
     export SUPPORT_PARTITION="${SUPPORT_PARTITION:-gpu}"
     export SUPPORT_QOS="${SUPPORT_QOS:-}"
     export SUPPORT_GRES="${SUPPORT_GRES:-gpu:1}"
