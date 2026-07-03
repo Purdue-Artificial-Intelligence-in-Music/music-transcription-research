@@ -36,7 +36,7 @@ CLUSTERS = {
         "remote_dir": "/scratch/gilbreth/ochaturv/research",
         "data_root": "/depot/yunglu/data/transcription",
         "max_gpus": 3,
-        "sbatch_flags": ["-A", "yunglu", "-p", "a100-80gb"],
+        "sbatch_flags": ["-A", "yunglu", "-p", "a100-80gb", "--mem", "240G"],
         "auto_submit_main": True,
     },
     "anvil": {
@@ -45,7 +45,7 @@ CLUSTERS = {
         "remote_dir": "/anvil/scratch/x-ochaturvedi/research",
         "data_root": "/anvil/scratch/x-ochaturvedi/transcription",
         "max_gpus": 8,
-        "sbatch_flags": ["-A", "cis240587-gpu", "-p", "gpu"],
+        "sbatch_flags": ["-A", "cis240587-gpu", "-p", "gpu", "--mem", "120G"],
         "auto_submit_main": False,
     },
 }

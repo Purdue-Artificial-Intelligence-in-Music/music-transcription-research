@@ -36,6 +36,10 @@ def gpu_flags():
         flags += ["-p", os.environ["GPU_PARTITION"]]
     if os.environ.get("GPU_QOS"):
         flags += ["--qos", os.environ["GPU_QOS"]]
+    # Per-cluster memory (run.sh hardcodes 240G, which is too large for Anvil's
+    # shared GPU nodes; cluster_env.sh sets GPU_MEM to a schedulable size).
+    if os.environ.get("GPU_MEM"):
+        flags += ["--mem", os.environ["GPU_MEM"]]
     return flags
 
 

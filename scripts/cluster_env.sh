@@ -34,6 +34,11 @@ if [ -d /anvil ]; then
     export GPU_ACCOUNT="${GPU_ACCOUNT:-cis240587-gpu}"
     export GPU_PARTITION="${GPU_PARTITION:-gpu}"
     export GPU_QOS="${GPU_QOS:-}"
+    # Anvil GPU nodes are SHARED: 512G RAM / 4 GPUs (~128G per GPU). Requesting a
+    # Gilbreth-sized 240G for one GPU can't fit alongside other jobs on a node,
+    # so the job never backfills and sits forever on (Priority). Right-size the
+    # per-job memory to a single-GPU share so it schedules on the shared partition.
+    export GPU_MEM="${GPU_MEM:-120G}"
     # Support jobs (upload / notify): the CPU allocation (cis220051) hit its
     # AssocGrpCPUMinutesLimit, so route these to the GPU account/partition,
     # which has surplus SU. (Uploads don't use the GPU, but Anvil has plenty.)
@@ -64,6 +69,9 @@ elif [ -d /depot/yunglu ]; then
     export GPU_ACCOUNT="${GPU_ACCOUNT:-yunglu}"
     export GPU_PARTITION="${GPU_PARTITION:-a100-80gb}"
     export GPU_QOS="${GPU_QOS:-normal}"
+    # Gilbreth a100-80gb nodes are effectively dedicated, so a large per-job
+    # memory request schedules fine.
+    export GPU_MEM="${GPU_MEM:-240G}"
     # Support jobs: no CPU partition exists on Gilbreth, so a GPU must be
     # requested even for CPU work. Use the preemptible standby QOS so these
     # never consume one of the 3 normal-QOS GPUs.
