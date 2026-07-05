@@ -2,16 +2,16 @@
     "values": [
         ["Model Name", "Instrument", "Training Datasets", "Completed Datasets"],
         ["ReconVAT", "Multiple", ["MAPS", "MusicNet"], ["Maestro", "Slakh 2100 Redux", "MSMD", "BiMMuDa", "POP909", "NESMDB", "AAM"]],
-        ["Jointist", "Multiple", ["Slakh 2100 Redux"], ["BiMMuDa"]],
+        ["Jointist", "Multiple", ["Slakh 2100 Redux"], ["AAM", "BiMMuDa", "POP909"]],
         ["Bytedance Piano transcription", "Piano", ["Maestro"], ["MSMD", "BiMMuDa", "POP909"]],
         ["Transkun", "Piano", ["Maestro", "MAPS", "SMD"], ["MSMD", "BiMMuDa", "POP909"]],
         ["Madmom", "Piano", [], ["Maestro", "MSMD", "BiMMuDa", "POP909"]],
-        ["MT3", "Multiple", ["Maestro", "Slakh 2100 Redux", "Cerberus", "GuitarSet", "MusicNet", "URMP"], ["BiMMuDa"]],
-        ["Omnizart", "Piano", ["Maestro"], ["BiMMuDa"]],
-        ["CREPE Pitch Tracker", "Multiple", ["MIR-1K", "Bach10", "RWC-Synth", "MedleyDB", "MDB-STEM-Synth", "NSynth"], ["BiMMuDa"]],
-        ["Basic Pitch", "Multiple", ["Molina", "GuitarSet", "Maestro", "Slakh 2100 Redux", "Phenicx", "iKala", "MedleyDB"], []]
+        ["MT3", "Multiple", ["Maestro", "Slakh 2100 Redux", "Cerberus", "GuitarSet", "MusicNet", "URMP"], ["AAM", "BiMMuDa", "POP909"]],
+        ["Omnizart", "Piano", ["Maestro"], ["BiMMuDa", "POP909"]],
+        ["CREPE Pitch Tracker", "Multiple", ["MIR-1K", "Bach10", "RWC-Synth", "MedleyDB", "MDB-STEM-Synth", "NSynth"], ["AAM", "BiMMuDa", "POP909"]],
+        ["Basic Pitch", "Multiple", ["Molina", "GuitarSet", "Maestro", "Slakh 2100 Redux", "Phenicx", "iKala", "MedleyDB"], ["AAM", "POP909"]]
     ],
-    "_comment": "Pipeline reads only 'values'. 9 models validated and enabled. Completed Datasets skip already-run+uploaded results (BiMMuDa validated for MT3/Omnizart/Jointist/CREPE; piano models + ReconVAT completed earlier). Basic Pitch has completed=[] (its -i/-o wrapper was just fixed, so it re-runs including BiMMuDa). MR-MT3 is disabled/deferred: its env is buildable (torch 2.1.0+cu121 / TF 2.13, segfault fixed) but the seqio/t5 stack (tensorflow_metadata/tfds/protobuf) still conflicts; its sibling MT3 already works. CREPE is a monophonic pitch tracker so its scores on polyphonic data are near-zero by design.",
+    "_comment": "Completed Datasets reflect results verified on Google Drive (scripts/list_drive.py). Remaining work (run.py auto-computes): MT3->MSMD,NESMDB; Omnizart->MSMD; Jointist->Maestro,MSMD,NESMDB; CREPE->Maestro,Slakh,MSMD,NESMDB; Basic Pitch->MSMD,BiMMuDa,NESMDB. ReconVAT and the piano models (Bytedance/Transkun/Madmom) are fully done. MR-MT3 stays disabled (seqio/t5 stack conflict; sibling MT3 covers that lineage).",
     "disabled": [
         ["MR-MT3", "Multiple", ["Slakh 2100 Redux"], []]
     ]
