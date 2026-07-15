@@ -2,16 +2,16 @@
     "values": [
         ["Model Name", "Instrument", "Training Datasets", "Completed Datasets"],
         ["ReconVAT", "Multiple", ["MAPS", "MusicNet"], ["Maestro", "Slakh 2100 Redux", "MSMD", "BiMMuDa", "POP909", "NESMDB", "AAM"]],
-        ["Jointist", "Multiple", ["Slakh 2100 Redux"], ["AAM", "BiMMuDa", "POP909"]],
+        ["Jointist", "Multiple", ["Slakh 2100 Redux"], ["AAM", "BiMMuDa", "Maestro", "NESMDB", "POP909"]],
         ["Bytedance Piano transcription", "Piano", ["Maestro"], ["MSMD", "BiMMuDa", "POP909"]],
         ["Transkun", "Piano", ["Maestro", "MAPS", "SMD"], ["MSMD", "BiMMuDa", "POP909"]],
         ["Madmom", "Piano", [], ["Maestro", "MSMD", "BiMMuDa", "POP909"]],
         ["MT3", "Multiple", ["Maestro", "Slakh 2100 Redux", "Cerberus", "GuitarSet", "MusicNet", "URMP"], ["AAM", "BiMMuDa", "POP909"]],
         ["Omnizart", "Piano", ["Maestro"], ["BiMMuDa", "POP909"]],
-        ["CREPE Pitch Tracker", "Multiple", ["MIR-1K", "Bach10", "RWC-Synth", "MedleyDB", "MDB-STEM-Synth", "NSynth"], ["AAM", "BiMMuDa", "POP909"]],
-        ["Basic Pitch", "Multiple", ["Molina", "GuitarSet", "Maestro", "Slakh 2100 Redux", "Phenicx", "iKala", "MedleyDB"], ["AAM", "POP909"]]
+        ["CREPE Pitch Tracker", "Multiple", ["MIR-1K", "Bach10", "RWC-Synth", "MedleyDB", "MDB-STEM-Synth", "NSynth"], ["AAM", "BiMMuDa", "NESMDB", "POP909"]],
+        ["Basic Pitch", "Multiple", ["Molina", "GuitarSet", "Maestro", "Slakh 2100 Redux", "Phenicx", "iKala", "MedleyDB"], ["AAM", "NESMDB", "POP909"]]
     ],
-    "_comment": "Completed Datasets reflect results verified on Google Drive (scripts/list_drive.py). Remaining work (run.py auto-computes): MT3->MSMD,NESMDB; Omnizart->MSMD; Jointist->Maestro,MSMD,NESMDB; CREPE->Maestro,Slakh,MSMD,NESMDB; Basic Pitch->MSMD,BiMMuDa,NESMDB. ReconVAT and the piano models (Bytedance/Transkun/Madmom) are fully done. MR-MT3 stays disabled (seqio/t5 stack conflict; sibling MT3 covers that lineage).",
+    "_comment": "Completed Datasets verified via scripts/list_drive.py counts. Remaining after the week-long run (some uploads were partial via afterany): MT3->MSMD,NESMDB(redo 4278/5278); Omnizart->MSMD; Jointist->MSMD; CREPE->MSMD,Maestro,Slakh(redo 88/1710); Basic Pitch->MSMD,BiMMuDa(redo 0/375). Split: NESMDB/Slakh/Maestro on Anvil, MSMD/BiMMuDa on Gilbreth standby. MR-MT3 stays disabled.",
     "disabled": [
         ["MR-MT3", "Multiple", ["Slakh 2100 Redux"], []]
     ]
